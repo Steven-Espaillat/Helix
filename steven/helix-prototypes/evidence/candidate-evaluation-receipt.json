@@ -1,0 +1,673 @@
+{
+  "candidate_hash": "sha256:796ad38e87d7788ecc478fc7cc183077cb0a9bd6e90a249e30e4e127f2b98a5f",
+  "evaluation": {
+    "schema_version": "helix.candidate-evaluation/v1",
+    "evaluation_id": "CEV-AF3149723877",
+    "run_id": "SRUN-EB4B5AED652A",
+    "candidate_id": "SDC-5ACC44150097",
+    "candidate_hash": "sha256:796ad38e87d7788ecc478fc7cc183077cb0a9bd6e90a249e30e4e127f2b98a5f",
+    "section_package_id": "section.5_2_3_body_weight",
+    "provenance_receipt": {
+      "schema_version": "helix.provenance-receipt/v1",
+      "receipt_id": "PRV-8C28655C0771",
+      "candidate_id": "SDC-5ACC44150097",
+      "candidate_hash": "sha256:796ad38e87d7788ecc478fc7cc183077cb0a9bd6e90a249e30e4e127f2b98a5f",
+      "status": "passed",
+      "enforcement_class": "hard_blocker",
+      "waivable": false,
+      "bindings": [
+        {
+          "location": "paragraph:BW-P1:span:0",
+          "text": "Terminal high-dose body weight was 286.2 g.",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:0",
+          "text": "high-dose",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:1",
+          "text": "M",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:2",
+          "text": "mean",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:3",
+          "text": "sd",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:4",
+          "text": "n",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:5",
+          "text": "286.2 g",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:0",
+          "text": "high-dose",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:1",
+          "text": "M",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:2",
+          "text": "mean",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:3",
+          "text": "sd",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:4",
+          "text": "n",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:5",
+          "text": "286.2 g",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        }
+      ],
+      "blockers": []
+    },
+    "study_output_evaluation_receipt": {
+      "schema_version": "helix.study-output-evaluation-receipt/v1",
+      "receipt_id": "SOE-1C152D470F98",
+      "candidate_id": "SDC-5ACC44150097",
+      "candidate_hash": "sha256:796ad38e87d7788ecc478fc7cc183077cb0a9bd6e90a249e30e4e127f2b98a5f",
+      "suite_id": "helix-section-study-output",
+      "suite_version": "0.1.0",
+      "suite_hash": "sha256:46f48b7db7c26728161d1aa3f58fa688d08d8dc9c9c65f437d77685a78b6f644",
+      "status": "passed",
+      "enforcement_class": "review_required",
+      "waivable": false,
+      "results": [
+        {
+          "assertion": "is-json",
+          "status": "passed",
+          "message": "Candidate JSON parsed."
+        },
+        {
+          "assertion": "contains:section_draft_candidate",
+          "status": "passed",
+          "message": "Candidate contains section_draft_candidate."
+        },
+        {
+          "assertion": "contains:validated_claim_ids",
+          "status": "passed",
+          "message": "Candidate contains validated_claim_ids."
+        },
+        {
+          "assertion": "contains:factual_spans",
+          "status": "passed",
+          "message": "Candidate contains factual_spans."
+        },
+        {
+          "assertion": "not-contains:release-ready",
+          "status": "passed",
+          "message": "Candidate omits release-ready."
+        },
+        {
+          "assertion": "not-contains:approved",
+          "status": "passed",
+          "message": "Candidate omits approved."
+        }
+      ]
+    },
+    "template_conformance_receipt": {
+      "schema_version": "helix.template-conformance-receipt/v1",
+      "receipt_id": "TCF-7255BB292DBC",
+      "candidate_id": "SDC-5ACC44150097",
+      "candidate_hash": "sha256:796ad38e87d7788ecc478fc7cc183077cb0a9bd6e90a249e30e4e127f2b98a5f",
+      "section_package_id": "section.5_2_3_body_weight",
+      "status": "passed",
+      "results": [
+        {
+          "gate_id": "body-weight-content-completeness",
+          "rule_id": "TCF-BW-COMPLETENESS",
+          "check_kind": "completeness",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-COMPLETENESS passed"
+        },
+        {
+          "gate_id": "body-weight-output-table-shape",
+          "rule_id": "TCF-BW-TABLE-COVERAGE",
+          "check_kind": "table_coverage",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-TABLE-COVERAGE passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-TERMINOLOGY",
+          "check_kind": "terminology",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-TERMINOLOGY passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-UNITS",
+          "check_kind": "units",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-UNITS passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-ROUNDING",
+          "check_kind": "rounding",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-ROUNDING passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-APPROVED-LANGUAGE",
+          "check_kind": "approved_language",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-APPROVED-LANGUAGE passed"
+        }
+      ]
+    },
+    "next_attempt_decision": {
+      "action": "hold",
+      "attempt": 1,
+      "max_attempts": 3,
+      "reasons": [
+        "Deterministic gates passed; promotion is out of scope"
+      ],
+      "blocking_receipt_ids": []
+    },
+    "hashes": {
+      "candidate": "sha256:796ad38e87d7788ecc478fc7cc183077cb0a9bd6e90a249e30e4e127f2b98a5f",
+      "provenance": "sha256:7dffe1ef4a940f0fad3f3e196e18c49d350c20f1bb822830d0f65fd4cc45a9e0",
+      "study_output_evaluation": "sha256:1e893a1ff484daed767a25017d7e1ed4bb850aaecd27acd1b94a7e8624a5bd0c",
+      "template_conformance": "sha256:f9b1229ecd03908263e934c29338b989fed3ff545f177f8e07c4f9913b901aff",
+      "evaluation": "sha256:73ba6f7aa343c4e83e74b8925e2a848b9e16becfcf288820a25925ab005c834b"
+    },
+    "idempotent_replay": false
+  },
+  "query": {
+    "schema_version": "helix.cross-section-query-receipt/v1",
+    "query_id": "CSQ-DBD1720075A7",
+    "run_id": "SRUN-EB4B5AED652A",
+    "section_package_id": "section.5_2_3_body_weight",
+    "requested_artifact_ids": [
+      "claim:C-BW-HIGH",
+      "validation.body_weight"
+    ],
+    "returned": [
+      {
+        "artifact_id": "claim:C-BW-HIGH",
+        "kind": "claim",
+        "hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17"
+      },
+      {
+        "artifact_id": "validation.body_weight",
+        "kind": "fact",
+        "hash": "sha256:bcaf52614f0099dec2dd299882b5872382b7c20ae8ce7ccb4204f0ecd66d756d"
+      }
+    ],
+    "rejected_artifact_ids": [],
+    "status": "returned",
+    "message": null
+  },
+  "undeclared_query": {
+    "schema_version": "helix.cross-section-query-receipt/v1",
+    "query_id": "CSQ-C58658F4D084",
+    "run_id": "SRUN-EB4B5AED652A",
+    "section_package_id": "section.5_2_3_body_weight",
+    "requested_artifact_ids": [
+      "claim:C-NOAEL",
+      "record:BW-HXL-M401-28"
+    ],
+    "returned": [],
+    "rejected_artifact_ids": [
+      "claim:C-NOAEL",
+      "record:BW-HXL-M401-28"
+    ],
+    "status": "rejected",
+    "message": "Cross-Section Queries cannot read undeclared data."
+  },
+  "unsupported": {
+    "schema_version": "helix.candidate-evaluation/v1",
+    "evaluation_id": "CEV-CC942E11C1E6",
+    "run_id": "SRUN-0D0F3D01CB86",
+    "candidate_id": "SDC-D69C3B29E8C7",
+    "candidate_hash": "sha256:75b32950b573aea2a66edf2d00b3353723e1d169c592fd0f1c3f368e6d376515",
+    "section_package_id": "section.5_2_3_body_weight",
+    "provenance_receipt": {
+      "schema_version": "helix.provenance-receipt/v1",
+      "receipt_id": "PRV-7B5E124267D9",
+      "candidate_id": "SDC-D69C3B29E8C7",
+      "candidate_hash": "sha256:75b32950b573aea2a66edf2d00b3353723e1d169c592fd0f1c3f368e6d376515",
+      "status": "blocked",
+      "enforcement_class": "hard_blocker",
+      "waivable": false,
+      "bindings": [],
+      "blockers": [
+        {
+          "code": "unsupported-content",
+          "location": "paragraph:BW-P1:span:0",
+          "text": "Terminal high-dose body weight was 286.2 g and 99.9 kg.",
+          "message": "paragraph:BW-P1:span:0 is not supported by C-BW-HIGH."
+        }
+      ]
+    },
+    "study_output_evaluation_receipt": {
+      "schema_version": "helix.study-output-evaluation-receipt/v1",
+      "receipt_id": "SOE-CC2B9C985DF3",
+      "candidate_id": "SDC-D69C3B29E8C7",
+      "candidate_hash": "sha256:75b32950b573aea2a66edf2d00b3353723e1d169c592fd0f1c3f368e6d376515",
+      "suite_id": "helix-section-study-output",
+      "suite_version": "0.1.0",
+      "suite_hash": "sha256:46f48b7db7c26728161d1aa3f58fa688d08d8dc9c9c65f437d77685a78b6f644",
+      "status": "passed",
+      "enforcement_class": "review_required",
+      "waivable": false,
+      "results": [
+        {
+          "assertion": "is-json",
+          "status": "passed",
+          "message": "Candidate JSON parsed."
+        },
+        {
+          "assertion": "contains:section_draft_candidate",
+          "status": "passed",
+          "message": "Candidate contains section_draft_candidate."
+        },
+        {
+          "assertion": "contains:validated_claim_ids",
+          "status": "passed",
+          "message": "Candidate contains validated_claim_ids."
+        },
+        {
+          "assertion": "contains:factual_spans",
+          "status": "passed",
+          "message": "Candidate contains factual_spans."
+        },
+        {
+          "assertion": "not-contains:release-ready",
+          "status": "passed",
+          "message": "Candidate omits release-ready."
+        },
+        {
+          "assertion": "not-contains:approved",
+          "status": "passed",
+          "message": "Candidate omits approved."
+        }
+      ]
+    },
+    "template_conformance_receipt": {
+      "schema_version": "helix.template-conformance-receipt/v1",
+      "receipt_id": "TCF-7DAB8234A3DA",
+      "candidate_id": "SDC-D69C3B29E8C7",
+      "candidate_hash": "sha256:75b32950b573aea2a66edf2d00b3353723e1d169c592fd0f1c3f368e6d376515",
+      "section_package_id": "section.5_2_3_body_weight",
+      "status": "blocked",
+      "results": [
+        {
+          "gate_id": "body-weight-content-completeness",
+          "rule_id": "TCF-BW-COMPLETENESS",
+          "check_kind": "completeness",
+          "status": "blocked",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate body-weight-content-completeness failed"
+        },
+        {
+          "gate_id": "body-weight-output-table-shape",
+          "rule_id": "TCF-BW-TABLE-COVERAGE",
+          "check_kind": "table_coverage",
+          "status": "blocked",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate body-weight-output-table-shape failed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-TERMINOLOGY",
+          "check_kind": "terminology",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-TERMINOLOGY passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-UNITS",
+          "check_kind": "units",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-UNITS passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-ROUNDING",
+          "check_kind": "rounding",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-ROUNDING passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-APPROVED-LANGUAGE",
+          "check_kind": "approved_language",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-APPROVED-LANGUAGE passed"
+        }
+      ]
+    },
+    "next_attempt_decision": {
+      "action": "retry",
+      "attempt": 1,
+      "max_attempts": 3,
+      "reasons": [
+        "Provenance compilation failed",
+        "Template Conformance failed"
+      ],
+      "blocking_receipt_ids": [
+        "PRV-7B5E124267D9",
+        "TCF-7DAB8234A3DA"
+      ]
+    },
+    "hashes": {
+      "candidate": "sha256:75b32950b573aea2a66edf2d00b3353723e1d169c592fd0f1c3f368e6d376515",
+      "provenance": "sha256:cd13f98b65b1bab581cf1fad750fa286684b531d9a2b1409e2a1b6edbd5540af",
+      "study_output_evaluation": "sha256:1a7a6305c1ff3746c4ec45a460a230cb1a9d6ee6c300622b64b672fe3fb44849",
+      "template_conformance": "sha256:5da41b701f6957a37e5e02f220b800d8a91b1d473fc66e1ea3bb50ed54b88bb2",
+      "evaluation": "sha256:e60ccb67096fe36a3b297fb99532f5d864fa12dc63f78c38d3a1e34307ef81c2"
+    },
+    "idempotent_replay": false
+  },
+  "advisory": {
+    "schema_version": "helix.candidate-evaluation/v1",
+    "evaluation_id": "CEV-0E9AC8B41626",
+    "run_id": "SRUN-D11B52B9B85B",
+    "candidate_id": "SDC-55A3F45D372B",
+    "candidate_hash": "sha256:cd882cbc1f2292b9f66b5fe1c8ed5124aebce2a73d705b1428356cd6e13353de",
+    "section_package_id": "section.5_2_3_body_weight",
+    "provenance_receipt": {
+      "schema_version": "helix.provenance-receipt/v1",
+      "receipt_id": "PRV-2DE48F145BC4",
+      "candidate_id": "SDC-55A3F45D372B",
+      "candidate_hash": "sha256:cd882cbc1f2292b9f66b5fe1c8ed5124aebce2a73d705b1428356cd6e13353de",
+      "status": "passed",
+      "enforcement_class": "hard_blocker",
+      "waivable": false,
+      "bindings": [
+        {
+          "location": "paragraph:BW-P1:span:0",
+          "text": "Terminal high-dose body weight was 286.2 g and is approved.",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:0",
+          "text": "high-dose",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:1",
+          "text": "M",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:2",
+          "text": "mean",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:3",
+          "text": "sd",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:4",
+          "text": "n",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:span:5",
+          "text": "286.2 g",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:0",
+          "text": "high-dose",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:1",
+          "text": "M",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:2",
+          "text": "mean",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:3",
+          "text": "sd",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:4",
+          "text": "n",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        },
+        {
+          "location": "table:BW-T1:row:0:cell:5",
+          "text": "286.2 g",
+          "claim_id": "C-BW-HIGH",
+          "claim_hash": "sha256:ff79466dcd721cd956bd2ff9475504df334dcbe7bf047ae38c2d128b4d615a17",
+          "artifact_hash": "sha256:f1d747bc4b8e1b4f940e043d7a2b0147eadd60bb79fce420a6145ed98cb059d1"
+        }
+      ],
+      "blockers": []
+    },
+    "study_output_evaluation_receipt": {
+      "schema_version": "helix.study-output-evaluation-receipt/v1",
+      "receipt_id": "SOE-987CC67AFF3C",
+      "candidate_id": "SDC-55A3F45D372B",
+      "candidate_hash": "sha256:cd882cbc1f2292b9f66b5fe1c8ed5124aebce2a73d705b1428356cd6e13353de",
+      "suite_id": "helix-section-study-output",
+      "suite_version": "0.1.0",
+      "suite_hash": "sha256:46f48b7db7c26728161d1aa3f58fa688d08d8dc9c9c65f437d77685a78b6f644",
+      "status": "failed",
+      "enforcement_class": "review_required",
+      "waivable": false,
+      "results": [
+        {
+          "assertion": "is-json",
+          "status": "passed",
+          "message": "Candidate JSON parsed."
+        },
+        {
+          "assertion": "contains:section_draft_candidate",
+          "status": "passed",
+          "message": "Candidate contains section_draft_candidate."
+        },
+        {
+          "assertion": "contains:validated_claim_ids",
+          "status": "passed",
+          "message": "Candidate contains validated_claim_ids."
+        },
+        {
+          "assertion": "contains:factual_spans",
+          "status": "passed",
+          "message": "Candidate contains factual_spans."
+        },
+        {
+          "assertion": "not-contains:release-ready",
+          "status": "passed",
+          "message": "Candidate omits release-ready."
+        },
+        {
+          "assertion": "not-contains:approved",
+          "status": "failed",
+          "message": "Candidate contains advisory-forbidden approved."
+        }
+      ]
+    },
+    "template_conformance_receipt": {
+      "schema_version": "helix.template-conformance-receipt/v1",
+      "receipt_id": "TCF-FE200CB381D9",
+      "candidate_id": "SDC-55A3F45D372B",
+      "candidate_hash": "sha256:cd882cbc1f2292b9f66b5fe1c8ed5124aebce2a73d705b1428356cd6e13353de",
+      "section_package_id": "section.5_2_3_body_weight",
+      "status": "passed",
+      "results": [
+        {
+          "gate_id": "body-weight-content-completeness",
+          "rule_id": "TCF-BW-COMPLETENESS",
+          "check_kind": "completeness",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-COMPLETENESS passed"
+        },
+        {
+          "gate_id": "body-weight-output-table-shape",
+          "rule_id": "TCF-BW-TABLE-COVERAGE",
+          "check_kind": "table_coverage",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-TABLE-COVERAGE passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-TERMINOLOGY",
+          "check_kind": "terminology",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-TERMINOLOGY passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-UNITS",
+          "check_kind": "units",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-UNITS passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-ROUNDING",
+          "check_kind": "rounding",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-ROUNDING passed"
+        },
+        {
+          "gate_id": "body-weight-output-style",
+          "rule_id": "TCF-BW-APPROVED-LANGUAGE",
+          "check_kind": "approved_language",
+          "status": "passed",
+          "enforcement_class": "hard_blocker",
+          "waivable": false,
+          "message": "Template Conformance Gate TCF-BW-APPROVED-LANGUAGE passed"
+        }
+      ]
+    },
+    "next_attempt_decision": {
+      "action": "hold",
+      "attempt": 1,
+      "max_attempts": 3,
+      "reasons": [
+        "Study Output Evaluation created review_required"
+      ],
+      "blocking_receipt_ids": []
+    },
+    "hashes": {
+      "candidate": "sha256:cd882cbc1f2292b9f66b5fe1c8ed5124aebce2a73d705b1428356cd6e13353de",
+      "provenance": "sha256:191c3a7e29984c402c853bb6f63ff3fa7510afe461939855780399d48a8e451b",
+      "study_output_evaluation": "sha256:94a5f58079dcc389dbcda8d48e099fff3211062eb38bab02d7748ef2ad48ef44",
+      "template_conformance": "sha256:137135b276766037fcd20d69147fb0b27b03f411f5fcf95d88f19ff4811b1b65",
+      "evaluation": "sha256:94e9cbbef046ba774cc319fd011afc532b1fa2fa4fe33eed765860e8ade78074"
+    },
+    "idempotent_replay": false
+  },
+  "persisted_evaluation_id": "CEV-AF3149723877"
+}

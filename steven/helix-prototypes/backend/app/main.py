@@ -8,6 +8,11 @@ from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session
 
 from .agents.codex_section_agent import CodexSectionAgent, SectionAgent
+from .candidate_evaluations import (
+    CandidateEvaluationConflictError,
+    CandidateEvaluationService,
+    UnknownSectionRunError,
+)
 from .config import Settings, get_settings
 from .data_validation import DataValidationConflictError, UnknownValidationPackageError
 from .database import create_database_engine, create_schema, create_session_factory
@@ -15,6 +20,10 @@ from .repository import StudyNotFoundError
 from .run_plans import PinnedRunService, RunConflictError, RunPlanRejectedError
 from .schemas import (
     ApprovalCommand,
+    CandidateEvaluation,
+    CandidateEvaluationCommand,
+    CrossSectionQueryCommand,
+    CrossSectionQueryReceipt,
     DataValidationCommand,
     DataValidationExecution,
     DispositionCommand,
@@ -107,6 +116,13 @@ def create_app(
 
     SectionRunServiceDependency = Annotated[SectionRunService, Depends(section_run_service)]
 
+    def candidate_evaluation_service(session: SessionDependency) -> CandidateEvaluationService:
+        return CandidateEvaluationService(session, active_settings.codex_repository_root)
+
+    CandidateEvaluationServiceDependency = Annotated[
+        CandidateEvaluationService, Depends(candidate_evaluation_service)
+    ]
+
     @app.get("/health", tags=["system"])
     def health(session: SessionDependency) -> dict[str, str]:
         session.execute(text("SELECT 1"))
@@ -175,6 +191,34 @@ def create_app(
         section_service: SectionRunServiceDependency,
     ) -> SectionRunReceipt:
         return _call(lambda: section_service.run(study_id, command))
+
+    @app.post(
+        "/api/v1/studies/{study_id}/section-runs/{run_id}/evaluations",
+        response_model=CandidateEvaluation,
+        status_code=status.HTTP_201_CREATED,
+        tags=["candidate-evaluations"],
+    )
+    def evaluate_candidate(
+        study_id: str,
+        run_id: str,
+        command: CandidateEvaluationCommand,
+        evaluation_service: CandidateEvaluationServiceDependency,
+    ) -> CandidateEvaluation:
+        return _call(lambda: evaluation_service.evaluate(study_id, run_id, command))
+
+    @app.post(
+        "/api/v1/studies/{study_id}/section-runs/{run_id}/cross-section-queries",
+        response_model=CrossSectionQueryReceipt,
+        status_code=status.HTTP_201_CREATED,
+        tags=["cross-section-queries"],
+    )
+    def query_cross_section(
+        study_id: str,
+        run_id: str,
+        command: CrossSectionQueryCommand,
+        evaluation_service: CandidateEvaluationServiceDependency,
+    ) -> CrossSectionQueryReceipt:
+        return _call(lambda: evaluation_service.query(study_id, run_id, command))
 
     @app.get(
         "/api/v1/studies/{study_id}/claims/{claim_id}/evidence",
@@ -250,12 +294,18 @@ def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:
         return operation()
     except StudyNotFoundError as error:
         raise HTTPException(status_code=404, detail=f"Unknown study {error.args[0]}") from error
-    except (InvalidCommandError, UnknownSectionPackageError, UnknownValidationPackageError) as error:
+    except (
+        InvalidCommandError,
+        UnknownSectionPackageError,
+        UnknownValidationPackageError,
+        UnknownSectionRunError,
+    ) as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except (
         WorkflowConflictError,
         SectionRunConflictError,
         RunConflictError,
+        CandidateEvaluationConflictError,
         DataValidationConflictError,
     ) as error:
         raise HTTPException(status_code=409, detail=str(error)) from error

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/study-output-evaluation-receipt/v1",
+  "title": "HELIX Study Output Evaluation Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "candidate_id",
+    "candidate_hash",
+    "suite_id",
+    "suite_version",
+    "suite_hash",
+    "status",
+    "enforcement_class",
+    "waivable",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "helix.study-output-evaluation-receipt/v1"
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^SOE-[A-Z0-9-]+$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^SDC-[A-Z0-9-]+$"
+    },
+    "candidate_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "suite_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "suite_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "suite_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "status": {
+      "enum": ["passed", "failed"]
+    },
+    "enforcement_class": {
+      "const": "review_required"
+    },
+    "waivable": {
+      "type": "boolean"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assertion", "status", "message"],
+        "properties": {
+          "assertion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["passed", "failed"]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

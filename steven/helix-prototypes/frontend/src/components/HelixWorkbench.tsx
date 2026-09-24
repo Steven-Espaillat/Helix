@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   ApiError,
+  evaluateCandidate,
   exportPackage,
   getWorkspace,
+  queryCrossSection,
   recordApproval,
   recordDisposition,
   runDataValidation,
@@ -95,6 +97,54 @@ export function HelixWorkbench({ studyId }: Props) {
       await refresh();
       setNotice(
         `${receipt.candidate_id} recorded from Codex SDK in Review Scaffold Revision ${receipt.review_scaffold_revision}.`,
+      );
+    } catch (cause) {
+      setError(messageFrom(cause));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function evaluateBodyWeight() {
+    if (!workspace?.section_runs.at(-1)) {
+      return;
+    }
+    const runId = workspace.section_runs.at(-1)?.receipt.run_id;
+    if (!runId) {
+      return;
+    }
+    setBusy("candidate-evaluation");
+    setNotice(null);
+    setError(null);
+    try {
+      const evaluation = await evaluateCandidate(studyId, runId);
+      await refresh();
+      setNotice(
+        `${evaluation.evaluation_id} ${evaluation.next_attempt_decision.action} for ${evaluation.candidate_id}.`,
+      );
+    } catch (cause) {
+      setError(messageFrom(cause));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function queryBodyWeightFacts() {
+    if (!workspace?.section_runs.at(-1)) {
+      return;
+    }
+    const runId = workspace.section_runs.at(-1)?.receipt.run_id;
+    if (!runId) {
+      return;
+    }
+    setBusy("cross-section-query");
+    setNotice(null);
+    setError(null);
+    try {
+      const receipt = await queryCrossSection(studyId, runId);
+      await refresh();
+      setNotice(
+        `${receipt.query_id} ${receipt.status} for ${receipt.requested_artifact_ids.length} requested artifacts.`,
       );
     } catch (cause) {
       setError(messageFrom(cause));
@@ -254,10 +304,14 @@ export function HelixWorkbench({ studyId }: Props) {
             validationBusy={busy === "validation"}
             dataValidationBusy={busy === "data-validation"}
             sectionRunBusy={busy === "section-run"}
+            evaluationBusy={busy === "candidate-evaluation"}
+            queryBusy={busy === "cross-section-query"}
             onPlannerChange={setPlanner}
             onValidate={() => void validate()}
             onExecuteBodyWeight={() => void executeBodyWeight()}
             onDraftBodyWeight={() => void draftBodyWeight()}
+            onEvaluateCandidate={() => void evaluateBodyWeight()}
+            onQueryCrossSection={() => void queryBodyWeightFacts()}
           />
         )}
         {activeView === "evidence" && (

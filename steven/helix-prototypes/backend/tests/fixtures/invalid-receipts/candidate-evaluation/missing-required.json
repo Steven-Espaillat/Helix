@@ -1,0 +1,74 @@
+{
+  "schema_version": "helix.candidate-evaluation/v1",
+  "evaluation_id": "CEV-VALID000001",
+  "run_id": "SRUN-VALID000001",
+  "candidate_id": "SDC-VALID000001",
+  "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "section_package_id": "section.5_2_3_body_weight",
+  "provenance_receipt": {
+    "schema_version": "helix.provenance-receipt/v1",
+    "receipt_id": "PRV-VALID000001",
+    "candidate_id": "SDC-VALID000001",
+    "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "status": "passed",
+    "enforcement_class": "hard_blocker",
+    "waivable": false,
+    "bindings": [
+      {
+        "location": "paragraph:BW-P1:span:0",
+        "text": "Terminal high-dose body weight was 286.2 g.",
+        "claim_id": "C-BW-HIGH",
+        "claim_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "artifact_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      }
+    ],
+    "blockers": []
+  },
+  "study_output_evaluation_receipt": {
+    "schema_version": "helix.study-output-evaluation-receipt/v1",
+    "receipt_id": "SOE-VALID000001",
+    "candidate_id": "SDC-VALID000001",
+    "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "suite_id": "helix-section-study-output",
+    "suite_version": "0.1.0",
+    "suite_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "status": "passed",
+    "enforcement_class": "review_required",
+    "waivable": false,
+    "results": [
+      {
+        "assertion": "is-json",
+        "status": "passed",
+        "message": "Candidate JSON parsed."
+      }
+    ]
+  },
+  "template_conformance_receipt": {
+    "schema_version": "helix.template-conformance-receipt/v1",
+    "receipt_id": "TCF-VALID000001",
+    "candidate_id": "SDC-VALID000001",
+    "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "section_package_id": "section.5_2_3_body_weight",
+    "status": "passed",
+    "results": [
+      {
+        "gate_id": "body-weight-content-completeness",
+        "rule_id": "TCF-BW-COMPLETENESS",
+        "check_kind": "completeness",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "message": "Template Conformance Gate TCF-BW-COMPLETENESS passed"
+      }
+    ]
+  },
+  "next_attempt_decision": {
+    "action": "hold",
+    "attempt": 1,
+    "max_attempts": 3,
+    "reasons": [
+      "Deterministic gates passed; promotion is out of scope"
+    ],
+    "blocking_receipt_ids": []
+  }
+}

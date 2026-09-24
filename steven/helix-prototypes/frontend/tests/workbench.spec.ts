@@ -18,6 +18,8 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByText("Synthetic / not for submission", { exact: true })).toBeVisible();
   await expect(page.getByTestId("release-status")).toHaveText("blocked");
   await expect(page.getByTestId("draft-body-weight")).toBeDisabled();
+  await expect(page.getByTestId("evaluate-candidate")).toBeDisabled();
+  await expect(page.getByTestId("query-cross-section")).toBeDisabled();
   await expect(page.getByTestId("section-run-ineligible")).toContainText("Run hybrid validation first");
   await expect(page.getByTestId("template-contract-gates")).toBeVisible();
   await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("blocked");
@@ -33,6 +35,8 @@ test("runs the synthetic study from validation through explicit export", async (
   await page.getByTestId("run-validation").click();
   await expect(page.getByRole("status")).toContainText("13 checks completed");
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
+  await expect(page.getByTestId("evaluate-candidate")).toBeDisabled();
+  await expect(page.getByTestId("query-cross-section")).toBeDisabled();
   await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("ready");
   await expect(page.getByTestId("eligibility-section.5_3_discussion")).toHaveText("ready");
   const workspaceBeforeDraft = await request.get(`${apiRoot}/studies/STUDY-HLX-028/workspace`);
@@ -210,6 +214,93 @@ test("enables draft from backend eligibility even when claims look incomplete", 
   expect(sectionRunPosts).toBe(0);
 });
 
+test("renders candidate evaluation and cross-section query from backend-owned workspace fields", async ({
+  page,
+}) => {
+  const evaluation = injectedEvaluation();
+  const query = injectedQuery();
+  let evaluationPosts = 0;
+  let queryPosts = 0;
+  await page.route("**/api/v1/studies/*/section-runs", async (route) => {
+    if (route.request().method() === "POST") {
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "The test must not start a Codex thread." }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route("**/api/v1/studies/*/section-runs/*/evaluations", async (route) => {
+    evaluationPosts += 1;
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(evaluation),
+    });
+  });
+  await page.route("**/api/v1/studies/*/section-runs/*/cross-section-queries", async (route) => {
+    queryPosts += 1;
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(query),
+    });
+  });
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(
+        withRecordedCandidate(workspace, {
+          includeEvaluation: evaluationPosts > 0,
+          includeQuery: queryPosts > 0,
+          evaluation,
+          query,
+        }),
+      ),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("evaluate-candidate")).toBeEnabled();
+  await expect(page.getByTestId("query-cross-section")).toBeEnabled();
+  await expect(page.getByTestId("section-run-receipt")).toContainText("SDC-EVAL000001");
+  await expect(page.getByTestId("candidate-evaluation")).toHaveCount(0);
+
+  await page.getByTestId("evaluate-candidate").click();
+  await expect(page.getByTestId("candidate-evaluation")).toBeVisible();
+  await expect(page.getByTestId("evaluation-id")).toHaveText("CEV-EVAL000001");
+  await expect(page.getByTestId("evaluation-candidate-hash")).toHaveText(INJECTED_HASH);
+  await expect(page.getByTestId("provenance-status")).toHaveText("Provenance passed");
+  await expect(page.getByTestId("provenance-binding-paragraph:BW-P1:span:0")).toContainText(
+    `C-BW-HIGH ${INJECTED_CLAIM_HASH} ${INJECTED_ARTIFACT_HASH}`,
+  );
+  await expect(page.getByTestId("study-output-status")).toHaveText("Study output passed review_required");
+  await expect(page.getByTestId("conformance-TCF-BW-COMPLETENESS")).toContainText("completeness passed");
+  await expect(page.getByTestId("conformance-TCF-BW-TABLE-COVERAGE")).toContainText("table_coverage passed");
+  await expect(page.getByTestId("conformance-TCF-BW-TERMINOLOGY")).toContainText("terminology passed");
+  await expect(page.getByTestId("conformance-TCF-BW-UNITS")).toContainText("units passed");
+  await expect(page.getByTestId("conformance-TCF-BW-ROUNDING")).toContainText("rounding passed");
+  await expect(page.getByTestId("conformance-TCF-BW-APPROVED-LANGUAGE")).toContainText(
+    "approved_language passed",
+  );
+  await expect(page.getByTestId("next-attempt-action")).toHaveText("Next attempt hold");
+  await expect(page.getByTestId("evaluation-hash")).toHaveText(INJECTED_EVALUATION_HASH);
+  expect(evaluationPosts).toBe(1);
+
+  await page.getByTestId("query-cross-section").click();
+  await expect(page.getByTestId("cross-section-query")).toBeVisible();
+  await expect(page.getByTestId("query-status")).toHaveText("returned");
+  await expect(page.getByTestId("query-requested")).toHaveText("claim:C-BW-HIGH, validation.body_weight");
+  await expect(page.getByTestId("query-hash-claim:C-BW-HIGH")).toContainText(INJECTED_CLAIM_HASH);
+  await expect(page.getByTestId("query-hash-validation.body_weight")).toContainText(INJECTED_ARTIFACT_HASH);
+  expect(queryPosts).toBe(1);
+});
+
 async function recordApproval(page: import("@playwright/test").Page, label: string) {
   const row = page.locator(".approval-row").filter({ hasText: label });
   await row.getByRole("button", { name: "Record" }).click();
@@ -285,6 +376,178 @@ function isExportedWorkspace(value: unknown): boolean {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+const INJECTED_HASH = `sha256:${"cafe".repeat(16)}`;
+const INJECTED_CLAIM_HASH = `sha256:${"b0b0".repeat(16)}`;
+const INJECTED_ARTIFACT_HASH = `sha256:${"a11e".repeat(16)}`;
+const INJECTED_EVALUATION_HASH = `sha256:${"eeee".repeat(16)}`;
+
+function injectedEvaluation(): Record<string, unknown> {
+  const rule = (ruleId: string, checkKind: string) => ({
+    gate_id: "body-weight-output-style",
+    rule_id: ruleId,
+    check_kind: checkKind,
+    status: "passed",
+    enforcement_class: "hard_blocker",
+    waivable: false,
+    message: `Template Conformance Gate ${ruleId} passed`,
+  });
+  return {
+    schema_version: "helix.candidate-evaluation/v1",
+    evaluation_id: "CEV-EVAL000001",
+    run_id: "SRUN-EVAL000001",
+    candidate_id: "SDC-EVAL000001",
+    candidate_hash: INJECTED_HASH,
+    section_package_id: "section.5_2_3_body_weight",
+    provenance_receipt: {
+      schema_version: "helix.provenance-receipt/v1",
+      receipt_id: "PRV-EVAL000001",
+      candidate_id: "SDC-EVAL000001",
+      candidate_hash: INJECTED_HASH,
+      status: "passed",
+      enforcement_class: "hard_blocker",
+      waivable: false,
+      bindings: [
+        {
+          location: "paragraph:BW-P1:span:0",
+          text: "Terminal high-dose body weight was 286.2 g.",
+          claim_id: "C-BW-HIGH",
+          claim_hash: INJECTED_CLAIM_HASH,
+          artifact_hash: INJECTED_ARTIFACT_HASH,
+        },
+      ],
+      blockers: [],
+    },
+    study_output_evaluation_receipt: {
+      schema_version: "helix.study-output-evaluation-receipt/v1",
+      receipt_id: "SOE-EVAL000001",
+      candidate_id: "SDC-EVAL000001",
+      candidate_hash: INJECTED_HASH,
+      suite_id: "helix-section-study-output",
+      suite_version: "0.1.0",
+      suite_hash: INJECTED_ARTIFACT_HASH,
+      status: "passed",
+      enforcement_class: "review_required",
+      waivable: false,
+      results: [{ assertion: "is-json", status: "passed", message: "Candidate JSON parsed." }],
+    },
+    template_conformance_receipt: {
+      schema_version: "helix.template-conformance-receipt/v1",
+      receipt_id: "TCF-EVAL000001",
+      candidate_id: "SDC-EVAL000001",
+      candidate_hash: INJECTED_HASH,
+      section_package_id: "section.5_2_3_body_weight",
+      status: "passed",
+      results: [
+        { ...rule("TCF-BW-COMPLETENESS", "completeness"), gate_id: "body-weight-content-completeness" },
+        { ...rule("TCF-BW-TABLE-COVERAGE", "table_coverage"), gate_id: "body-weight-output-table-shape" },
+        rule("TCF-BW-TERMINOLOGY", "terminology"),
+        rule("TCF-BW-UNITS", "units"),
+        rule("TCF-BW-ROUNDING", "rounding"),
+        rule("TCF-BW-APPROVED-LANGUAGE", "approved_language"),
+      ],
+    },
+    next_attempt_decision: {
+      action: "hold",
+      attempt: 1,
+      max_attempts: 3,
+      reasons: ["Deterministic gates passed; promotion is out of scope"],
+      blocking_receipt_ids: [],
+    },
+    hashes: {
+      candidate: INJECTED_HASH,
+      provenance: INJECTED_CLAIM_HASH,
+      study_output_evaluation: INJECTED_ARTIFACT_HASH,
+      template_conformance: INJECTED_CLAIM_HASH,
+      evaluation: INJECTED_EVALUATION_HASH,
+    },
+  };
+}
+
+function injectedQuery(): Record<string, unknown> {
+  return {
+    schema_version: "helix.cross-section-query-receipt/v1",
+    query_id: "CSQ-EVAL000001",
+    run_id: "SRUN-EVAL000001",
+    section_package_id: "section.5_2_3_body_weight",
+    requested_artifact_ids: ["claim:C-BW-HIGH", "validation.body_weight"],
+    returned: [
+      { artifact_id: "claim:C-BW-HIGH", kind: "claim", hash: INJECTED_CLAIM_HASH },
+      { artifact_id: "validation.body_weight", kind: "fact", hash: INJECTED_ARTIFACT_HASH },
+    ],
+    rejected_artifact_ids: [],
+    status: "returned",
+  };
+}
+
+function withRecordedCandidate(
+  workspace: unknown,
+  options: {
+    includeEvaluation: boolean;
+    includeQuery: boolean;
+    evaluation: Record<string, unknown>;
+    query: Record<string, unknown>;
+  },
+): unknown {
+  if (!isObject(workspace)) {
+    throw new Error("Workspace is missing.");
+  }
+  return {
+    ...workspace,
+    section_runs: [
+      {
+        receipt: {
+          run_id: "SRUN-EVAL000001",
+          section_id: "5_2_3_body_weight",
+          section_package_id: "section.5_2_3_body_weight",
+          status: "candidate_recorded",
+          candidate_id: "SDC-EVAL000001",
+          candidate_hash: INJECTED_HASH,
+          envelope_hash: INJECTED_ARTIFACT_HASH,
+          agent_runtime: "codex_sdk",
+          codex_thread_id: "thread-eval-001",
+          skill_name: "helix-section-agent",
+          skill_hash: INJECTED_CLAIM_HASH,
+          review_scaffold_revision: 2,
+          idempotent_replay: false,
+        },
+        candidate: {
+          schema_version: "helix.section-draft-candidate/v1",
+          status: "section_draft_candidate",
+          candidate_id: "SDC-EVAL000001",
+          run_id: "SRUN-EVAL000001",
+          section_id: "5_2_3_body_weight",
+          section_package_id: "section.5_2_3_body_weight",
+          section_package_version: "0.1.0",
+          drafting_cycle_id: "CYCLE-BW-001",
+          attempt: 1,
+          validated_claim_ids: ["C-BW-HIGH"],
+          content_blocks: [
+            {
+              block_id: "BW-P1",
+              kind: "paragraph",
+              content: "Terminal high-dose body weight was 286.2 g.",
+              factual_spans: [
+                { text: "Terminal high-dose body weight was 286.2 g.", claim_ids: ["C-BW-HIGH"] },
+              ],
+            },
+          ],
+          executor_receipt_ids: ["EXEC-BW-SUMMARY-001"],
+          agent_receipt: {
+            runtime: "codex_sdk",
+            thread_id: "thread-eval-001",
+            skill_name: "helix-section-agent",
+            skill_hash: INJECTED_CLAIM_HASH,
+          },
+        },
+        envelope: {},
+        review_scaffold: {},
+      },
+    ],
+    candidate_evaluations: options.includeEvaluation ? [options.evaluation] : [],
+    cross_section_queries: options.includeQuery ? [options.query] : [],
+  };
 }
 
 function withBlockedBodyWeight(workspace: unknown): unknown {

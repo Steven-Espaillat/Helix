@@ -140,6 +140,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/studies/{study_id}/section-runs/{run_id}/cross-section-queries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Query Cross Section */
+        post: operations["query_cross_section_api_v1_studies__study_id__section_runs__run_id__cross_section_queries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/studies/{study_id}/section-runs/{run_id}/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate Candidate */
+        post: operations["evaluate_candidate_api_v1_studies__study_id__section_runs__run_id__evaluations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/studies/{study_id}/validation-results/{result_id}/dispositions": {
         parameters: {
             query?: never;
@@ -251,6 +285,52 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** CandidateEvaluation */
+        CandidateEvaluation: {
+            /** Candidate Hash */
+            candidate_hash: string;
+            /** Candidate Id */
+            candidate_id: string;
+            /** Evaluation Id */
+            evaluation_id: string;
+            hashes: components["schemas"]["CandidateEvaluationHashes"];
+            /**
+             * Idempotent Replay
+             * @default false
+             */
+            idempotent_replay: boolean;
+            next_attempt_decision: components["schemas"]["NextAttemptDecision"];
+            provenance_receipt: components["schemas"]["ProvenanceReceipt"];
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.candidate-evaluation/v1";
+            /** Section Package Id */
+            section_package_id: string;
+            study_output_evaluation_receipt: components["schemas"]["StudyOutputEvaluationReceipt"];
+            template_conformance_receipt: components["schemas"]["TemplateConformanceReceipt"];
+        };
+        /** CandidateEvaluationCommand */
+        CandidateEvaluationCommand: {
+            /** Idempotency Key */
+            idempotency_key: string;
+        };
+        /** CandidateEvaluationHashes */
+        CandidateEvaluationHashes: {
+            /** Candidate */
+            candidate: string;
+            /** Evaluation */
+            evaluation: string;
+            /** Provenance */
+            provenance: string;
+            /** Study Output Evaluation */
+            study_output_evaluation: string;
+            /** Template Conformance */
+            template_conformance: string;
+        };
         /** Claim */
         Claim: {
             /** Claim Id */
@@ -296,6 +376,52 @@ export interface components {
          * @enum {string}
          */
         ClaimStatus: "pending" | "validated" | "needs_review" | "approved";
+        /** CrossSectionQueryCommand */
+        CrossSectionQueryCommand: {
+            /** Artifact Ids */
+            artifact_ids: string[];
+            /** Idempotency Key */
+            idempotency_key: string;
+        };
+        /** CrossSectionQueryReceipt */
+        CrossSectionQueryReceipt: {
+            /** Message */
+            message?: string | null;
+            /** Query Id */
+            query_id: string;
+            /** Rejected Artifact Ids */
+            rejected_artifact_ids: string[];
+            /** Requested Artifact Ids */
+            requested_artifact_ids: string[];
+            /** Returned */
+            returned: components["schemas"]["CrossSectionReturnedArtifact"][];
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.cross-section-query-receipt/v1";
+            /** Section Package Id */
+            section_package_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "returned" | "rejected";
+        };
+        /** CrossSectionReturnedArtifact */
+        CrossSectionReturnedArtifact: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Hash */
+            hash: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "fact" | "claim" | "section_draft";
+        };
         /** DataValidationCommand */
         DataValidationCommand: {
             /** Actor */
@@ -563,6 +689,25 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** NextAttemptDecision */
+        NextAttemptDecision: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "retry" | "stop_for_review" | "hold";
+            /** Attempt */
+            attempt: number;
+            /** Blocking Receipt Ids */
+            blocking_receipt_ids: string[];
+            /**
+             * Max Attempts
+             * @constant
+             */
+            max_attempts: 3;
+            /** Reasons */
+            reasons: string[];
+        };
         /** PinnedRun */
         PinnedRun: {
             /** Created At */
@@ -614,6 +759,30 @@ export interface components {
             /** Subject */
             subject: string;
         };
+        /** ProvenanceBinding */
+        ProvenanceBinding: {
+            /** Artifact Hash */
+            artifact_hash: string;
+            /** Claim Hash */
+            claim_hash: string;
+            /** Claim Id */
+            claim_id: string;
+            /** Location */
+            location: string;
+            /** Text */
+            text: string;
+        };
+        /** ProvenanceBlocker */
+        ProvenanceBlocker: {
+            /** Code */
+            code: string;
+            /** Location */
+            location: string;
+            /** Message */
+            message: string;
+            /** Text */
+            text: string;
+        };
         /** ProvenanceEdge */
         ProvenanceEdge: {
             /** Authority Tier */
@@ -632,6 +801,39 @@ export interface components {
             transform_id: string;
             /** Transform Version */
             transform_version?: string | null;
+        };
+        /** ProvenanceReceipt */
+        ProvenanceReceipt: {
+            /** Bindings */
+            bindings: components["schemas"]["ProvenanceBinding"][];
+            /** Blockers */
+            blockers: components["schemas"]["ProvenanceBlocker"][];
+            /** Candidate Hash */
+            candidate_hash: string;
+            /** Candidate Id */
+            candidate_id: string;
+            /**
+             * Enforcement Class
+             * @constant
+             */
+            enforcement_class: "hard_blocker";
+            /** Receipt Id */
+            receipt_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.provenance-receipt/v1";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "blocked";
+            /**
+             * Waivable
+             * @constant
+             */
+            waivable: false;
         };
         /** RegulatoryReference */
         RegulatoryReference: {
@@ -1033,6 +1235,52 @@ export interface components {
             /** Workflow State */
             workflow_state: string;
         };
+        /** StudyOutputAssertionResult */
+        StudyOutputAssertionResult: {
+            /** Assertion */
+            assertion: string;
+            /** Message */
+            message: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "failed";
+        };
+        /** StudyOutputEvaluationReceipt */
+        StudyOutputEvaluationReceipt: {
+            /** Candidate Hash */
+            candidate_hash: string;
+            /** Candidate Id */
+            candidate_id: string;
+            /**
+             * Enforcement Class
+             * @constant
+             */
+            enforcement_class: "review_required";
+            /** Receipt Id */
+            receipt_id: string;
+            /** Results */
+            results: components["schemas"]["StudyOutputAssertionResult"][];
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.study-output-evaluation-receipt/v1";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "failed";
+            /** Suite Hash */
+            suite_hash: string;
+            /** Suite Id */
+            suite_id: string;
+            /** Suite Version */
+            suite_version: string;
+            /** Waivable */
+            waivable: boolean;
+        };
         /** StudyTypeResolution */
         StudyTypeResolution: {
             /** Evidence */
@@ -1059,6 +1307,58 @@ export interface components {
             predecessor_run_id: string;
             /** Reason */
             reason: string;
+        };
+        /** TemplateConformanceReceipt */
+        TemplateConformanceReceipt: {
+            /** Candidate Hash */
+            candidate_hash: string;
+            /** Candidate Id */
+            candidate_id: string;
+            /** Receipt Id */
+            receipt_id: string;
+            /** Results */
+            results: components["schemas"]["TemplateConformanceResult"][];
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.template-conformance-receipt/v1";
+            /** Section Package Id */
+            section_package_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "blocked";
+        };
+        /** TemplateConformanceResult */
+        TemplateConformanceResult: {
+            /**
+             * Check Kind
+             * @enum {string}
+             */
+            check_kind: "completeness" | "table_coverage" | "terminology" | "units" | "rounding" | "approved_language";
+            /**
+             * Enforcement Class
+             * @constant
+             */
+            enforcement_class: "hard_blocker";
+            /** Gate Id */
+            gate_id: string;
+            /** Message */
+            message: string;
+            /** Rule Id */
+            rule_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "blocked";
+            /**
+             * Waivable
+             * @constant
+             */
+            waivable: false;
         };
         /** TemplateContractGateResult */
         TemplateContractGateResult: {
@@ -1214,8 +1514,12 @@ export interface components {
         WorkspaceResponse: {
             /** Approvals */
             approvals: components["schemas"]["Approval"][];
+            /** Candidate Evaluations */
+            candidate_evaluations?: components["schemas"]["CandidateEvaluation"][];
             /** Claims */
             claims: components["schemas"]["Claim"][];
+            /** Cross Section Queries */
+            cross_section_queries?: components["schemas"]["CrossSectionQueryReceipt"][];
             /** Data Validation Executions */
             data_validation_executions: components["schemas"]["DataValidationExecution"][];
             /** Dispositions */
@@ -1518,6 +1822,78 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SectionRunReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    query_cross_section_api_v1_studies__study_id__section_runs__run_id__cross_section_queries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrossSectionQueryCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrossSectionQueryReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluate_candidate_api_v1_studies__study_id__section_runs__run_id__evaluations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateEvaluationCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateEvaluation"];
                 };
             };
             /** @description Validation Error */

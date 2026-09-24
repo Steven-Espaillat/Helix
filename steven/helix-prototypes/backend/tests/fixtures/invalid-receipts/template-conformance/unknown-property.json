@@ -1,0 +1,20 @@
+{
+  "schema_version": "helix.template-conformance-receipt/v1",
+  "receipt_id": "TCF-VALID000001",
+  "candidate_id": "SDC-VALID000001",
+  "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "section_package_id": "section.5_2_3_body_weight",
+  "status": "passed",
+  "results": [
+    {
+      "gate_id": "body-weight-content-completeness",
+      "rule_id": "TCF-BW-COMPLETENESS",
+      "check_kind": "completeness",
+      "status": "passed",
+      "enforcement_class": "hard_blocker",
+      "waivable": false,
+      "message": "Template Conformance Gate TCF-BW-COMPLETENESS passed"
+    }
+  ],
+  "invented_field": "nope"
+}

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/template-conformance-receipt/v1",
+  "title": "HELIX Template Conformance Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "candidate_id",
+    "candidate_hash",
+    "section_package_id",
+    "status",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "helix.template-conformance-receipt/v1"
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^TCF-[A-Z0-9-]+$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^SDC-[A-Z0-9-]+$"
+    },
+    "candidate_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "section_package_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": ["passed", "blocked"]
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gate_id",
+          "rule_id",
+          "check_kind",
+          "status",
+          "enforcement_class",
+          "waivable",
+          "message"
+        ],
+        "properties": {
+          "gate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "check_kind": {
+            "enum": [
+              "completeness",
+              "table_coverage",
+              "terminology",
+              "units",
+              "rounding",
+              "approved_language"
+            ]
+          },
+          "status": {
+            "enum": ["passed", "blocked"]
+          },
+          "enforcement_class": {
+            "const": "hard_blocker"
+          },
+          "waivable": {
+            "const": false
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

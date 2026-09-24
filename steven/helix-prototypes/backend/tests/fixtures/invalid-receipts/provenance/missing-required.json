@@ -1,0 +1,10 @@
+{
+  "schema_version": "helix.provenance-receipt/v1",
+  "receipt_id": "PRV-VALID000001",
+  "candidate_id": "SDC-VALID000001",
+  "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "passed",
+  "enforcement_class": "hard_blocker",
+  "waivable": false,
+  "blockers": []
+}

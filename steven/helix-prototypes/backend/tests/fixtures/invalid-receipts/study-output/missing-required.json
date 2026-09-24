@@ -1,0 +1,12 @@
+{
+  "schema_version": "helix.study-output-evaluation-receipt/v1",
+  "receipt_id": "SOE-VALID000001",
+  "candidate_id": "SDC-VALID000001",
+  "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "suite_id": "helix-section-study-output",
+  "suite_version": "0.1.0",
+  "suite_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "status": "passed",
+  "enforcement_class": "review_required",
+  "waivable": false
+}

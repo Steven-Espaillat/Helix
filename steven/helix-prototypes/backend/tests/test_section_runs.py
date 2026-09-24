@@ -69,6 +69,12 @@ class FakeSectionAgent:
         content: object = "Terminal high-dose body weight was 286.2 g."
         if self.mode == "uncovered_content":
             content = "Terminal high-dose body weight was 286.2 g. Unsupported factual assertion."
+        if self.mode == "unsupported_value":
+            content = "Terminal high-dose body weight was 286.2 g and 99.9 kg."
+        if self.mode == "advisory_fail":
+            content = "Terminal high-dose body weight was 286.2 g and is approved."
+        if self.mode == "forbidden_language":
+            content = "Terminal high-dose body weight was 286.2 g and treatment related."
         if self.mode == "nested_unapproved":
             content = {
                 "rows": [
@@ -98,27 +104,7 @@ class FakeSectionAgent:
             "drafting_cycle_id": "CYCLE-BW-001",
             "attempt": 1,
             "validated_claim_ids": claim_ids,
-            "content_blocks": [
-                {
-                    "block_id": "BW-P1",
-                    "kind": "paragraph",
-                    "content": content,
-                    "factual_spans": (
-                        []
-                        if self.mode == "empty_factual_spans"
-                        else [
-                            {
-                                "text": (
-                                    "286.2 g"
-                                    if isinstance(content, dict) or self.mode == "uncovered_content"
-                                    else content
-                                ),
-                                "claim_ids": span_claim_ids,
-                            }
-                        ]
-                    ),
-                }
-            ],
+            "content_blocks": body_weight_blocks(self.mode, content, span_claim_ids),
             "executor_receipt_ids": (
                 ["EXEC-NOT-ALLOWED"]
                 if self.mode == "unapproved_executor_receipt"
@@ -127,6 +113,58 @@ class FakeSectionAgent:
             "agent_receipt": receipt,
         }
         return AgentResult(thread_id="thread-test-001", final_response=json.dumps(candidate))
+
+
+def body_weight_blocks(mode: str, content: object, claim_ids: list[str]) -> list[dict[str, object]]:
+    if mode in {"conforming", "conforming_advisory_fail"}:
+        cells = [
+            {"text": "high-dose", "claim_ids": claim_ids},
+            {"text": "M", "claim_ids": claim_ids},
+            {"text": "mean", "claim_ids": claim_ids},
+            {"text": "sd", "claim_ids": claim_ids},
+            {"text": "n", "claim_ids": claim_ids},
+            {"text": "286.2 g", "claim_ids": claim_ids},
+        ]
+        paragraph = (
+            "Terminal high-dose body weight was 286.2 g and is approved."
+            if mode == "conforming_advisory_fail"
+            else "Terminal high-dose body weight was 286.2 g."
+        )
+        return [
+            {
+                "block_id": "BW-P1",
+                "kind": "paragraph",
+                "content": paragraph,
+                "factual_spans": [{"text": paragraph, "claim_ids": claim_ids}],
+            },
+            {
+                "block_id": "BW-T1",
+                "kind": "table",
+                "content": {"rows": [{"cells": cells}]},
+                "factual_spans": [{"text": cell["text"], "claim_ids": claim_ids} for cell in cells],
+            },
+        ]
+    return [
+        {
+            "block_id": "BW-P1",
+            "kind": "paragraph",
+            "content": content,
+            "factual_spans": (
+                []
+                if mode == "empty_factual_spans"
+                else [
+                    {
+                        "text": (
+                            "286.2 g"
+                            if isinstance(content, dict) or mode == "uncovered_content"
+                            else content
+                        ),
+                        "claim_ids": claim_ids,
+                    }
+                ]
+            ),
+        }
+    ]
 
 
 def governed_root(tmp_path: Path) -> Path:

@@ -11,6 +11,11 @@ These JSON Schemas define the records that connect deterministic validation, Cod
 | `section-draft.schema.json` | Records deterministic promotion of one exact candidate after blocking gates pass. |
 | `review-scaffold-revision.schema.json` | Records one immutable, study-wide review rendering that can contain `[NEEDS REVIEW]` placeholders and can never be exported. |
 | `run-plan.schema.json` | Stores the immutable dependency graph resolved for one Pinned Run. |
+| `provenance-receipt.schema.json` | Records deterministic claim bindings for one Section Draft Candidate. |
+| `study-output-evaluation-receipt.schema.json` | Records advisory Promptfoo study-output results without gate authority. |
+| `template-conformance-receipt.schema.json` | Records post-draft Template Conformance Gate results. |
+| `cross-section-query-receipt.schema.json` | Records requested artifact IDs and returned hashes for one audited query. |
+| `candidate-evaluation.schema.json` | Persists one Candidate Attempt with its three evaluation receipts and next-attempt decision. |
 
 JSON Schema cannot prove that a `RunPlan` is acyclic or that each dependency exists. The backend must check both conditions before it stores the plan.
 

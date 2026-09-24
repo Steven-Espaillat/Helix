@@ -12,3 +12,5 @@ export type ExportReceipt = components["schemas"]["ExportReceipt"];
 export type PlannerMode = components["schemas"]["PlannerMode"];
 export type SectionRunReceipt = components["schemas"]["SectionRunReceipt"];
 export type DataValidationExecution = components["schemas"]["DataValidationExecution"];
+export type CandidateEvaluation = components["schemas"]["CandidateEvaluation"];
+export type CrossSectionQueryReceipt = components["schemas"]["CrossSectionQueryReceipt"];

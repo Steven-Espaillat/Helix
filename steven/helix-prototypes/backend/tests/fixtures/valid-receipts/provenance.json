@@ -1,0 +1,19 @@
+{
+  "schema_version": "helix.provenance-receipt/v1",
+  "receipt_id": "PRV-VALID000001",
+  "candidate_id": "SDC-VALID000001",
+  "candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "passed",
+  "enforcement_class": "hard_blocker",
+  "waivable": false,
+  "bindings": [
+    {
+      "location": "paragraph:BW-P1:span:0",
+      "text": "Terminal high-dose body weight was 286.2 g.",
+      "claim_id": "C-BW-HIGH",
+      "claim_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "artifact_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  ],
+  "blockers": []
+}

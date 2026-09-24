@@ -265,10 +265,10 @@ class StudyService:
         )
 
     def disposition(self, study_id: str, result_id: str, command: DispositionCommand) -> WorkspaceResponse:
-        if result_id.startswith("TCR-"):
+        if result_id.startswith(("TCR-", "PRV-", "TCF-")):
             raise WorkflowConflictError(
-                "Template Contract Gate failures are non-waivable. "
-                "Correct the governed template through a superseding run."
+                "Template and provenance failures are non-waivable. "
+                "Correct governed input through a superseding run or a new candidate."
             )
         package = self.repository.get(study_id, for_update=True)
         self._ensure_mutable(package)
@@ -619,6 +619,8 @@ class StudyService:
             data_validation_executions=package.data_validation_executions,
             section_run_eligibility=self.section_runs.eligibilities(package),
             section_runs=self.repository.list_section_runs(package.study.study_id),
+            candidate_evaluations=self.repository.list_candidate_evaluations(package.study.study_id),
+            cross_section_queries=self.repository.list_cross_section_queries(package.study.study_id),
             review_scaffold_revisions=package.review_scaffold_revisions,
         )
 

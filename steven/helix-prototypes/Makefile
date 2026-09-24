@@ -1,4 +1,4 @@
-.PHONY: up down generate test verify verify-postgres
+.PHONY: up down generate test verify verify-postgres verify-candidate-evaluation
 
 up:
 	docker compose up --build
@@ -20,3 +20,6 @@ verify: test
 
 verify-postgres:
 	./scripts/verify-postgres.sh
+
+verify-candidate-evaluation:
+	./scripts/verify-candidate-evaluation.sh

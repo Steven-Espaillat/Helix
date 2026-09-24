@@ -10,10 +10,14 @@ type Props = {
   validationBusy: boolean;
   dataValidationBusy: boolean;
   sectionRunBusy: boolean;
+  evaluationBusy: boolean;
+  queryBusy: boolean;
   onPlannerChange: (planner: PlannerMode) => void;
   onValidate: () => void;
   onExecuteBodyWeight: () => void;
   onDraftBodyWeight: () => void;
+  onEvaluateCandidate: () => void;
+  onQueryCrossSection: () => void;
 };
 
 export function StudyJourney({
@@ -22,10 +26,14 @@ export function StudyJourney({
   validationBusy,
   dataValidationBusy,
   sectionRunBusy,
+  evaluationBusy,
+  queryBusy,
   onPlannerChange,
   onValidate,
   onExecuteBodyWeight,
   onDraftBodyWeight,
+  onEvaluateCandidate,
+  onQueryCrossSection,
 }: Props) {
   const defaultStage = useMemo(
     () =>
@@ -49,9 +57,16 @@ export function StudyJourney({
     (item) => item.section_package_id === "section.5_2_3_body_weight",
   );
   const bodyWeightRun = workspace.section_runs.at(-1);
+  const bodyWeightEvaluation = (workspace.candidate_evaluations ?? []).find(
+    (item) => item.run_id === bodyWeightRun?.receipt.run_id,
+  );
+  const bodyWeightQuery = (workspace.cross_section_queries ?? []).find(
+    (item) => item.run_id === bodyWeightRun?.receipt.run_id,
+  );
   const dataValidation = workspace.data_validation_executions.at(-1);
   const terminalClaim = dataValidation?.claims.find((claim) => claim.claim_id === "C-BW-HIGH");
-  const commandBusy = validationBusy || dataValidationBusy || sectionRunBusy;
+  const commandBusy =
+    validationBusy || dataValidationBusy || sectionRunBusy || evaluationBusy || queryBusy;
   const latestScaffold = workspace.review_scaffold_revisions?.at(-1);
 
   if (!stage) {
@@ -252,6 +267,67 @@ export function StudyJourney({
               <span>Thread {bodyWeightRun.receipt.codex_thread_id}</span>
               <code>Envelope {bodyWeightRun.receipt.envelope_hash}</code>
               <span>Review Scaffold Revision {bodyWeightRun.receipt.review_scaffold_revision}</span>
+            </div>
+          )}
+          <button
+            className="button secondary wide"
+            type="button"
+            onClick={onEvaluateCandidate}
+            disabled={!bodyWeightRun || commandBusy}
+            data-testid="evaluate-candidate"
+          >
+            {evaluationBusy ? "Evaluating candidate…" : "Evaluate candidate"}
+          </button>
+          <button
+            className="button secondary wide"
+            type="button"
+            onClick={onQueryCrossSection}
+            disabled={!bodyWeightRun || commandBusy}
+            data-testid="query-cross-section"
+          >
+            {queryBusy ? "Querying dependencies…" : "Query declared dependencies"}
+          </button>
+          {bodyWeightEvaluation && (
+            <div className="section-run-receipt" data-testid="candidate-evaluation">
+              <strong>Candidate evaluation</strong>
+              <span data-testid="evaluation-id">{bodyWeightEvaluation.evaluation_id}</span>
+              <code data-testid="evaluation-candidate-hash">{bodyWeightEvaluation.candidate_hash}</code>
+              <span data-testid="provenance-status">
+                Provenance {bodyWeightEvaluation.provenance_receipt.status}
+              </span>
+              {bodyWeightEvaluation.provenance_receipt.bindings.map((item) => (
+                <code key={item.location} data-testid={`provenance-binding-${item.location}`}>
+                  {item.claim_id} {item.claim_hash} {item.artifact_hash}
+                </code>
+              ))}
+              <span data-testid="study-output-status">
+                Study output {bodyWeightEvaluation.study_output_evaluation_receipt.status}{" "}
+                {bodyWeightEvaluation.study_output_evaluation_receipt.enforcement_class}
+              </span>
+              <span data-testid="conformance-status">
+                Conformance {bodyWeightEvaluation.template_conformance_receipt.status}
+              </span>
+              {bodyWeightEvaluation.template_conformance_receipt.results.map((item) => (
+                <span key={item.rule_id} data-testid={`conformance-${item.rule_id}`}>
+                  {item.rule_id} {item.check_kind} {item.status}
+                </span>
+              ))}
+              <span data-testid="next-attempt-action">
+                Next attempt {bodyWeightEvaluation.next_attempt_decision.action}
+              </span>
+              <code data-testid="evaluation-hash">{bodyWeightEvaluation.hashes.evaluation}</code>
+            </div>
+          )}
+          {bodyWeightQuery && (
+            <div className="section-run-receipt" data-testid="cross-section-query">
+              <strong>Cross-section query</strong>
+              <span data-testid="query-status">{bodyWeightQuery.status}</span>
+              <span data-testid="query-requested">{bodyWeightQuery.requested_artifact_ids.join(", ")}</span>
+              {bodyWeightQuery.returned.map((item) => (
+                <code key={item.artifact_id} data-testid={`query-hash-${item.artifact_id}`}>
+                  {item.artifact_id} {item.hash}
+                </code>
+              ))}
             </div>
           )}
           <p className="fine-print">

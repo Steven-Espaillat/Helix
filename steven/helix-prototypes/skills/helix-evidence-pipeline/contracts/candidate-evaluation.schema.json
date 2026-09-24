@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/candidate-evaluation/v1",
+  "title": "HELIX Candidate Evaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evaluation_id",
+    "run_id",
+    "candidate_id",
+    "candidate_hash",
+    "section_package_id",
+    "provenance_receipt",
+    "study_output_evaluation_receipt",
+    "template_conformance_receipt",
+    "next_attempt_decision",
+    "hashes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "helix.candidate-evaluation/v1"
+    },
+    "evaluation_id": {
+      "type": "string",
+      "pattern": "^CEV-[A-Z0-9-]+$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^SDC-[A-Z0-9-]+$"
+    },
+    "candidate_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "section_package_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_receipt": {
+      "$ref": "helix://contracts/provenance-receipt/v1"
+    },
+    "study_output_evaluation_receipt": {
+      "$ref": "helix://contracts/study-output-evaluation-receipt/v1"
+    },
+    "template_conformance_receipt": {
+      "$ref": "helix://contracts/template-conformance-receipt/v1"
+    },
+    "next_attempt_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "attempt", "max_attempts", "reasons", "blocking_receipt_ids"],
+      "properties": {
+        "action": {
+          "enum": ["retry", "stop_for_review", "hold"]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "max_attempts": {
+          "const": 3
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "blocking_receipt_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "idempotent_replay": {
+      "type": "boolean"
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate",
+        "provenance",
+        "study_output_evaluation",
+        "template_conformance",
+        "evaluation"
+      ],
+      "properties": {
+        "candidate": {
+          "$ref": "#/$defs/sha256"
+        },
+        "provenance": {
+          "$ref": "#/$defs/sha256"
+        },
+        "study_output_evaluation": {
+          "$ref": "#/$defs/sha256"
+        },
+        "template_conformance": {
+          "$ref": "#/$defs/sha256"
+        },
+        "evaluation": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

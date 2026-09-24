@@ -1,5 +1,7 @@
 import type {
   ApprovalRole,
+  CandidateEvaluation,
+  CrossSectionQueryReceipt,
   DataValidationExecution,
   EvidenceChainData,
   ExportReceipt,
@@ -63,6 +65,41 @@ export async function runSectionAgent(studyId: string): Promise<SectionRunReceip
     }),
   });
   assertSectionRunReceipt(value);
+  return value;
+}
+
+export async function evaluateCandidate(
+  studyId: string,
+  runId: string,
+): Promise<CandidateEvaluation> {
+  const value = await request(
+    `/studies/${encodeURIComponent(studyId)}/section-runs/${encodeURIComponent(runId)}/evaluations`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        idempotency_key: `workbench-${studyId}-evaluate-${runId}-v1`,
+      }),
+    },
+  );
+  assertCandidateEvaluation(value);
+  return value;
+}
+
+export async function queryCrossSection(
+  studyId: string,
+  runId: string,
+): Promise<CrossSectionQueryReceipt> {
+  const value = await request(
+    `/studies/${encodeURIComponent(studyId)}/section-runs/${encodeURIComponent(runId)}/cross-section-queries`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        artifact_ids: ["claim:C-BW-HIGH", "validation.body_weight"],
+        idempotency_key: `workbench-${studyId}-query-${runId}-v1`,
+      }),
+    },
+  );
+  assertCrossSectionQuery(value);
   return value;
 }
 
@@ -205,6 +242,35 @@ function assertSectionRunReceipt(value: unknown): asserts value is SectionRunRec
     typeof value.skill_hash !== "string"
   ) {
     throw new Error("The section-run response does not match the generated API contract.");
+  }
+}
+
+function assertCandidateEvaluation(value: unknown): asserts value is CandidateEvaluation {
+  if (
+    !isObject(value) ||
+    value.schema_version !== "helix.candidate-evaluation/v1" ||
+    typeof value.evaluation_id !== "string" ||
+    typeof value.candidate_hash !== "string" ||
+    !isObject(value.provenance_receipt) ||
+    !isObject(value.study_output_evaluation_receipt) ||
+    !isObject(value.template_conformance_receipt) ||
+    !isObject(value.next_attempt_decision) ||
+    !isObject(value.hashes)
+  ) {
+    throw new Error("The candidate evaluation response does not match the generated API contract.");
+  }
+}
+
+function assertCrossSectionQuery(value: unknown): asserts value is CrossSectionQueryReceipt {
+  if (
+    !isObject(value) ||
+    value.schema_version !== "helix.cross-section-query-receipt/v1" ||
+    typeof value.query_id !== "string" ||
+    !Array.isArray(value.requested_artifact_ids) ||
+    !Array.isArray(value.returned) ||
+    (value.status !== "returned" && value.status !== "rejected")
+  ) {
+    throw new Error("The cross-section query response does not match the generated API contract.");
   }
 }
 

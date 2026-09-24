@@ -1,0 +1,15 @@
+{
+  "schema_version": "helix.cross-section-query-receipt/v1",
+  "query_id": "CSQ-VALID000001",
+  "run_id": "SRUN-VALID000001",
+  "section_package_id": "section.5_2_3_body_weight",
+  "returned": [
+    {
+      "artifact_id": "claim:C-BW-HIGH",
+      "kind": "claim",
+      "hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    }
+  ],
+  "rejected_artifact_ids": [],
+  "status": "returned"
+}

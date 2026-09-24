@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from .models import (
     AuditEventRow,
+    CandidateEvaluationRow,
+    CrossSectionQueryRow,
     DataValidationRunRow,
     ExportFileRow,
     PinnedRunRow,
@@ -13,7 +15,14 @@ from .models import (
     StudyPackageRow,
     ValidationRunRow,
 )
-from .schemas import DataValidationExecution, StoredSectionRun, StudyEvidencePackage, ValidationRun
+from .schemas import (
+    CandidateEvaluation,
+    CrossSectionQueryReceipt,
+    DataValidationExecution,
+    StoredSectionRun,
+    StudyEvidencePackage,
+    ValidationRun,
+)
 
 
 class StudyNotFoundError(LookupError):
@@ -229,6 +238,88 @@ class StudyPackageRepository:
             )
             for row in rows
         ]
+
+    def get_section_run_by_id(self, study_id: str, run_id: str) -> SectionRunRow | None:
+        return self.session.scalar(
+            select(SectionRunRow).where(
+                SectionRunRow.study_id == study_id,
+                SectionRunRow.run_id == run_id,
+            )
+        )
+
+    def get_candidate_evaluation(self, study_id: str, idempotency_key: str) -> CandidateEvaluationRow | None:
+        return self.session.scalar(
+            select(CandidateEvaluationRow).where(
+                CandidateEvaluationRow.study_id == study_id,
+                CandidateEvaluationRow.idempotency_key == idempotency_key,
+            )
+        )
+
+    def list_candidate_evaluations(self, study_id: str) -> list[CandidateEvaluation]:
+        rows = self.session.scalars(
+            select(CandidateEvaluationRow)
+            .where(CandidateEvaluationRow.study_id == study_id)
+            .order_by(CandidateEvaluationRow.created_at, CandidateEvaluationRow.id)
+        ).all()
+        return [CandidateEvaluation.model_validate(row.evaluation) for row in rows]
+
+    def add_candidate_evaluation(
+        self,
+        *,
+        study_id: str,
+        run_id: str,
+        candidate_id: str,
+        idempotency_key: str,
+        request_hash: str,
+        evaluation: CandidateEvaluation,
+    ) -> CandidateEvaluationRow:
+        row = CandidateEvaluationRow(
+            study_id=study_id,
+            run_id=run_id,
+            candidate_id=candidate_id,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash,
+            evaluation=evaluation.model_dump(mode="json"),
+        )
+        self.session.add(row)
+        self.session.flush()
+        return row
+
+    def get_cross_section_query(self, study_id: str, idempotency_key: str) -> CrossSectionQueryRow | None:
+        return self.session.scalar(
+            select(CrossSectionQueryRow).where(
+                CrossSectionQueryRow.study_id == study_id,
+                CrossSectionQueryRow.idempotency_key == idempotency_key,
+            )
+        )
+
+    def list_cross_section_queries(self, study_id: str) -> list[CrossSectionQueryReceipt]:
+        rows = self.session.scalars(
+            select(CrossSectionQueryRow)
+            .where(CrossSectionQueryRow.study_id == study_id)
+            .order_by(CrossSectionQueryRow.created_at, CrossSectionQueryRow.id)
+        ).all()
+        return [CrossSectionQueryReceipt.model_validate(row.receipt) for row in rows]
+
+    def add_cross_section_query(
+        self,
+        *,
+        study_id: str,
+        run_id: str,
+        idempotency_key: str,
+        request_hash: str,
+        receipt: CrossSectionQueryReceipt,
+    ) -> CrossSectionQueryRow:
+        row = CrossSectionQueryRow(
+            study_id=study_id,
+            run_id=run_id,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash,
+            receipt=receipt.model_dump(mode="json"),
+        )
+        self.session.add(row)
+        self.session.flush()
+        return row
 
     def get_data_validation_run(self, study_id: str, idempotency_key: str) -> DataValidationRunRow | None:
         return self.session.scalar(

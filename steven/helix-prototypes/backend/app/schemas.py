@@ -680,6 +680,144 @@ class StoredSectionRun(StrictModel):
     review_scaffold: dict[str, object]
 
 
+Sha256 = Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")]
+
+
+class CandidateEvaluationCommand(StrictModel):
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
+class CrossSectionQueryCommand(StrictModel):
+    artifact_ids: list[str] = Field(min_length=1)
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
+class ProvenanceBinding(StrictModel):
+    location: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    claim_id: str = Field(min_length=1)
+    claim_hash: Sha256
+    artifact_hash: Sha256
+
+
+class ProvenanceBlocker(StrictModel):
+    code: str = Field(min_length=1)
+    location: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    message: str = Field(min_length=1)
+
+
+class ProvenanceReceipt(StrictModel):
+    schema_version: Literal["helix.provenance-receipt/v1"]
+    receipt_id: Annotated[str, Field(pattern=r"^PRV-[A-Z0-9-]+$")]
+    candidate_id: Annotated[str, Field(pattern=r"^SDC-[A-Z0-9-]+$")]
+    candidate_hash: Sha256
+    status: Literal["passed", "blocked"]
+    enforcement_class: Literal["hard_blocker"]
+    waivable: Literal[False]
+    bindings: list[ProvenanceBinding]
+    blockers: list[ProvenanceBlocker]
+
+
+class StudyOutputAssertionResult(StrictModel):
+    assertion: str = Field(min_length=1)
+    status: Literal["passed", "failed"]
+    message: str = Field(min_length=1)
+
+
+class StudyOutputEvaluationReceipt(StrictModel):
+    schema_version: Literal["helix.study-output-evaluation-receipt/v1"]
+    receipt_id: Annotated[str, Field(pattern=r"^SOE-[A-Z0-9-]+$")]
+    candidate_id: Annotated[str, Field(pattern=r"^SDC-[A-Z0-9-]+$")]
+    candidate_hash: Sha256
+    suite_id: str = Field(min_length=1)
+    suite_version: str = Field(pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
+    suite_hash: Sha256
+    status: Literal["passed", "failed"]
+    enforcement_class: Literal["review_required"]
+    waivable: bool
+    results: list[StudyOutputAssertionResult] = Field(min_length=1)
+
+
+ConformanceCheckKind = Literal[
+    "completeness",
+    "table_coverage",
+    "terminology",
+    "units",
+    "rounding",
+    "approved_language",
+]
+
+
+class TemplateConformanceResult(StrictModel):
+    gate_id: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    check_kind: ConformanceCheckKind
+    status: Literal["passed", "blocked"]
+    enforcement_class: Literal["hard_blocker"]
+    waivable: Literal[False]
+    message: str = Field(min_length=1)
+
+
+class TemplateConformanceReceipt(StrictModel):
+    schema_version: Literal["helix.template-conformance-receipt/v1"]
+    receipt_id: Annotated[str, Field(pattern=r"^TCF-[A-Z0-9-]+$")]
+    candidate_id: Annotated[str, Field(pattern=r"^SDC-[A-Z0-9-]+$")]
+    candidate_hash: Sha256
+    section_package_id: str = Field(min_length=1)
+    status: Literal["passed", "blocked"]
+    results: list[TemplateConformanceResult] = Field(min_length=1)
+
+
+class CrossSectionReturnedArtifact(StrictModel):
+    artifact_id: str = Field(min_length=1)
+    kind: Literal["fact", "claim", "section_draft"]
+    hash: Sha256
+
+
+class CrossSectionQueryReceipt(StrictModel):
+    schema_version: Literal["helix.cross-section-query-receipt/v1"]
+    query_id: Annotated[str, Field(pattern=r"^CSQ-[A-Z0-9-]+$")]
+    run_id: str = Field(min_length=1)
+    section_package_id: str = Field(min_length=1)
+    requested_artifact_ids: list[str] = Field(min_length=1)
+    returned: list[CrossSectionReturnedArtifact]
+    rejected_artifact_ids: list[str]
+    status: Literal["returned", "rejected"]
+    message: str | None = None
+
+
+class NextAttemptDecision(StrictModel):
+    action: Literal["retry", "stop_for_review", "hold"]
+    attempt: int = Field(ge=1, le=3)
+    max_attempts: Literal[3]
+    reasons: list[str]
+    blocking_receipt_ids: list[str]
+
+
+class CandidateEvaluationHashes(StrictModel):
+    candidate: Sha256
+    provenance: Sha256
+    study_output_evaluation: Sha256
+    template_conformance: Sha256
+    evaluation: Sha256
+
+
+class CandidateEvaluation(StrictModel):
+    schema_version: Literal["helix.candidate-evaluation/v1"]
+    evaluation_id: Annotated[str, Field(pattern=r"^CEV-[A-Z0-9-]+$")]
+    run_id: str = Field(min_length=1)
+    candidate_id: Annotated[str, Field(pattern=r"^SDC-[A-Z0-9-]+$")]
+    candidate_hash: Sha256
+    section_package_id: str = Field(min_length=1)
+    provenance_receipt: ProvenanceReceipt
+    study_output_evaluation_receipt: StudyOutputEvaluationReceipt
+    template_conformance_receipt: TemplateConformanceReceipt
+    next_attempt_decision: NextAttemptDecision
+    hashes: CandidateEvaluationHashes
+    idempotent_replay: bool = False
+
+
 class WorkspaceResponse(StrictModel):
     label: str
     study: Study
@@ -700,6 +838,8 @@ class WorkspaceResponse(StrictModel):
     data_validation_executions: list[DataValidationExecution]
     section_run_eligibility: list[SectionRunEligibility]
     section_runs: list[StoredSectionRun]
+    candidate_evaluations: list[CandidateEvaluation] = Field(default_factory=list)
+    cross_section_queries: list[CrossSectionQueryReceipt] = Field(default_factory=list)
     review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
 
 
