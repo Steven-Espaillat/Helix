@@ -284,6 +284,9 @@ class StudyEvidencePackage(StrictModel):
     data_validation_executions: list["DataValidationExecution"] = Field(default_factory=list)
     review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
     superseded_pinned_runs: list["PinnedRun"] = Field(default_factory=list)
+    predecessor_snapshots: list["PredecessorSnapshot"] = Field(default_factory=list)
+    superseding_run_receipt: "SupersedingRunReceipt | None" = None
+    frozen_inputs: "FrozenRunInputs | None" = None
 
 
 class PlannerMode(StrEnum):
@@ -895,6 +898,79 @@ class PromotionDecision(StrictModel):
     gate_decision_ids: list[str]
 
 
+class FrozenRunInputs(StrictModel):
+    records: StudyRecords
+    manifest: list[ManifestEntry]
+    template: dict[str, object]
+    validation_package: dict[str, object]
+    section_packages: dict[str, dict[str, object]]
+    skill_hash: Sha256
+    suite_hash: Sha256
+    executor_hash: Sha256
+    validation_package_hash: Sha256
+
+
+class ArtifactLineage(StrictModel):
+    predecessor_run_id: str = Field(min_length=1, max_length=80)
+    predecessor_artifact_id: str = Field(min_length=1)
+    predecessor_content_hash: Sha256
+    predecessor_dependency_fingerprint: Sha256
+
+
+class ParseReuse(StrictModel):
+    node_id: str = Field(min_length=1)
+    content_hash: Sha256
+    reused: bool
+
+
+class CarriedForwardArtifact(StrictModel):
+    kind: Literal["section_draft_candidate", "section_draft"]
+    section_package_id: str = Field(min_length=1)
+    artifact_id: str = Field(min_length=1)
+    content_hash: Sha256
+    dependency_fingerprint: Sha256
+    lineage: ArtifactLineage
+    stored_run: StoredSectionRun | None = None
+    section_draft: "SectionDraft | None" = None
+
+
+class PredecessorSnapshot(StrictModel):
+    schema_version: Literal["helix.predecessor-snapshot/v1"]
+    snapshot_hash: Sha256
+    pinned_run: PinnedRun
+    frozen_inputs: FrozenRunInputs
+    claims: list[Claim]
+    provenance_edges: list[ProvenanceEdge]
+    validation_results: list[ValidationResult]
+    data_validation_executions: list[DataValidationExecution]
+    gate_decisions: list[GateDecision]
+    review_dispositions: list[ReviewDisposition]
+    approvals: list[Approval]
+    events: list[WorkflowEvent]
+    review_scaffold_revisions: list[dict[str, object]]
+    export_artifacts: list[ExportArtifact]
+    workflow_state: str
+    section_runs: list[StoredSectionRun]
+    section_drafts: list["SectionDraft"]
+    candidate_evaluations: list[CandidateEvaluation]
+    drafting_cycles: list[DraftingCycle]
+
+
+class SupersedingRunReceipt(StrictModel):
+    schema_version: Literal["helix.superseding-run/v1"]
+    run_id: str = Field(min_length=1)
+    predecessor_run_id: str = Field(min_length=1)
+    predecessor_snapshot_hash: Sha256
+    reason: str = Field(min_length=8, max_length=240)
+    parse_reuse: list[ParseReuse]
+    carried_forward: list[CarriedForwardArtifact]
+    rerun_node_ids: list[str]
+    impact_set: SectionImpactSet
+    fresh_validation_receipt_ids: list[str]
+    fresh_gate_ids: list[str]
+    fresh_scaffold_revision: int = Field(ge=0)
+
+
 class SectionDraft(StrictModel):
     schema_version: Literal["helix.section-draft/v1"]
     status: Literal["section_draft"]
@@ -936,6 +1012,8 @@ class WorkspaceResponse(StrictModel):
     review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
     drafting_cycles: list[DraftingCycle] = Field(default_factory=list)
     can_open_revision: bool = False
+    predecessor_snapshots: list[PredecessorSnapshot] = Field(default_factory=list)
+    superseding_run_receipt: SupersedingRunReceipt | None = None
 
 
 class ExportReceipt(StrictModel):
@@ -946,5 +1024,8 @@ class ExportReceipt(StrictModel):
     idempotent_replay: bool
 
 
+FrozenRunInputs.model_rebuild()
+CarriedForwardArtifact.model_rebuild()
+PredecessorSnapshot.model_rebuild()
 StudyEvidencePackage.model_rebuild()
 WorkspaceResponse.model_rebuild()

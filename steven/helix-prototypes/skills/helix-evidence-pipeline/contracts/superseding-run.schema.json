@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/superseding-run/v1",
+  "title": "HELIX Superseding Run Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "predecessor_run_id",
+    "predecessor_snapshot_hash",
+    "reason",
+    "parse_reuse",
+    "carried_forward",
+    "rerun_node_ids",
+    "impact_set",
+    "fresh_validation_receipt_ids",
+    "fresh_gate_ids",
+    "fresh_scaffold_revision"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "helix.superseding-run/v1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "predecessor_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "predecessor_snapshot_hash": {
+      "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 240
+    },
+    "parse_reuse": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "content_hash", "reused"],
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+          },
+          "reused": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "carried_forward": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "section_package_id",
+          "artifact_id",
+          "content_hash",
+          "dependency_fingerprint",
+          "lineage",
+          "stored_run",
+          "section_draft"
+        ],
+        "properties": {
+          "kind": {
+            "enum": ["section_draft_candidate", "section_draft"]
+          },
+          "section_package_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+          },
+          "dependency_fingerprint": {
+            "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+          },
+          "lineage": {
+            "$ref": "helix://contracts/artifact-lineage/v1"
+          },
+          "stored_run": {
+            "type": ["object", "null"]
+          },
+          "section_draft": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "rerun_node_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "impact_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin_section_package_id", "direct", "transitive"],
+      "properties": {
+        "origin_section_package_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "direct": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "transitive": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "fresh_validation_receipt_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "fresh_gate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "fresh_scaffold_revision": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

@@ -235,7 +235,13 @@ class DataValidationService:
         self.repository_root = repository_root.resolve()
         self.repository = StudyPackageRepository(session)
 
-    def execute(self, study_id: str, command: DataValidationCommand) -> DataValidationExecution:
+    def execute(
+        self,
+        study_id: str,
+        command: DataValidationCommand,
+        *,
+        commit: bool = True,
+    ) -> DataValidationExecution:
         if command.package_id != PACKAGE_ID:
             raise UnknownValidationPackageError(f"Unknown Data Validation Package {command.package_id}")
         package = self.repository.get(study_id)
@@ -269,7 +275,8 @@ class DataValidationService:
                 existing,
                 idempotency_key=command.idempotency_key,
             )
-            self.session.commit()
+            if commit:
+                self.session.commit()
             return self._replay(existing)
 
         package = self.repository.get(study_id, for_update=True)
@@ -279,7 +286,8 @@ class DataValidationService:
         existing = self.repository.get_data_validation_for_run(study_id, pinned.run_id, command.package_id)
         if existing is not None:
             self.repository.add_data_validation_alias(existing, idempotency_key=command.idempotency_key)
-            self.session.commit()
+            if commit:
+                self.session.commit()
             return self._replay(existing)
 
         execution = self._run(package, pinned, command)
@@ -303,7 +311,8 @@ class DataValidationService:
             idempotency_key=f"dvp:{pinned.run_id}:{command.package_id}",
             occurred_at=datetime.fromisoformat(stored.event.timestamp.replace("Z", "+00:00")),
         )
-        self.session.commit()
+        if commit:
+            self.session.commit()
         return stored
 
     def _run(

@@ -429,7 +429,8 @@ function draftIdempotencyKey(studyId: string, workspace: Workspace | null): stri
       (item) => item.candidate.drafting_cycle_id === "CYCLE-BW-001",
     ).length;
     if (attemptCount === 0) {
-      return `workbench-${studyId}-body-weight-v1`;
+      const runId = workspace?.pinned_run?.run_id ?? "unpinned";
+      return `workbench-${studyId}-body-weight-${runId}-v1`;
     }
   }
   const cycleId = latest?.cycle_id ?? "CYCLE-BW-001";

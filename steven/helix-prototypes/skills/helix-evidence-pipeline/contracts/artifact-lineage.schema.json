@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/artifact-lineage/v1",
+  "title": "HELIX Artifact Lineage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "predecessor_run_id",
+    "predecessor_artifact_id",
+    "predecessor_content_hash",
+    "predecessor_dependency_fingerprint"
+  ],
+  "properties": {
+    "predecessor_run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "predecessor_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "predecessor_content_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "predecessor_dependency_fingerprint": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": "helix.predecessor-snapshot/v1",
+  "snapshot_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "pinned_run": {"run_id": "RUN-PRED00000001"},
+  "frozen_inputs": {
+    "records": {},
+    "manifest": [],
+    "template": {},
+    "validation_package": {},
+    "section_packages": {},
+    "skill_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "suite_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "executor_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "validation_package_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "claims": [],
+  "provenance_edges": [],
+  "validation_results": [],
+  "data_validation_executions": [],
+  "gate_decisions": [],
+  "review_dispositions": [],
+  "approvals": [],
+  "events": [],
+  "review_scaffold_revisions": [],
+  "section_runs": [],
+  "section_drafts": [],
+  "candidate_evaluations": [],
+  "drafting_cycles": [],
+  "invented": true
+}

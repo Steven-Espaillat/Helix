@@ -201,8 +201,13 @@ class SectionRunService:
         return [self._load_json(path) for path in sorted(directory.glob("*/package.json"))]
 
     def run(self, study_id: str, command: SectionRunCommand) -> SectionRunReceipt:
+        snapshot = self.repository.get(study_id)
         request_hash = canonical_hash(
-            {"study_id": study_id, "section_package_id": command.section_package_id}
+            {
+                "study_id": study_id,
+                "section_package_id": command.section_package_id,
+                "pinned_run_id": snapshot.pinned_run.run_id if snapshot.pinned_run is not None else "",
+            }
         )
         prior_receipt = self._replay(study_id, command.idempotency_key, request_hash)
         if prior_receipt is not None:
@@ -211,6 +216,13 @@ class SectionRunService:
             raise UnknownSectionPackageError(f"Unknown Section Package {command.section_package_id}")
 
         package = self.repository.get(study_id, for_update=True)
+        request_hash = canonical_hash(
+            {
+                "study_id": study_id,
+                "section_package_id": command.section_package_id,
+                "pinned_run_id": package.pinned_run.run_id if package.pinned_run is not None else "",
+            }
+        )
         prior_receipt = self._replay(study_id, command.idempotency_key, request_hash)
         if prior_receipt is not None:
             return prior_receipt
@@ -376,9 +388,18 @@ class SectionRunService:
         if existing is not None:
             return existing
         now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        cycle_id = DRAFTING_CYCLE_ID
+        prior_ids = {
+            item.cycle_id
+            for item in self.repository.list_drafting_cycles(
+                package.study.study_id, include_predecessor=True
+            )
+        }
+        if cycle_id in prior_ids:
+            cycle_id = f"CYCLE-{uuid4().hex[:12].upper()}"
         cycle = DraftingCycle(
             schema_version="helix.drafting-cycle/v1",
-            cycle_id=DRAFTING_CYCLE_ID,
+            cycle_id=cycle_id,
             run_id=pinned_run.run_id,
             section_package_id=section_package_id,
             predecessor_cycle_id=None,
@@ -391,9 +412,14 @@ class SectionRunService:
         self.repository.add_drafting_cycle(
             study_id=package.study.study_id,
             cycle=cycle,
-            idempotency_key=f"implicit:{package.study.study_id}:{section_package_id}:{DRAFTING_CYCLE_ID}",
+            idempotency_key=f"implicit:{package.study.study_id}:{section_package_id}:{cycle_id}:{pinned_run.run_id}",
             request_hash=canonical_hash(
-                {"study_id": package.study.study_id, "section_package_id": section_package_id}
+                {
+                    "study_id": package.study.study_id,
+                    "section_package_id": section_package_id,
+                    "run_id": pinned_run.run_id,
+                    "cycle_id": cycle_id,
+                }
             ),
             stale_disposition_ids=[],
             stale_approval_ids=[],

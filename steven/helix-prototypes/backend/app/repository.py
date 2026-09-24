@@ -231,13 +231,15 @@ class StudyPackageRepository:
         self.session.flush()
         return row
 
-    def list_section_runs(self, study_id: str) -> list[StoredSectionRun]:
+    def list_section_runs(
+        self, study_id: str, *, include_predecessor: bool = False
+    ) -> list[StoredSectionRun]:
         rows = self.session.scalars(
             select(SectionRunRow)
             .where(SectionRunRow.study_id == study_id, SectionRunRow.receipt.is_not(None))
             .order_by(SectionRunRow.created_at, SectionRunRow.run_id)
         ).all()
-        return [
+        runs = [
             StoredSectionRun.model_validate(
                 {
                     "receipt": row.receipt,
@@ -248,6 +250,39 @@ class StudyPackageRepository:
             )
             for row in rows
         ]
+        package = self.get(study_id)
+        current_id = package.pinned_run.run_id if package.pinned_run is not None else None
+        if not include_predecessor and current_id is not None:
+            runs = [
+                item
+                for item in runs
+                if str(item.envelope.get("pinned_run_id") or "") == current_id
+            ]
+            receipt = package.superseding_run_receipt
+            if receipt is not None:
+                seen = {item.receipt.run_id for item in runs}
+                runs.extend(
+                    item.stored_run
+                    for item in receipt.carried_forward
+                    if item.stored_run is not None and item.stored_run.receipt.run_id not in seen
+                )
+        return runs
+
+    def _current_section_run_ids(self, study_id: str) -> set[str]:
+        package = self.get(study_id)
+        current_id = package.pinned_run.run_id if package.pinned_run is not None else None
+        rows = self.session.scalars(
+            select(SectionRunRow)
+            .where(SectionRunRow.study_id == study_id, SectionRunRow.receipt.is_not(None))
+            .order_by(SectionRunRow.created_at, SectionRunRow.run_id)
+        ).all()
+        if current_id is None:
+            return {row.run_id for row in rows}
+        return {
+            row.run_id
+            for row in rows
+            if str((row.envelope or {}).get("pinned_run_id") or "") == current_id
+        }
 
     def list_recorded_candidates(self, study_id: str) -> list[tuple[str, dict[str, Any]]]:
         rows = self.session.scalars(
@@ -255,6 +290,24 @@ class StudyPackageRepository:
             .where(SectionRunRow.study_id == study_id, SectionRunRow.candidate.is_not(None))
             .order_by(SectionRunRow.created_at, SectionRunRow.run_id)
         ).all()
+        package = self.get(study_id)
+        current_id = package.pinned_run.run_id if package.pinned_run is not None else None
+        if current_id is not None:
+            carried = {
+                item.artifact_id
+                for item in (
+                    package.superseding_run_receipt.carried_forward
+                    if package.superseding_run_receipt is not None
+                    else []
+                )
+                if item.kind == "section_draft_candidate"
+            }
+            rows = [
+                row
+                for row in rows
+                if str((row.envelope or {}).get("pinned_run_id") or "") == current_id
+                or (row.candidate or {}).get("candidate_id") in carried
+            ]
         return [(row.section_package_id, row.candidate) for row in rows if row.candidate is not None]
 
     def review_scaffold_revisions(self, study_id: str) -> list[dict[str, Any]]:
@@ -285,26 +338,29 @@ class StudyPackageRepository:
         )
 
     def latest_drafting_cycle(self, study_id: str, section_package_id: str) -> DraftingCycle | None:
-        row = self.session.scalar(
-            select(DraftingCycleRow)
-            .where(
-                DraftingCycleRow.study_id == study_id,
-                DraftingCycleRow.section_package_id == section_package_id,
-            )
-            .order_by(DraftingCycleRow.created_at.desc(), DraftingCycleRow.id.desc())
-            .limit(1)
-        )
-        if row is None:
-            return None
-        return DraftingCycle.model_validate(row.cycle)
+        cycles = [
+            item
+            for item in self.list_drafting_cycles(study_id)
+            if item.section_package_id == section_package_id
+        ]
+        return cycles[-1] if cycles else None
 
-    def list_drafting_cycles(self, study_id: str) -> list[DraftingCycle]:
+    def list_drafting_cycles(
+        self, study_id: str, *, include_predecessor: bool = False
+    ) -> list[DraftingCycle]:
         rows = self.session.scalars(
             select(DraftingCycleRow)
             .where(DraftingCycleRow.study_id == study_id)
             .order_by(DraftingCycleRow.created_at, DraftingCycleRow.id)
         ).all()
-        return [DraftingCycle.model_validate(row.cycle) for row in rows]
+        cycles = [DraftingCycle.model_validate(row.cycle) for row in rows]
+        if include_predecessor:
+            return cycles
+        package = self.get(study_id)
+        current_id = package.pinned_run.run_id if package.pinned_run is not None else None
+        if current_id is None:
+            return cycles
+        return [item for item in cycles if item.run_id == current_id]
 
     def add_drafting_cycle(
         self,
@@ -348,13 +404,19 @@ class StudyPackageRepository:
             )
         )
 
-    def list_candidate_evaluations(self, study_id: str) -> list[CandidateEvaluation]:
+    def list_candidate_evaluations(
+        self, study_id: str, *, include_predecessor: bool = False
+    ) -> list[CandidateEvaluation]:
         rows = self.session.scalars(
             select(CandidateEvaluationRow)
             .where(CandidateEvaluationRow.study_id == study_id)
             .order_by(CandidateEvaluationRow.created_at, CandidateEvaluationRow.id)
         ).all()
-        return [CandidateEvaluation.model_validate(row.evaluation) for row in rows]
+        evaluations = [CandidateEvaluation.model_validate(row.evaluation) for row in rows]
+        if include_predecessor:
+            return evaluations
+        allowed = self._current_section_run_ids(study_id)
+        return [item for item in evaluations if item.run_id in allowed]
 
     def add_candidate_evaluation(
         self,
@@ -463,13 +525,26 @@ class StudyPackageRepository:
             )
         )
 
-    def list_section_drafts(self, study_id: str) -> list[SectionDraft]:
+    def list_section_drafts(self, study_id: str, *, include_predecessor: bool = False) -> list[SectionDraft]:
         rows = self.session.scalars(
             select(SectionDraftRow)
             .where(SectionDraftRow.study_id == study_id)
             .order_by(SectionDraftRow.created_at, SectionDraftRow.id)
         ).all()
-        return [SectionDraft.model_validate(row.draft) for row in rows]
+        drafts = [SectionDraft.model_validate(row.draft) for row in rows]
+        package = self.get(study_id)
+        if include_predecessor:
+            return drafts
+        allowed = self._current_section_run_ids(study_id)
+        filtered = [item for item in drafts if item.run_id in allowed]
+        seen = {item.draft_id for item in filtered}
+        if package.superseding_run_receipt is not None:
+            for item in package.superseding_run_receipt.carried_forward:
+                if item.section_draft is None or item.section_draft.draft_id in seen:
+                    continue
+                filtered.append(item.section_draft)
+                seen.add(item.section_draft.draft_id)
+        return filtered
 
     def add_section_draft(
         self,

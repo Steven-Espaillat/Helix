@@ -280,6 +280,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Animal */
+        Animal: {
+            /** Animal Id */
+            animal_id: string;
+            /** Group Id */
+            group_id: string;
+            /** Randomization Id */
+            randomization_id: string;
+            /**
+             * Sex
+             * @enum {string}
+             */
+            sex: "M" | "F";
+            /** Study Id */
+            study_id: string;
+        };
         /** Approval */
         Approval: {
             /** Approval Id */
@@ -309,6 +325,17 @@ export interface components {
          * @enum {string}
          */
         ApprovalRole: "pathologist" | "peer_reviewer" | "qau" | "study_director";
+        /** ArtifactLineage */
+        ArtifactLineage: {
+            /** Predecessor Artifact Id */
+            predecessor_artifact_id: string;
+            /** Predecessor Content Hash */
+            predecessor_content_hash: string;
+            /** Predecessor Dependency Fingerprint */
+            predecessor_dependency_fingerprint: string;
+            /** Predecessor Run Id */
+            predecessor_run_id: string;
+        };
         /** AssembledSection */
         AssembledSection: {
             /** Blocks */
@@ -381,6 +408,25 @@ export interface components {
             study_output_evaluation: string;
             /** Template Conformance */
             template_conformance: string;
+        };
+        /** CarriedForwardArtifact */
+        CarriedForwardArtifact: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Dependency Fingerprint */
+            dependency_fingerprint: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "section_draft_candidate" | "section_draft";
+            lineage: components["schemas"]["ArtifactLineage"];
+            section_draft?: components["schemas"]["SectionDraft"] | null;
+            /** Section Package Id */
+            section_package_id: string;
+            stored_run?: components["schemas"]["StoredSectionRun"] | null;
         };
         /** Claim */
         Claim: {
@@ -725,6 +771,34 @@ export interface components {
             idempotency_key: string;
             supersession?: components["schemas"]["SupersessionRef"] | null;
         };
+        /** FrozenRunInputs */
+        FrozenRunInputs: {
+            /** Executor Hash */
+            executor_hash: string;
+            /** Manifest */
+            manifest: components["schemas"]["ManifestEntry"][];
+            records: components["schemas"]["StudyRecords"];
+            /** Section Packages */
+            section_packages: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            };
+            /** Skill Hash */
+            skill_hash: string;
+            /** Suite Hash */
+            suite_hash: string;
+            /** Template */
+            template: {
+                [key: string]: unknown;
+            };
+            /** Validation Package */
+            validation_package: {
+                [key: string]: unknown;
+            };
+            /** Validation Package Hash */
+            validation_package_hash: string;
+        };
         /** GateDecision */
         GateDecision: {
             /** Blocking Result Ids */
@@ -806,6 +880,51 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** Measurement */
+        Measurement: {
+            /** Animal Id */
+            animal_id?: string | null;
+            /** Domain */
+            domain: string;
+            /** Grain */
+            grain: string;
+            /** Group Id */
+            group_id?: string | null;
+            /** Record Id */
+            record_id: string;
+            /** Source Pointer */
+            source_pointer: string;
+            /** Test Code */
+            test_code: string;
+            /** Timepoint */
+            timepoint: string;
+            /** Unit */
+            unit: string | null;
+            /** Value */
+            value: number | string;
+        };
+        /** MicroscopicFinding */
+        MicroscopicFinding: {
+            /** Animal Id */
+            animal_id: string;
+            /** Controlled Term */
+            controlled_term: string;
+            /**
+             * Domain
+             * @constant
+             */
+            domain: "MI";
+            /** Finding */
+            finding: string;
+            /** Finding Id */
+            finding_id: string;
+            /** Severity */
+            severity: string;
+            /** Source Pointer */
+            source_pointer: string;
+            /** Tissue */
+            tissue: string;
+        };
         /** NextAttemptDecision */
         NextAttemptDecision: {
             /**
@@ -824,6 +943,15 @@ export interface components {
             max_attempts: 3;
             /** Reasons */
             reasons: string[];
+        };
+        /** ParseReuse */
+        ParseReuse: {
+            /** Content Hash */
+            content_hash: string;
+            /** Node Id */
+            node_id: string;
+            /** Reused */
+            reused: boolean;
         };
         /** PinnedRun */
         PinnedRun: {
@@ -875,6 +1003,50 @@ export interface components {
             message: string;
             /** Subject */
             subject: string;
+        };
+        /** PredecessorSnapshot */
+        PredecessorSnapshot: {
+            /** Approvals */
+            approvals: components["schemas"]["Approval"][];
+            /** Candidate Evaluations */
+            candidate_evaluations: components["schemas"]["CandidateEvaluation"][];
+            /** Claims */
+            claims: components["schemas"]["Claim"][];
+            /** Data Validation Executions */
+            data_validation_executions: components["schemas"]["DataValidationExecution"][];
+            /** Drafting Cycles */
+            drafting_cycles: components["schemas"]["DraftingCycle"][];
+            /** Events */
+            events: components["schemas"]["WorkflowEvent"][];
+            /** Export Artifacts */
+            export_artifacts: components["schemas"]["ExportArtifact"][];
+            frozen_inputs: components["schemas"]["FrozenRunInputs"];
+            /** Gate Decisions */
+            gate_decisions: components["schemas"]["GateDecision"][];
+            pinned_run: components["schemas"]["PinnedRun"];
+            /** Provenance Edges */
+            provenance_edges: components["schemas"]["ProvenanceEdge"][];
+            /** Review Dispositions */
+            review_dispositions: components["schemas"]["ReviewDisposition"][];
+            /** Review Scaffold Revisions */
+            review_scaffold_revisions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.predecessor-snapshot/v1";
+            /** Section Drafts */
+            section_drafts: components["schemas"]["SectionDraft"][];
+            /** Section Runs */
+            section_runs: components["schemas"]["StoredSectionRun"][];
+            /** Snapshot Hash */
+            snapshot_hash: string;
+            /** Validation Results */
+            validation_results: components["schemas"]["ValidationResult"][];
+            /** Workflow State */
+            workflow_state: string;
         };
         /** PromotionCommand */
         PromotionCommand: {
@@ -1464,6 +1636,23 @@ export interface components {
             /** Waivable */
             waivable: boolean;
         };
+        /** StudyRecords */
+        StudyRecords: {
+            /** Animals */
+            animals: components["schemas"]["Animal"][];
+            /** Body Weights */
+            body_weights: components["schemas"]["Measurement"][];
+            /** Clinical Observations */
+            clinical_observations: components["schemas"]["Measurement"][];
+            /** Food Consumption */
+            food_consumption: components["schemas"]["Measurement"][];
+            /** Formulation */
+            formulation: components["schemas"]["Measurement"][];
+            /** Microscopic Findings */
+            microscopic_findings: components["schemas"]["MicroscopicFinding"][];
+            /** Organ Weights */
+            organ_weights: components["schemas"]["Measurement"][];
+        };
         /** StudyTypeResolution */
         StudyTypeResolution: {
             /** Evidence */
@@ -1483,6 +1672,35 @@ export interface components {
             status: "resolved" | "needs_review";
             /** Study Type Id */
             study_type_id: string | null;
+        };
+        /** SupersedingRunReceipt */
+        SupersedingRunReceipt: {
+            /** Carried Forward */
+            carried_forward: components["schemas"]["CarriedForwardArtifact"][];
+            /** Fresh Gate Ids */
+            fresh_gate_ids: string[];
+            /** Fresh Scaffold Revision */
+            fresh_scaffold_revision: number;
+            /** Fresh Validation Receipt Ids */
+            fresh_validation_receipt_ids: string[];
+            impact_set: components["schemas"]["SectionImpactSet"];
+            /** Parse Reuse */
+            parse_reuse: components["schemas"]["ParseReuse"][];
+            /** Predecessor Run Id */
+            predecessor_run_id: string;
+            /** Predecessor Snapshot Hash */
+            predecessor_snapshot_hash: string;
+            /** Reason */
+            reason: string;
+            /** Rerun Node Ids */
+            rerun_node_ids: string[];
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.superseding-run/v1";
         };
         /** SupersessionRef */
         SupersessionRef: {
@@ -1725,6 +1943,8 @@ export interface components {
             pinned_run: components["schemas"]["PinnedRun"] | null;
             /** Planner Capabilities */
             planner_capabilities: components["schemas"]["PlannerCapability"][];
+            /** Predecessor Snapshots */
+            predecessor_snapshots?: components["schemas"]["PredecessorSnapshot"][];
             /** Promotion Decisions */
             promotion_decisions?: components["schemas"]["PromotionDecision"][];
             release_gate: components["schemas"]["GateDecision"];
@@ -1743,6 +1963,7 @@ export interface components {
             stages: components["schemas"]["Stage"][];
             study: components["schemas"]["Study"];
             summary: components["schemas"]["WorkspaceSummary"];
+            superseding_run_receipt?: components["schemas"]["SupersedingRunReceipt"] | null;
             /** Validations */
             validations: components["schemas"]["ValidationResult"][];
             /** Workflow State */

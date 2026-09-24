@@ -1,0 +1,40 @@
+{
+  "schema_version": "helix.superseding-run/v1",
+  "run_id": "RUN-SUCC00000001",
+  "predecessor_run_id": "RUN-PRED00000001",
+  "predecessor_snapshot_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "reason": "Correct the locked body-weight source after authorized review",
+  "parse_reuse": [
+    {
+      "node_id": "parse.body_weights",
+      "content_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "reused": true
+    }
+  ],
+  "carried_forward": [
+    {
+      "kind": "section_draft_candidate",
+      "section_package_id": "section.5_2_3_body_weight",
+      "artifact_id": "SDC-PRED0000001",
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "dependency_fingerprint": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "lineage": {
+        "predecessor_run_id": "RUN-PRED00000001",
+        "predecessor_artifact_id": "SDC-PRED0000001",
+        "predecessor_content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "predecessor_dependency_fingerprint": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "stored_run": null,
+      "section_draft": null
+    }
+  ],
+  "rerun_node_ids": ["section.5_3_discussion"],
+  "impact_set": {
+    "origin_section_package_id": "section.5_3_discussion",
+    "direct": ["section.5_3_discussion"],
+    "transitive": []
+  },
+  "fresh_validation_receipt_ids": ["DVR-FRESH000001"],
+  "fresh_gate_ids": ["GATE-FRESH00001"],
+  "fresh_scaffold_revision": 1
+}

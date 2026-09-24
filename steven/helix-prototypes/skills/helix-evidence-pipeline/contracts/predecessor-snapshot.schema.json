@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/predecessor-snapshot/v1",
+  "title": "HELIX Predecessor Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_hash",
+    "pinned_run",
+    "frozen_inputs",
+    "claims",
+    "provenance_edges",
+    "validation_results",
+    "data_validation_executions",
+    "gate_decisions",
+    "review_dispositions",
+    "approvals",
+    "events",
+    "review_scaffold_revisions",
+    "export_artifacts",
+    "workflow_state",
+    "section_runs",
+    "section_drafts",
+    "candidate_evaluations",
+    "drafting_cycles"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "helix.predecessor-snapshot/v1"
+    },
+    "snapshot_hash": {
+      "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+    },
+    "pinned_run": {
+      "type": "object"
+    },
+    "frozen_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "records",
+        "manifest",
+        "template",
+        "validation_package",
+        "section_packages",
+        "skill_hash",
+        "suite_hash",
+        "executor_hash",
+        "validation_package_hash"
+      ],
+      "properties": {
+        "records": {
+          "type": "object"
+        },
+        "manifest": {
+          "type": "array"
+        },
+        "template": {
+          "type": "object"
+        },
+        "validation_package": {
+          "type": "object"
+        },
+        "section_packages": {
+          "type": "object"
+        },
+        "skill_hash": {
+          "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+        },
+        "suite_hash": {
+          "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+        },
+        "executor_hash": {
+          "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+        },
+        "validation_package_hash": {
+          "$ref": "helix://contracts/artifact-lineage/v1#/$defs/sha256"
+        }
+      }
+    },
+    "claims": {
+      "type": "array"
+    },
+    "provenance_edges": {
+      "type": "array"
+    },
+    "validation_results": {
+      "type": "array"
+    },
+    "data_validation_executions": {
+      "type": "array"
+    },
+    "gate_decisions": {
+      "type": "array"
+    },
+    "review_dispositions": {
+      "type": "array"
+    },
+    "approvals": {
+      "type": "array"
+    },
+    "events": {
+      "type": "array"
+    },
+    "review_scaffold_revisions": {
+      "type": "array"
+    },
+    "export_artifacts": {
+      "type": "array"
+    },
+    "workflow_state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "section_runs": {
+      "type": "array"
+    },
+    "section_drafts": {
+      "type": "array"
+    },
+    "candidate_evaluations": {
+      "type": "array"
+    },
+    "drafting_cycles": {
+      "type": "array"
+    }
+  }
+}

@@ -1,6 +1,44 @@
 {
   "components": {
     "schemas": {
+      "Animal": {
+        "additionalProperties": false,
+        "properties": {
+          "animal_id": {
+            "title": "Animal Id",
+            "type": "string"
+          },
+          "group_id": {
+            "title": "Group Id",
+            "type": "string"
+          },
+          "randomization_id": {
+            "title": "Randomization Id",
+            "type": "string"
+          },
+          "sex": {
+            "enum": [
+              "M",
+              "F"
+            ],
+            "title": "Sex",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "animal_id",
+          "study_id",
+          "group_id",
+          "sex",
+          "randomization_id"
+        ],
+        "title": "Animal",
+        "type": "object"
+      },
       "Approval": {
         "additionalProperties": false,
         "properties": {
@@ -94,6 +132,40 @@
         ],
         "title": "ApprovalRole",
         "type": "string"
+      },
+      "ArtifactLineage": {
+        "additionalProperties": false,
+        "properties": {
+          "predecessor_artifact_id": {
+            "minLength": 1,
+            "title": "Predecessor Artifact Id",
+            "type": "string"
+          },
+          "predecessor_content_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Predecessor Content Hash",
+            "type": "string"
+          },
+          "predecessor_dependency_fingerprint": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Predecessor Dependency Fingerprint",
+            "type": "string"
+          },
+          "predecessor_run_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Predecessor Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "predecessor_run_id",
+          "predecessor_artifact_id",
+          "predecessor_content_hash",
+          "predecessor_dependency_fingerprint"
+        ],
+        "title": "ArtifactLineage",
+        "type": "object"
       },
       "AssembledSection": {
         "additionalProperties": false,
@@ -301,6 +373,72 @@
           "evaluation"
         ],
         "title": "CandidateEvaluationHashes",
+        "type": "object"
+      },
+      "CarriedForwardArtifact": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "minLength": 1,
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "content_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "dependency_fingerprint": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Dependency Fingerprint",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "section_draft_candidate",
+              "section_draft"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "lineage": {
+            "$ref": "#/components/schemas/ArtifactLineage"
+          },
+          "section_draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SectionDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "section_package_id": {
+            "minLength": 1,
+            "title": "Section Package Id",
+            "type": "string"
+          },
+          "stored_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoredSectionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "section_package_id",
+          "artifact_id",
+          "content_hash",
+          "dependency_fingerprint",
+          "lineage"
+        ],
+        "title": "CarriedForwardArtifact",
         "type": "object"
       },
       "Claim": {
@@ -1326,6 +1464,72 @@
         "title": "FreezeRunCommand",
         "type": "object"
       },
+      "FrozenRunInputs": {
+        "additionalProperties": false,
+        "properties": {
+          "executor_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Executor Hash",
+            "type": "string"
+          },
+          "manifest": {
+            "items": {
+              "$ref": "#/components/schemas/ManifestEntry"
+            },
+            "title": "Manifest",
+            "type": "array"
+          },
+          "records": {
+            "$ref": "#/components/schemas/StudyRecords"
+          },
+          "section_packages": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Section Packages",
+            "type": "object"
+          },
+          "skill_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Skill Hash",
+            "type": "string"
+          },
+          "suite_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Suite Hash",
+            "type": "string"
+          },
+          "template": {
+            "additionalProperties": true,
+            "title": "Template",
+            "type": "object"
+          },
+          "validation_package": {
+            "additionalProperties": true,
+            "title": "Validation Package",
+            "type": "object"
+          },
+          "validation_package_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Validation Package Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "records",
+          "manifest",
+          "template",
+          "validation_package",
+          "section_packages",
+          "skill_hash",
+          "suite_hash",
+          "executor_hash",
+          "validation_package_hash"
+        ],
+        "title": "FrozenRunInputs",
+        "type": "object"
+      },
       "GateDecision": {
         "additionalProperties": false,
         "properties": {
@@ -1545,6 +1749,141 @@
         "title": "ManifestEntry",
         "type": "object"
       },
+      "Measurement": {
+        "additionalProperties": false,
+        "properties": {
+          "animal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Animal Id"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "grain": {
+            "title": "Grain",
+            "type": "string"
+          },
+          "group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Id"
+          },
+          "record_id": {
+            "title": "Record Id",
+            "type": "string"
+          },
+          "source_pointer": {
+            "title": "Source Pointer",
+            "type": "string"
+          },
+          "test_code": {
+            "title": "Test Code",
+            "type": "string"
+          },
+          "timepoint": {
+            "title": "Timepoint",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "record_id",
+          "domain",
+          "timepoint",
+          "test_code",
+          "value",
+          "unit",
+          "grain",
+          "source_pointer"
+        ],
+        "title": "Measurement",
+        "type": "object"
+      },
+      "MicroscopicFinding": {
+        "additionalProperties": false,
+        "properties": {
+          "animal_id": {
+            "title": "Animal Id",
+            "type": "string"
+          },
+          "controlled_term": {
+            "title": "Controlled Term",
+            "type": "string"
+          },
+          "domain": {
+            "const": "MI",
+            "title": "Domain",
+            "type": "string"
+          },
+          "finding": {
+            "title": "Finding",
+            "type": "string"
+          },
+          "finding_id": {
+            "title": "Finding Id",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "source_pointer": {
+            "title": "Source Pointer",
+            "type": "string"
+          },
+          "tissue": {
+            "title": "Tissue",
+            "type": "string"
+          }
+        },
+        "required": [
+          "finding_id",
+          "domain",
+          "animal_id",
+          "tissue",
+          "finding",
+          "severity",
+          "controlled_term",
+          "source_pointer"
+        ],
+        "title": "MicroscopicFinding",
+        "type": "object"
+      },
       "NextAttemptDecision": {
         "additionalProperties": false,
         "properties": {
@@ -1591,6 +1930,32 @@
           "blocking_receipt_ids"
         ],
         "title": "NextAttemptDecision",
+        "type": "object"
+      },
+      "ParseReuse": {
+        "additionalProperties": false,
+        "properties": {
+          "content_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "node_id": {
+            "minLength": 1,
+            "title": "Node Id",
+            "type": "string"
+          },
+          "reused": {
+            "title": "Reused",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "node_id",
+          "content_hash",
+          "reused"
+        ],
+        "title": "ParseReuse",
         "type": "object"
       },
       "PinnedRun": {
@@ -1740,6 +2105,153 @@
           "message"
         ],
         "title": "PlanningEvidence",
+        "type": "object"
+      },
+      "PredecessorSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "approvals": {
+            "items": {
+              "$ref": "#/components/schemas/Approval"
+            },
+            "title": "Approvals",
+            "type": "array"
+          },
+          "candidate_evaluations": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateEvaluation"
+            },
+            "title": "Candidate Evaluations",
+            "type": "array"
+          },
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            },
+            "title": "Claims",
+            "type": "array"
+          },
+          "data_validation_executions": {
+            "items": {
+              "$ref": "#/components/schemas/DataValidationExecution"
+            },
+            "title": "Data Validation Executions",
+            "type": "array"
+          },
+          "drafting_cycles": {
+            "items": {
+              "$ref": "#/components/schemas/DraftingCycle"
+            },
+            "title": "Drafting Cycles",
+            "type": "array"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowEvent"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "export_artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ExportArtifact"
+            },
+            "title": "Export Artifacts",
+            "type": "array"
+          },
+          "frozen_inputs": {
+            "$ref": "#/components/schemas/FrozenRunInputs"
+          },
+          "gate_decisions": {
+            "items": {
+              "$ref": "#/components/schemas/GateDecision"
+            },
+            "title": "Gate Decisions",
+            "type": "array"
+          },
+          "pinned_run": {
+            "$ref": "#/components/schemas/PinnedRun"
+          },
+          "provenance_edges": {
+            "items": {
+              "$ref": "#/components/schemas/ProvenanceEdge"
+            },
+            "title": "Provenance Edges",
+            "type": "array"
+          },
+          "review_dispositions": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewDisposition"
+            },
+            "title": "Review Dispositions",
+            "type": "array"
+          },
+          "review_scaffold_revisions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Review Scaffold Revisions",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "helix.predecessor-snapshot/v1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "section_drafts": {
+            "items": {
+              "$ref": "#/components/schemas/SectionDraft"
+            },
+            "title": "Section Drafts",
+            "type": "array"
+          },
+          "section_runs": {
+            "items": {
+              "$ref": "#/components/schemas/StoredSectionRun"
+            },
+            "title": "Section Runs",
+            "type": "array"
+          },
+          "snapshot_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Snapshot Hash",
+            "type": "string"
+          },
+          "validation_results": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationResult"
+            },
+            "title": "Validation Results",
+            "type": "array"
+          },
+          "workflow_state": {
+            "title": "Workflow State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "snapshot_hash",
+          "pinned_run",
+          "frozen_inputs",
+          "claims",
+          "provenance_edges",
+          "validation_results",
+          "data_validation_executions",
+          "gate_decisions",
+          "review_dispositions",
+          "approvals",
+          "events",
+          "review_scaffold_revisions",
+          "export_artifacts",
+          "workflow_state",
+          "section_runs",
+          "section_drafts",
+          "candidate_evaluations",
+          "drafting_cycles"
+        ],
+        "title": "PredecessorSnapshot",
         "type": "object"
       },
       "PromotionCommand": {
@@ -3390,6 +3902,71 @@
         "title": "StudyOutputEvaluationReceipt",
         "type": "object"
       },
+      "StudyRecords": {
+        "additionalProperties": false,
+        "properties": {
+          "animals": {
+            "items": {
+              "$ref": "#/components/schemas/Animal"
+            },
+            "title": "Animals",
+            "type": "array"
+          },
+          "body_weights": {
+            "items": {
+              "$ref": "#/components/schemas/Measurement"
+            },
+            "title": "Body Weights",
+            "type": "array"
+          },
+          "clinical_observations": {
+            "items": {
+              "$ref": "#/components/schemas/Measurement"
+            },
+            "title": "Clinical Observations",
+            "type": "array"
+          },
+          "food_consumption": {
+            "items": {
+              "$ref": "#/components/schemas/Measurement"
+            },
+            "title": "Food Consumption",
+            "type": "array"
+          },
+          "formulation": {
+            "items": {
+              "$ref": "#/components/schemas/Measurement"
+            },
+            "title": "Formulation",
+            "type": "array"
+          },
+          "microscopic_findings": {
+            "items": {
+              "$ref": "#/components/schemas/MicroscopicFinding"
+            },
+            "title": "Microscopic Findings",
+            "type": "array"
+          },
+          "organ_weights": {
+            "items": {
+              "$ref": "#/components/schemas/Measurement"
+            },
+            "title": "Organ Weights",
+            "type": "array"
+          }
+        },
+        "required": [
+          "animals",
+          "body_weights",
+          "clinical_observations",
+          "food_consumption",
+          "organ_weights",
+          "microscopic_findings",
+          "formulation"
+        ],
+        "title": "StudyRecords",
+        "type": "object"
+      },
       "StudyTypeResolution": {
         "additionalProperties": false,
         "properties": {
@@ -3452,6 +4029,96 @@
           "evidence"
         ],
         "title": "StudyTypeResolution",
+        "type": "object"
+      },
+      "SupersedingRunReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "carried_forward": {
+            "items": {
+              "$ref": "#/components/schemas/CarriedForwardArtifact"
+            },
+            "title": "Carried Forward",
+            "type": "array"
+          },
+          "fresh_gate_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fresh Gate Ids",
+            "type": "array"
+          },
+          "fresh_scaffold_revision": {
+            "minimum": 0.0,
+            "title": "Fresh Scaffold Revision",
+            "type": "integer"
+          },
+          "fresh_validation_receipt_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fresh Validation Receipt Ids",
+            "type": "array"
+          },
+          "impact_set": {
+            "$ref": "#/components/schemas/SectionImpactSet"
+          },
+          "parse_reuse": {
+            "items": {
+              "$ref": "#/components/schemas/ParseReuse"
+            },
+            "title": "Parse Reuse",
+            "type": "array"
+          },
+          "predecessor_run_id": {
+            "minLength": 1,
+            "title": "Predecessor Run Id",
+            "type": "string"
+          },
+          "predecessor_snapshot_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Predecessor Snapshot Hash",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 240,
+            "minLength": 8,
+            "title": "Reason",
+            "type": "string"
+          },
+          "rerun_node_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rerun Node Ids",
+            "type": "array"
+          },
+          "run_id": {
+            "minLength": 1,
+            "title": "Run Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "helix.superseding-run/v1",
+            "title": "Schema Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "run_id",
+          "predecessor_run_id",
+          "predecessor_snapshot_hash",
+          "reason",
+          "parse_reuse",
+          "carried_forward",
+          "rerun_node_ids",
+          "impact_set",
+          "fresh_validation_receipt_ids",
+          "fresh_gate_ids",
+          "fresh_scaffold_revision"
+        ],
+        "title": "SupersedingRunReceipt",
         "type": "object"
       },
       "SupersessionRef": {
@@ -4117,6 +4784,13 @@
             "title": "Planner Capabilities",
             "type": "array"
           },
+          "predecessor_snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/PredecessorSnapshot"
+            },
+            "title": "Predecessor Snapshots",
+            "type": "array"
+          },
           "promotion_decisions": {
             "items": {
               "$ref": "#/components/schemas/PromotionDecision"
@@ -4171,6 +4845,16 @@
           },
           "summary": {
             "$ref": "#/components/schemas/WorkspaceSummary"
+          },
+          "superseding_run_receipt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupersedingRunReceipt"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "validations": {
             "items": {

@@ -1,4 +1,4 @@
-.PHONY: up down generate test verify verify-postgres verify-candidate-evaluation verify-candidate-attempts verify-section-promotion verify-review-scaffold verify-human-directed-revision
+.PHONY: up down generate test verify verify-postgres verify-candidate-evaluation verify-candidate-attempts verify-section-promotion verify-review-scaffold verify-human-directed-revision verify-superseding-runs
 
 up:
 	docker compose up --build
@@ -35,3 +35,6 @@ verify-review-scaffold:
 
 verify-human-directed-revision:
 	./scripts/verify-human-directed-revision.sh
+
+verify-superseding-runs:
+	./scripts/verify-superseding-runs.sh

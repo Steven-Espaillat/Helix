@@ -524,6 +524,48 @@ export function StudyJourney({
               </code>
             </div>
           </div>
+          {workspace.pinned_run.predecessor_run_id && (
+            <div className="run-plan-fingerprints" data-testid="superseding-run">
+              <div>
+                <span>Predecessor</span>
+                <code data-testid="predecessor-run-id">{workspace.pinned_run.predecessor_run_id}</code>
+              </div>
+              <div>
+                <span>Supersession</span>
+                <span data-testid="supersession-reason">{workspace.pinned_run.supersession_reason}</span>
+              </div>
+              {workspace.superseding_run_receipt && (
+                <>
+                  <div>
+                    <span>Parse reuse</span>
+                    <span data-testid="parse-reuse">
+                      {workspace.superseding_run_receipt.parse_reuse
+                        .map((item) => `${item.node_id} ${item.reused ? "reused" : "rerun"}`)
+                        .join(", ")}
+                    </span>
+                  </div>
+                  <div>
+                    <span>Carried forward</span>
+                    <span data-testid="carried-forward-count">
+                      {workspace.superseding_run_receipt.carried_forward.length}
+                    </span>
+                  </div>
+                  <div>
+                    <span>Rerun nodes</span>
+                    <span data-testid="rerun-nodes">
+                      {workspace.superseding_run_receipt.rerun_node_ids.join(", ") || "none"}
+                    </span>
+                  </div>
+                </>
+              )}
+              {(workspace.predecessor_snapshots ?? []).map((item) => (
+                <div key={item.snapshot_hash}>
+                  <span>Snapshot</span>
+                  <code data-testid="predecessor-snapshot-hash">{item.snapshot_hash}</code>
+                </div>
+              ))}
+            </div>
+          )}
           <details>
             <summary>
               Complete Run Plan · {workspace.pinned_run.run_plan.nodes.length} nodes · {workspace.pinned_run.governed_inputs.length} governed inputs

@@ -341,6 +341,30 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   await expect(page.getByTestId("section-draft")).toHaveCount(0);
 });
 
+test("renders predecessor run identity and carry-forward counts from the workspace", async ({ page }) => {
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(withSupersedingRun(workspace)),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: /Study journey/ }).click();
+  await expect(page.getByTestId("superseding-run")).toBeVisible();
+  await expect(page.getByTestId("predecessor-run-id")).toHaveText("RUN-PRED00000001");
+  await expect(page.getByTestId("supersession-reason")).toHaveText(
+    "Correct the locked body-weight source after authorized review",
+  );
+  await expect(page.getByTestId("parse-reuse")).toHaveText("parse.body_weights reused");
+  await expect(page.getByTestId("carried-forward-count")).toHaveText("1");
+  await expect(page.getByTestId("rerun-nodes")).toHaveText("section.5_3_discussion");
+  await expect(page.getByTestId("predecessor-snapshot-hash")).toHaveText(INJECTED_HASH);
+});
+
 test("renders backend promotion status and draft evidence without recalculating eligibility", async ({
   page,
 }) => {
@@ -819,6 +843,85 @@ function withStoppedCycle(workspace: unknown, canOpenRevision = false): unknown 
     candidate_evaluations: evaluations,
     drafting_cycles: [injectedCycle("CYCLE-BW-001", null)],
     can_open_revision: canOpenRevision,
+  };
+}
+
+function withSupersedingRun(workspace: unknown): unknown {
+  if (!isObject(workspace) || !isObject(workspace.pinned_run)) {
+    throw new Error("Workspace is missing a pinned run.");
+  }
+  return {
+    ...workspace,
+    pinned_run: {
+      ...workspace.pinned_run,
+      predecessor_run_id: "RUN-PRED00000001",
+      supersession_reason: "Correct the locked body-weight source after authorized review",
+    },
+    predecessor_snapshots: [
+      {
+        schema_version: "helix.predecessor-snapshot/v1",
+        snapshot_hash: INJECTED_HASH,
+        pinned_run: workspace.pinned_run,
+        frozen_inputs: {
+          records: { animals: [], body_weights: [], clinical_observations: [], food_consumption: [], organ_weights: [], microscopic_findings: [], formulation: [] },
+          manifest: [],
+          template: {},
+          validation_package: {},
+          section_packages: {},
+          skill_hash: INJECTED_HASH,
+          suite_hash: INJECTED_HASH,
+          executor_hash: INJECTED_HASH,
+          validation_package_hash: INJECTED_HASH,
+        },
+        claims: [],
+        provenance_edges: [],
+        validation_results: [],
+        data_validation_executions: [],
+        gate_decisions: [],
+        review_dispositions: [],
+        approvals: [],
+        events: [],
+        review_scaffold_revisions: [],
+        section_runs: [],
+        section_drafts: [],
+        candidate_evaluations: [],
+        drafting_cycles: [],
+      },
+    ],
+    superseding_run_receipt: {
+      schema_version: "helix.superseding-run/v1",
+      run_id: workspace.pinned_run.run_id,
+      predecessor_run_id: "RUN-PRED00000001",
+      predecessor_snapshot_hash: INJECTED_HASH,
+      reason: "Correct the locked body-weight source after authorized review",
+      parse_reuse: [{ node_id: "parse.body_weights", content_hash: INJECTED_HASH, reused: true }],
+      carried_forward: [
+        {
+          kind: "section_draft_candidate",
+          section_package_id: "section.5_2_3_body_weight",
+          artifact_id: "SDC-PRED0000001",
+          content_hash: INJECTED_HASH,
+          dependency_fingerprint: INJECTED_HASH,
+          lineage: {
+            predecessor_run_id: "RUN-PRED00000001",
+            predecessor_artifact_id: "SDC-PRED0000001",
+            predecessor_content_hash: INJECTED_HASH,
+            predecessor_dependency_fingerprint: INJECTED_HASH,
+          },
+          stored_run: null,
+          section_draft: null,
+        },
+      ],
+      rerun_node_ids: ["section.5_3_discussion"],
+      impact_set: {
+        origin_section_package_id: "section.5_3_discussion",
+        direct: ["section.5_3_discussion"],
+        transitive: [],
+      },
+      fresh_validation_receipt_ids: ["DVR-FRESH000001"],
+      fresh_gate_ids: ["GATE-RELEASE"],
+      fresh_scaffold_revision: 1,
+    },
   };
 }
 

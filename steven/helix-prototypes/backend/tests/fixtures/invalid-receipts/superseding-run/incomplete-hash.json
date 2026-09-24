@@ -1,0 +1,18 @@
+{
+  "schema_version": "helix.superseding-run/v1",
+  "run_id": "RUN-SUCC00000001",
+  "predecessor_run_id": "RUN-PRED00000001",
+  "predecessor_snapshot_hash": "sha256:not-a-complete-hash",
+  "reason": "Correct the locked body-weight source after authorized review",
+  "parse_reuse": [],
+  "carried_forward": [],
+  "rerun_node_ids": [],
+  "impact_set": {
+    "origin_section_package_id": "section.5_2_3_body_weight",
+    "direct": ["section.5_2_3_body_weight"],
+    "transitive": []
+  },
+  "fresh_validation_receipt_ids": [],
+  "fresh_gate_ids": [],
+  "fresh_scaffold_revision": 1
+}
