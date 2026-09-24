@@ -600,6 +600,44 @@
         "title": "ClaimStatus",
         "type": "string"
       },
+      "CodexAgentReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "runtime": {
+            "const": "codex_sdk",
+            "title": "Runtime",
+            "type": "string"
+          },
+          "skill_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Skill Hash",
+            "type": "string"
+          },
+          "skill_name": {
+            "const": "helix-section-agent",
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "skill_references_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Skill References Hash",
+            "type": "string"
+          },
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "runtime",
+          "thread_id",
+          "skill_name",
+          "skill_hash",
+          "skill_references_hash"
+        ],
+        "title": "CodexAgentReceipt",
+        "type": "object"
+      },
       "ConditionDecision": {
         "additionalProperties": false,
         "properties": {
@@ -3251,11 +3289,7 @@
         "additionalProperties": false,
         "properties": {
           "agent_receipt": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Agent Receipt",
-            "type": "object"
+            "$ref": "#/components/schemas/CodexAgentReceipt"
           },
           "attempt": {
             "maximum": 3.0,
@@ -3479,12 +3513,18 @@
             "type": "string"
           },
           "skill_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
             "title": "Skill Hash",
             "type": "string"
           },
           "skill_name": {
             "const": "helix-section-agent",
             "title": "Skill Name",
+            "type": "string"
+          },
+          "skill_references_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Skill References Hash",
             "type": "string"
           },
           "status": {
@@ -3505,6 +3545,7 @@
           "codex_thread_id",
           "skill_name",
           "skill_hash",
+          "skill_references_hash",
           "review_scaffold_revision"
         ],
         "title": "SectionRunReceipt",

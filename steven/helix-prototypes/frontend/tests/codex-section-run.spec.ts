@@ -50,6 +50,7 @@ type LiveReceipt = {
   codex_thread_id: string;
   envelope_hash: string;
   skill_hash: string;
+  skill_references_hash: string;
   review_scaffold_revision: number;
 };
 
@@ -63,6 +64,7 @@ function isLiveReceipt(value: unknown): value is LiveReceipt {
     isHash(value.candidate_hash) &&
     isHash(value.envelope_hash) &&
     isHash(value.skill_hash) &&
+    isHash(value.skill_references_hash) &&
     typeof value.review_scaffold_revision === "number"
   );
 }
@@ -81,6 +83,7 @@ function isProvenSectionWorkspace(workspace: unknown, receipt: LiveReceipt): boo
   return (
     run.receipt.codex_thread_id === receipt.codex_thread_id &&
     run.receipt.skill_hash === receipt.skill_hash &&
+    run.receipt.skill_references_hash === receipt.skill_references_hash &&
     run.receipt.candidate_hash === receipt.candidate_hash &&
     run.receipt.envelope_hash === receipt.envelope_hash &&
     run.receipt.review_scaffold_revision === receipt.review_scaffold_revision &&

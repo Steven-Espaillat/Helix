@@ -129,7 +129,7 @@
     "agent_receipt": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["runtime", "thread_id", "skill_name", "skill_hash"],
+      "required": ["runtime", "thread_id", "skill_name", "skill_hash", "skill_references_hash"],
       "properties": {
         "runtime": {
           "type": "string",
@@ -144,6 +144,9 @@
           "const": "helix-section-agent"
         },
         "skill_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "skill_references_hash": {
           "$ref": "#/$defs/sha256"
         }
       }

@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Literal, NewType
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,6 +14,8 @@ class StrictModel(BaseModel):
 
 
 Sha256 = Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")]
+SkillDocumentHash = NewType("SkillDocumentHash", str)
+SkillReferencesHash = NewType("SkillReferencesHash", str)
 
 
 class ManifestEntry(StrictModel):
@@ -678,6 +680,14 @@ class SectionRunEligibility(StrictModel):
     impact_set: SectionImpactSet
 
 
+class CodexAgentReceipt(StrictModel):
+    runtime: Literal["codex_sdk"]
+    thread_id: str
+    skill_name: Literal["helix-section-agent"]
+    skill_hash: Sha256
+    skill_references_hash: Sha256
+
+
 class SectionDraftCandidate(StrictModel):
     schema_version: Literal["helix.section-draft-candidate/v1"]
     status: Literal["section_draft_candidate"]
@@ -691,7 +701,7 @@ class SectionDraftCandidate(StrictModel):
     validated_claim_ids: list[str] = Field(min_length=1)
     content_blocks: list[dict[str, object]] = Field(min_length=1)
     executor_receipt_ids: list[str]
-    agent_receipt: dict[str, str]
+    agent_receipt: CodexAgentReceipt
 
 
 class SectionRunReceipt(StrictModel):
@@ -705,7 +715,8 @@ class SectionRunReceipt(StrictModel):
     agent_runtime: Literal["codex_sdk"]
     codex_thread_id: str
     skill_name: Literal["helix-section-agent"]
-    skill_hash: str
+    skill_hash: Sha256
+    skill_references_hash: Sha256
     review_scaffold_revision: int
     idempotent_replay: bool = False
 

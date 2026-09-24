@@ -290,7 +290,8 @@ function assertSectionRunReceipt(value: unknown): asserts value is SectionRunRec
     typeof value.candidate_hash !== "string" ||
     typeof value.envelope_hash !== "string" ||
     typeof value.codex_thread_id !== "string" ||
-    typeof value.skill_hash !== "string"
+    typeof value.skill_hash !== "string" ||
+    typeof value.skill_references_hash !== "string"
   ) {
     throw new Error("The section-run response does not match the generated API contract.");
   }

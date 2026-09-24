@@ -21,6 +21,7 @@ from .repository import StudyPackageRepository
 from .review_scaffolds import persist
 from .schemas import (
     ClaimStatus,
+    CodexAgentReceipt,
     DraftingCycle,
     PinnedRun,
     SectionDraftCandidate,
@@ -30,6 +31,7 @@ from .schemas import (
     StudyEvidencePackage,
     WorkflowEvent,
 )
+from .skill_integrity import SECTION_AGENT_ROOT, SkillIntegrity, skill_integrity
 from .template_contracts import evaluate_template_contract, impact_set_for
 
 SECTION_PACKAGE_ID = "section.5_2_3_body_weight"
@@ -84,7 +86,6 @@ class SectionRunService:
             / "package.json"
         )
         self.template_path = repository_root / "backend" / "app" / "data" / "report-template.json"
-        self.skill_path = repository_root / ".agents" / "skills" / SKILL_NAME / "SKILL.md"
 
     def eligibilities(self, package: StudyEvidencePackage) -> list[SectionRunEligibility]:
         definitions = self._section_package_definitions()
@@ -269,6 +270,7 @@ class SectionRunService:
             if errors:
                 raise CandidateValidationError(errors[0].message)
         envelope_hash = canonical_hash(envelope)
+        integrity = skill_integrity(self.repository_root / SECTION_AGENT_ROOT)
         try:
             row = self.repository.add_section_run(
                 run_id=run_id,
@@ -289,7 +291,6 @@ class SectionRunService:
                 "A Candidate Attempt is already recorded for this cycle slot"
             ) from error
         candidate_schema = self._load_json(self.contracts / "section-draft-candidate.schema.json")
-        skill_hash = self._file_hash(self.skill_path)
         candidate_id = f"SDC-{uuid4().hex[:12].upper()}"
         prompt = self._prompt(
             envelope=envelope,
@@ -298,7 +299,8 @@ class SectionRunService:
             attempt=admission.attempt,
             thread_receipt_instruction=(
                 "Set agent_receipt.thread_id to {{CODEX_THREAD_ID}}. "
-                f"Set skill_name to {SKILL_NAME} and skill_hash to {skill_hash}."
+                f"Set skill_name to {SKILL_NAME}, skill_hash to {integrity.skill_hash}, "
+                f"and skill_references_hash to {integrity.skill_references_hash}."
             ),
         )
         try:
@@ -319,7 +321,7 @@ class SectionRunService:
                 drafting_cycle_id=admission.drafting_cycle_id,
                 attempt=admission.attempt,
                 thread_id=result.thread_id,
-                skill_hash=skill_hash,
+                integrity=integrity,
                 executor_receipt_ids=[
                     str(receipt["artifact_id"]) for receipt in envelope["executor_receipts"]
                 ],
@@ -344,7 +346,8 @@ class SectionRunService:
                 agent_runtime="codex_sdk",
                 codex_thread_id=result.thread_id,
                 skill_name=SKILL_NAME,
-                skill_hash=skill_hash,
+                skill_hash=integrity.skill_hash,
+                skill_references_hash=integrity.skill_references_hash,
                 review_scaffold_revision=int(revision["sequence"]),
             )
             row.receipt = receipt.model_dump(mode="json")
@@ -531,7 +534,7 @@ class SectionRunService:
         drafting_cycle_id: str,
         attempt: int,
         thread_id: str,
-        skill_hash: str,
+        integrity: SkillIntegrity,
         executor_receipt_ids: list[str],
     ) -> SectionDraftCandidate:
         try:
@@ -573,13 +576,13 @@ class SectionRunService:
             candidate.executor_receipt_ids
         ) != set(executor_receipt_ids):
             raise CandidateValidationError("Codex candidate returned invalid executor receipts")
-        receipt = candidate.agent_receipt
-        if receipt != {
-            "runtime": "codex_sdk",
-            "thread_id": thread_id,
-            "skill_name": SKILL_NAME,
-            "skill_hash": skill_hash,
-        }:
+        if candidate.agent_receipt != CodexAgentReceipt(
+            runtime="codex_sdk",
+            thread_id=thread_id,
+            skill_name=SKILL_NAME,
+            skill_hash=integrity.skill_hash,
+            skill_references_hash=integrity.skill_references_hash,
+        ):
             raise CandidateValidationError("Codex candidate omitted or changed its runtime receipt")
         if "286.2 g" not in json.dumps(candidate.content_blocks, ensure_ascii=False):
             raise CandidateValidationError("Codex candidate did not preserve the validated value 286.2 g")

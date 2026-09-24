@@ -332,6 +332,7 @@ export function StudyJourney({
                 <code>{run.receipt.candidate_hash}</code>
                 <span>{run.receipt.skill_name}</span>
                 <code>{run.receipt.skill_hash}</code>
+                <code>{run.receipt.skill_references_hash}</code>
                 <span>Thread {run.receipt.codex_thread_id}</span>
                 <code>Envelope {run.receipt.envelope_hash}</code>
                 <span>Review Scaffold Revision {run.receipt.review_scaffold_revision}</span>

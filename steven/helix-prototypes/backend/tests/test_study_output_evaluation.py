@@ -36,6 +36,7 @@ def candidate(text: str) -> SectionDraftCandidate:
                 "thread_id": "thread-test-001",
                 "skill_name": "helix-section-agent",
                 "skill_hash": HASH,
+                "skill_references_hash": HASH,
             },
         }
     )

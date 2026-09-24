@@ -10,6 +10,7 @@
   "codex_thread_id": "01a0cff2-6087-76b2-a983-6bcfca17e393",
   "skill_name": "helix-section-agent",
   "skill_hash": "sha256:40f2a2076c14ec4efce86c6d3d3c2627c52a043866cc9abebef49f18086369f4",
+  "skill_references_hash": "sha256:abababababababababababababababababababababababababababababababab",
   "review_scaffold_revision": 2,
   "idempotent_replay": false
 }

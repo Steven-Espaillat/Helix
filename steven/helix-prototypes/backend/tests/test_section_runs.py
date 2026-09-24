@@ -17,6 +17,7 @@ from app.models import AuditEventRow, SectionRunRow
 from app.repository import StudyPackageRepository
 from app.schemas import SectionRunCommand
 from app.section_runs import SectionRunService
+from app.skill_integrity import SECTION_AGENT_ROOT, skill_integrity
 from app.template_contracts import evaluate_template_contract
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,6 +65,9 @@ class FakeSectionAgent:
         candidate_id = re.search(r"candidate_id (SDC-[A-Z0-9-]+)", prompt).group(1)
         run_id = re.search(r"run_id (SRUN-[A-Z0-9-]+)", prompt).group(1)
         skill_hash = re.search(r"skill_hash to (sha256:[a-f0-9]{64})", prompt).group(1)
+        skill_references_hash = re.search(
+            r"skill_references_hash to (sha256:[a-f0-9]{64})", prompt
+        ).group(1)
         cycle_match = re.search(r"drafting_cycle_id ([A-Z0-9-]+)", prompt)
         attempt_match = re.search(r"and attempt (\d+)", prompt)
         drafting_cycle_id = cycle_match.group(1) if cycle_match else "CYCLE-BW-001"
@@ -94,6 +98,7 @@ class FakeSectionAgent:
             "thread_id": "thread-test-001",
             "skill_name": "helix-section-agent",
             "skill_hash": skill_hash,
+            "skill_references_hash": skill_references_hash,
         }
         if self.mode == "missing_receipt":
             receipt.pop("thread_id")
@@ -249,6 +254,10 @@ def test_section_run_records_candidate_receipt_scaffold_and_exact_replay() -> No
         assert receipt["candidate_hash"].startswith("sha256:")
         assert receipt["envelope_hash"].startswith("sha256:")
         assert receipt["skill_hash"].startswith("sha256:")
+        assert (
+            receipt["skill_references_hash"]
+            == skill_integrity(ROOT / SECTION_AGENT_ROOT).skill_references_hash
+        )
         assert receipt["review_scaffold_revision"] == 2
         assert len(workspace["section_runs"]) == 1
         stored = workspace["section_runs"][0]
