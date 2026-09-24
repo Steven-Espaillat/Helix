@@ -289,6 +289,8 @@ class StudyEvidencePackage(StrictModel):
     predecessor_snapshots: list["PredecessorSnapshot"] = Field(default_factory=list)
     superseding_run_receipt: "SupersedingRunReceipt | None" = None
     frozen_inputs: "FrozenRunInputs | None" = None
+    release_candidate: "ReleaseCandidate | None" = None
+    final_study_approval: "FinalStudyApproval | None" = None
 
 
 class PlannerMode(StrEnum):
@@ -385,6 +387,55 @@ class ApprovalCommand(StrictModel):
     role: ApprovalRole
     reviewer: str = Field(min_length=2, max_length=120)
     meaning: str = Field(min_length=4, max_length=200)
+
+
+class FinalStudyApprovalCommand(StrictModel):
+    reviewer: str = Field(min_length=2, max_length=120)
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
+class IncludedArtifact(StrictModel):
+    artifact_id: str = Field(min_length=1)
+    kind: Literal[
+        "pinned_run",
+        "section_draft_candidate",
+        "section_draft",
+        "data_validation_receipt",
+    ]
+    content_hash: Sha256
+
+
+class DraftingCycleRef(StrictModel):
+    section_package_id: str = Field(min_length=1)
+    cycle_id: Annotated[str, Field(pattern=r"^CYCLE-[A-Z0-9-]+$")]
+
+
+class ReleaseCandidate(StrictModel):
+    schema_version: Literal["helix.release-candidate/v1"]
+    status: Literal["release_candidate"]
+    export_eligible: Literal[True]
+    run_id: str = Field(min_length=1)
+    study_id: str = Field(min_length=1)
+    included_artifacts: list[IncludedArtifact] = Field(min_length=1)
+    current_drafting_cycles: list[DraftingCycleRef]
+    content_hash: Sha256
+
+
+class ApprovedArtifactHash(StrictModel):
+    artifact_id: str = Field(min_length=1)
+    content_hash: Sha256
+
+
+class FinalStudyApproval(StrictModel):
+    schema_version: Literal["helix.final-study-approval/v1"]
+    approval_id: Annotated[str, Field(pattern=r"^FSA-[A-Z0-9-]+$")]
+    run_id: str = Field(min_length=1)
+    study_id: str = Field(min_length=1)
+    reviewer: str = Field(min_length=2, max_length=120)
+    recorded_at: str
+    manifest_hash: Sha256
+    included_artifact_hashes: list[ApprovedArtifactHash] = Field(min_length=1)
+    idempotency_key: str = Field(min_length=8, max_length=160)
 
 
 class ExportCommand(StrictModel):
@@ -965,7 +1016,8 @@ class PredecessorSnapshot(StrictModel):
     section_drafts: list["SectionDraft"]
     candidate_evaluations: list[CandidateEvaluation]
     drafting_cycles: list[DraftingCycle]
-
+    release_candidate: "ReleaseCandidate | None" = None
+    final_study_approval: "FinalStudyApproval | None" = None
 
 class SupersedingRunReceipt(StrictModel):
     schema_version: Literal["helix.superseding-run/v1"]
@@ -1025,6 +1077,9 @@ class WorkspaceResponse(StrictModel):
     can_open_revision: bool = False
     predecessor_snapshots: list[PredecessorSnapshot] = Field(default_factory=list)
     superseding_run_receipt: SupersedingRunReceipt | None = None
+    release_candidate: ReleaseCandidate | None = None
+    final_study_approval: FinalStudyApproval | None = None
+    approval_current: bool = False
 
 
 class ExportReceipt(StrictModel):

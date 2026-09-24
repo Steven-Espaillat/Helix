@@ -138,6 +138,12 @@ test("runs the synthetic study from validation through explicit export", async (
   await recordApproval(page, "Quality Assurance Unit statement");
   await recordApproval(page, "Study director approval");
 
+  await expect(page.getByTestId("release-status")).toHaveText("ready for signature");
+  await expect(page.getByText("FDA approved")).toHaveCount(0);
+  await expect(page.getByTestId("final-study-approval-scope")).toBeVisible();
+  await page.getByTestId("record-final-study-approval").click();
+  await expect(page.getByTestId("approval-current")).toHaveText("current");
+  await expect(page.getByTestId("approval-manifest-hash")).toHaveText(/^sha256:[a-f0-9]{64}$/);
   await expect(page.getByTestId("release-status")).toHaveText("ready for export");
   await expect(page.getByTestId("export-package")).toBeEnabled();
   await page.getByTestId("export-package").click();
@@ -363,6 +369,26 @@ test("renders predecessor run identity and carry-forward counts from the workspa
   await expect(page.getByTestId("carried-forward-count")).toHaveText("1");
   await expect(page.getByTestId("rerun-nodes")).toHaveText("section.5_3_discussion");
   await expect(page.getByTestId("predecessor-snapshot-hash")).toHaveText(INJECTED_HASH);
+});
+
+test("renders the exact Final Study Approval scope from the workspace", async ({ page }) => {
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(withFinalStudyApproval(workspace)),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: /Report assembly/ }).click();
+  await expect(page.getByTestId("final-study-approval-scope")).toBeVisible();
+  await expect(page.getByTestId("approval-current")).toHaveText("current");
+  await expect(page.getByTestId("approval-manifest-hash")).toHaveText(INJECTED_HASH);
+  await expect(page.getByTestId("approval-artifact-RUN-PRED00000001")).toHaveText(INJECTED_HASH);
+  await expect(page.getByText("FDA approved")).toHaveCount(0);
 });
 
 test("renders backend promotion status and draft evidence without recalculating eligibility", async ({
@@ -845,6 +871,45 @@ function withStoppedCycle(workspace: unknown, canOpenRevision = false): unknown 
     candidate_evaluations: evaluations,
     drafting_cycles: [injectedCycle("CYCLE-BW-001", null)],
     can_open_revision: canOpenRevision,
+  };
+}
+
+function withFinalStudyApproval(workspace: unknown): unknown {
+  if (!isObject(workspace)) {
+    throw new Error("Workspace is missing.");
+  }
+  return {
+    ...workspace,
+    approval_current: true,
+    release_candidate: {
+      schema_version: "helix.release-candidate/v1",
+      status: "release_candidate",
+      export_eligible: true,
+      run_id: "RUN-PRED00000001",
+      study_id: "TOX-2026-014",
+      included_artifacts: [
+        {
+          artifact_id: "RUN-PRED00000001",
+          kind: "pinned_run",
+          content_hash: INJECTED_HASH,
+        },
+      ],
+      current_drafting_cycles: [],
+      content_hash: INJECTED_HASH,
+    },
+    final_study_approval: {
+      schema_version: "helix.final-study-approval/v1",
+      approval_id: "FSA-SCOPE000001",
+      run_id: "RUN-PRED00000001",
+      study_id: "TOX-2026-014",
+      reviewer: "Dr. Sam Director",
+      recorded_at: "2026-09-24T00:00:00Z",
+      manifest_hash: INJECTED_HASH,
+      included_artifact_hashes: [
+        { artifact_id: "RUN-PRED00000001", content_hash: INJECTED_HASH },
+      ],
+      idempotency_key: "injected-fsa-scope",
+    },
   };
 }
 

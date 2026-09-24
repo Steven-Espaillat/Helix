@@ -11,6 +11,7 @@ type Props = {
   onInspectClaim: (claimId: string) => void;
   onResolve: (resultId: string, message: string) => void;
   onApprove: (role: ApprovalRole) => void;
+  onFinalStudyApproval: () => void;
   onExport: () => void;
 };
 
@@ -27,6 +28,7 @@ export function ReportAssembly({
   onInspectClaim,
   onResolve,
   onApprove,
+  onFinalStudyApproval,
   onExport,
 }: Props) {
   const [selectedSectionId, setSelectedSectionId] = useState("S7");
@@ -299,6 +301,70 @@ export function ReportAssembly({
                 );
               })}
             </div>
+          </section>
+
+          <section className="panel approval-card" data-testid="final-study-approval-scope">
+            <div className="panel-heading compact">
+              <div>
+                <p className="eyebrow">Hash-bound record</p>
+                <h3>Final Study Approval</h3>
+              </div>
+              <span
+                className="count-chip"
+                data-testid="approval-current"
+              >
+                {workspace.approval_current
+                  ? "current"
+                  : workspace.final_study_approval
+                    ? "stale"
+                    : "ready for signature"}
+              </span>
+            </div>
+            <p>
+              Approval applies only to the exact release-candidate manifest and included artifact
+              hashes. Language stays at ready for signature / ready for export — never a regulator
+              approval claim.
+            </p>
+            {workspace.release_candidate && (
+              <div className="artifact-list">
+                <div>
+                  <strong>Manifest</strong>
+                  <code data-testid="approval-manifest-hash">
+                    {workspace.final_study_approval?.manifest_hash
+                      ?? workspace.release_candidate.content_hash}
+                  </code>
+                </div>
+                {(workspace.final_study_approval?.included_artifact_hashes
+                  ?? workspace.release_candidate.included_artifacts
+                ).map((item) => (
+                  <div key={item.artifact_id}>
+                    <strong>{item.artifact_id}</strong>
+                    <code data-testid={`approval-artifact-${item.artifact_id}`}>
+                      {item.content_hash}
+                    </code>
+                  </div>
+                ))}
+              </div>
+            )}
+            {workspace.approval_current ? (
+              <span className="approval-check">✓</span>
+            ) : (
+              <button
+                type="button"
+                className="text-button"
+                data-testid="record-final-study-approval"
+                disabled={
+                  !priorHumanApprovalsComplete
+                  || !approvalRoles.has("study_director")
+                  || openBlockers.length > 0
+                  || busy !== null
+                  || workspace.release_candidate == null
+                }
+                onClick={onFinalStudyApproval}
+              >
+                {busy === "final-study-approval" ? "Recording…" : "Record Final Study Approval"}
+              </button>
+            )}
           </section>
 
           <section className="panel export-card">

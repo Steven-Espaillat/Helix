@@ -11,6 +11,7 @@ import {
   queryCrossSection,
   recordApproval,
   recordDisposition,
+  recordFinalStudyApproval,
   reviseSection,
   runDataValidation,
   runSectionAgent,
@@ -255,6 +256,21 @@ export function HelixWorkbench({ studyId }: Props) {
     }
   }
 
+  async function approveFinalStudy() {
+    setBusy("final-study-approval");
+    setNotice(null);
+    setError(null);
+    try {
+      const key = `workbench-${studyId}-fsa-${workspace?.release_candidate?.content_hash?.slice(-12) ?? "pending"}`;
+      setWorkspace(await recordFinalStudyApproval(studyId, key));
+      setNotice("Final Study Approval recorded for the exact release-candidate hashes.");
+    } catch (cause) {
+      setError(messageFrom(cause));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function performExport() {
     setBusy("export");
     setNotice(null);
@@ -407,6 +423,7 @@ export function HelixWorkbench({ studyId }: Props) {
             onInspectClaim={inspectClaim}
             onResolve={(resultId, message) => void resolve(resultId, message)}
             onApprove={(role) => void approve(role)}
+            onFinalStudyApproval={() => void approveFinalStudy()}
             onExport={() => void performExport()}
           />
         )}

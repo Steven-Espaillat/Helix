@@ -8,6 +8,15 @@ from .artifacts import GeneratedArtifact, generate_artifact
 from .config import Settings
 from .data_validation import DataValidationService, as_validation_results, policy_for
 from .drafting_cycles import current_cycle, cycle_exhausted, load_recorded_attempts
+from .release_candidates import (
+    MissingReleaseCandidateError,
+    approval_is_current,
+    approval_request_hash,
+    compile_release_candidate,
+    hashes_for,
+    recorded_request_hash,
+    validate_final_study_approval,
+)
 from .reporting import assemble_report, claim_report_text
 from .repository import StudyPackageRepository
 from .review_scaffolds import ExportAdmissionError, admit_export_document
@@ -27,6 +36,8 @@ from .schemas import (
     ExportArtifact,
     ExportCommand,
     ExportReceipt,
+    FinalStudyApproval,
+    FinalStudyApprovalCommand,
     FreezeRunCommand,
     GateDecision,
     GateStatus,
@@ -34,6 +45,7 @@ from .schemas import (
     PlannerCapability,
     PlannerMode,
     ProvenanceEdge,
+    ReleaseCandidate,
     ReviewDisposition,
     SectionStatus,
     SourceRecord,
@@ -649,6 +661,82 @@ class StudyService:
         self.session.commit()
         return self._workspace(updated)
 
+    def record_final_study_approval(
+        self,
+        study_id: str,
+        command: FinalStudyApprovalCommand,
+    ) -> WorkspaceResponse:
+        package = self.repository.get(study_id, for_update=True)
+        self._ensure_mutable(package)
+        live = self._live_release_candidate(package)
+        if live is None:
+            raise WorkflowConflictError("Freeze the authorized manifest before Final Study Approval")
+        request_hash = approval_request_hash(study_id, command.reviewer, live)
+        existing = package.final_study_approval
+        if existing is not None:
+            same_key = existing.idempotency_key == command.idempotency_key
+            same_hash = recorded_request_hash(existing) == request_hash
+            if same_key and same_hash:
+                return self._workspace(package)
+            if same_key:
+                raise WorkflowConflictError("The idempotency key was already used for another command")
+            if approval_is_current(existing, live):
+                raise WorkflowConflictError(
+                    "Final Study Approval is already recorded for this release candidate"
+                )
+        gate = self._release_gate(package)
+        if gate.blocking_result_ids:
+            raise WorkflowConflictError("Unresolved sections, gates, or dispositions prevent approval")
+        approval_roles = {item.role for item in package.approvals}
+        if not REQUIRED_APPROVALS.issubset(approval_roles):
+            raise WorkflowConflictError("Configured reviewer prerequisites prevent approval")
+        if any(section.status == SectionStatus.NEEDS_REVIEW for section in package.report_sections):
+            raise WorkflowConflictError("Unresolved sections prevent approval")
+        timestamp = self._now()
+        approval = FinalStudyApproval(
+            schema_version="helix.final-study-approval/v1",
+            approval_id=f"FSA-{uuid4().hex[:12].upper()}",
+            run_id=live.run_id,
+            study_id=study_id,
+            reviewer=command.reviewer,
+            recorded_at=timestamp,
+            manifest_hash=live.content_hash,
+            included_artifact_hashes=hashes_for(live),
+            idempotency_key=command.idempotency_key,
+        )
+        validate_final_study_approval(approval)
+        event = self._event(
+            "final_study_approval_recorded",
+            command.reviewer,
+            "complete",
+            {
+                "approval_id": approval.approval_id,
+                "manifest_hash": approval.manifest_hash,
+                "run_id": approval.run_id,
+            },
+            timestamp=timestamp,
+        )
+        updated = package.model_copy(
+            update={
+                "release_candidate": live,
+                "final_study_approval": approval,
+                "events": [*package.events, event],
+            }
+        )
+        updated = self._with_derived_gate(updated, timestamp)
+        updated = self.section_runs.persist_contract_revision(updated, event_id=event.event_id)
+        self.repository.save(updated)
+        self.repository.append_event(
+            study_id=study_id,
+            event_type=event.event,
+            actor=event.actor,
+            payload={"outcome": event.outcome, **event.details},
+            idempotency_key=f"final-study-approval:{command.idempotency_key}",
+            occurred_at=datetime.fromisoformat(timestamp.replace("Z", "+00:00")),
+        )
+        self.session.commit()
+        return self._workspace(updated)
+
     def export(self, study_id: str, command: ExportCommand) -> ExportReceipt:
         package = self.repository.get(study_id, for_update=True)
         storage_key = f"export:{command.idempotency_key}"
@@ -665,6 +753,9 @@ class StudyService:
         gate = self._release_gate(package)
         if gate.status != GateStatus.READY_FOR_EXPORT:
             raise WorkflowConflictError("The release gate is not ready for export")
+        live = self._live_release_candidate(package)
+        if not approval_is_current(package.final_study_approval, live):
+            raise WorkflowConflictError("Final Study Approval is stale and blocks export")
         for revision in package.review_scaffold_revisions:
             try:
                 admit_export_document(revision)
@@ -799,6 +890,12 @@ class StudyService:
             can_open_revision=self._can_open_revision(package.study.study_id),
             predecessor_snapshots=package.predecessor_snapshots,
             superseding_run_receipt=package.superseding_run_receipt,
+            release_candidate=self._live_release_candidate(package),
+            final_study_approval=package.final_study_approval,
+            approval_current=approval_is_current(
+                package.final_study_approval,
+                self._live_release_candidate(package),
+            ),
         )
 
     def _can_open_revision(self, study_id: str) -> bool:
@@ -849,7 +946,19 @@ class StudyService:
             package,
             candidate_blocker_ids=blockers,
             decided_at=decided_at,
+            live_release_candidate=self._live_release_candidate(package),
         )
+
+    def _live_release_candidate(self, package: StudyEvidencePackage) -> ReleaseCandidate | None:
+        try:
+            return compile_release_candidate(
+                package,
+                section_runs=self.repository.list_section_runs(package.study.study_id),
+                section_drafts=self.repository.list_section_drafts(package.study.study_id),
+                drafting_cycles=self.repository.list_drafting_cycles(package.study.study_id),
+            )
+        except MissingReleaseCandidateError:
+            return None
 
     def _apply_claim_correction(
         self,
@@ -1038,6 +1147,7 @@ def derive_release_gate(
     package: StudyEvidencePackage,
     candidate_blocker_ids: list[str] | None = None,
     decided_at: str | None = None,
+    live_release_candidate: ReleaseCandidate | None = None,
 ) -> GateDecision:
     latest_dispositions: dict[str, ReviewDisposition] = {}
     for disposition in package.review_dispositions:
@@ -1055,6 +1165,7 @@ def derive_release_gate(
     has_unreviewed_sections = any(
         section.status == SectionStatus.NEEDS_REVIEW for section in package.report_sections
     )
+    current_approval = approval_is_current(package.final_study_approval, live_release_candidate)
     if all(artifact.status == "exported" for artifact in package.export_artifacts):
         status = GateStatus.EXPORTED
     elif unresolved:
@@ -1063,6 +1174,8 @@ def derive_release_gate(
         status = GateStatus.READY_FOR_SIGNATURE
     elif has_unreviewed_sections:
         status = GateStatus.BLOCKED
+    elif not current_approval:
+        status = GateStatus.READY_FOR_SIGNATURE
     else:
         status = GateStatus.READY_FOR_EXPORT
     prior = next((gate for gate in package.gate_decisions if gate.gate_type == "release"), None)

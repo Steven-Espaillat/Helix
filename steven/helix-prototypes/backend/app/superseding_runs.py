@@ -154,6 +154,12 @@ def snapshot_predecessor(
         "section_drafts": [item.model_dump(mode="json") for item in section_drafts],
         "candidate_evaluations": [item.model_dump(mode="json") for item in candidate_evaluations],
         "drafting_cycles": [item.model_dump(mode="json") for item in drafting_cycles],
+        "release_candidate": (
+            package.release_candidate.model_dump(mode="json") if package.release_candidate else None
+        ),
+        "final_study_approval": (
+            package.final_study_approval.model_dump(mode="json") if package.final_study_approval else None
+        ),
     }
     return PredecessorSnapshot.model_validate({**payload, "snapshot_hash": canonical_hash(payload)})
 
@@ -282,6 +288,8 @@ def apply_supersession(
             "workflow_state": (
                 "gated" if package.workflow_state == "exported" else package.workflow_state
             ),
+            "release_candidate": None,
+            "final_study_approval": None,
         }
     )
 
@@ -305,6 +313,8 @@ def with_fresh_authority(
     updated = package.model_copy(
         update={
             "approvals": [],
+            "release_candidate": None,
+            "final_study_approval": None,
             "superseding_run_receipt": receipt.model_copy(
                 update={
                     "fresh_validation_receipt_ids": validation_receipt_ids,

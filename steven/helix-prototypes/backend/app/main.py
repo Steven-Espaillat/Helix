@@ -30,6 +30,7 @@ from .schemas import (
     EvidenceChain,
     ExportCommand,
     ExportReceipt,
+    FinalStudyApprovalCommand,
     FreezeRunCommand,
     HumanDirectedRevisionCommand,
     HumanDirectedRevisionReceipt,
@@ -306,6 +307,18 @@ def create_app(
         study_service: ServiceDependency,
     ) -> WorkspaceResponse:
         return _call(lambda: study_service.approve(study_id, command))
+
+    @app.post(
+        "/api/v1/studies/{study_id}/final-study-approvals",
+        response_model=WorkspaceResponse,
+        tags=["review"],
+    )
+    def record_final_study_approval(
+        study_id: str,
+        command: FinalStudyApprovalCommand,
+        study_service: ServiceDependency,
+    ) -> WorkspaceResponse:
+        return _call(lambda: study_service.record_final_study_approval(study_id, command))
 
     @app.get(
         "/api/v1/studies/{study_id}/exports/{artifact_id}",

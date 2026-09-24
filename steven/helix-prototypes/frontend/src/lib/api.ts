@@ -190,6 +190,21 @@ export async function recordApproval(
   return value;
 }
 
+export async function recordFinalStudyApproval(
+  studyId: string,
+  idempotencyKey: string,
+): Promise<Workspace> {
+  const value = await request(`/studies/${encodeURIComponent(studyId)}/final-study-approvals`, {
+    method: "POST",
+    body: JSON.stringify({
+      reviewer: "Dr. Sam Director",
+      idempotency_key: idempotencyKey,
+    }),
+  });
+  assertWorkspace(value);
+  return value;
+}
+
 export function artifactDownloadUrl(studyId: string, artifactId: string): string {
   return `${API_ROOT}/studies/${encodeURIComponent(studyId)}/exports/${encodeURIComponent(artifactId)}`;
 }

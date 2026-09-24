@@ -1,0 +1,16 @@
+{
+  "schema_version": "helix.final-study-approval/v1",
+  "approval_id": "FSA-TEST00000001",
+  "run_id": "RUN-TEST0000000001",
+  "study_id": "STUDY-HLX-028",
+  "reviewer": "Dr. Sam Director",
+  "recorded_at": "2026-09-24T00:00:00Z",
+  "manifest_hash": "sha256:not-a-complete-hash",
+  "included_artifact_hashes": [
+    {
+      "artifact_id": "RUN-TEST0000000001",
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "idempotency_key": "final-study-approval-v1"
+}

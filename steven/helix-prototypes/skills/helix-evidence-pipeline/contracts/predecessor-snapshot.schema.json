@@ -124,6 +124,12 @@
     },
     "drafting_cycles": {
       "type": "array"
+    },
+    "release_candidate": {
+      "type": ["object", "null"]
+    },
+    "final_study_approval": {
+      "type": ["object", "null"]
     }
   }
 }

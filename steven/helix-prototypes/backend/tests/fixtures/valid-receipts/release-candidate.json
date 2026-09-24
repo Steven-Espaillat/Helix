@@ -1,0 +1,16 @@
+{
+  "schema_version": "helix.release-candidate/v1",
+  "status": "release_candidate",
+  "export_eligible": true,
+  "run_id": "RUN-TEST0000000001",
+  "study_id": "STUDY-HLX-028",
+  "included_artifacts": [
+    {
+      "artifact_id": "RUN-TEST0000000001",
+      "kind": "pinned_run",
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "current_drafting_cycles": [],
+  "content_hash": "sha256:64f1291f69009f8fa462bfea3b2e47dd8d87f4fbc9cff710be42026b53fbfc0f"
+}

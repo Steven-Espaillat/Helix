@@ -653,6 +653,11 @@ def test_supersession_after_export_clears_successor_export_state(tmp_path: Path)
         approve(client, "peer_reviewer", "Dr. Priya Peer", "Independent pathology review complete")
         approve(client, "qau", "Morgan QA", "Quality assurance statement recorded")
         approve(client, "study_director", "Dr. Sam Director", "Final report approval")
+        signed = client.post(
+            f"/api/v1/studies/{STUDY_ID}/final-study-approvals",
+            json={"reviewer": "Dr. Sam Director", "idempotency_key": "supersede-after-export-fsa"},
+        )
+        assert signed.status_code == 200, signed.text
         exported = client.post(
             f"/api/v1/studies/{STUDY_ID}/exports",
             json={"actor": "Dr. Sam Director", "idempotency_key": "supersede-after-export-v1"},

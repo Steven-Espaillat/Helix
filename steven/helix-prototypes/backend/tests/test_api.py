@@ -163,7 +163,20 @@ def test_hybrid_validation_review_approval_and_export_flow() -> None:
             )
             assert response.status_code == 200
         approved = response.json()
+        assert approved["release_gate"]["status"] == "ready_for_signature"
+        assert approved["approval_current"] is False
+        signed = client.post(
+            f"/api/v1/studies/{STUDY_ID}/final-study-approvals",
+            json={"reviewer": "Dr. Sam Director", "idempotency_key": "e2e-final-study-approval-v1"},
+        )
+        assert signed.status_code == 200, signed.text
+        approved = signed.json()
         assert approved["release_gate"]["status"] == "ready_for_export"
+        assert approved["approval_current"] is True
+        assert (
+            approved["final_study_approval"]["manifest_hash"]
+            == approved["release_candidate"]["content_hash"]
+        )
         assert all(section["status"] != "needs_review" for section in approved["report"]["sections"])
         clinical_pathology = next(
             section for section in approved["report"]["sections"] if section["section_id"] == "S6"

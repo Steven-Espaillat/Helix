@@ -1,7 +1,7 @@
 {
   "receipt": {
-    "receipt_id": "RCP-DVP-470F4429923FE30D",
-    "run_id": "RUN-A5202A719DB799FA",
+    "receipt_id": "RCP-DVP-28AEA2408292B751",
+    "run_id": "RUN-EA5CAAC545398B61",
     "package_id": "validation.body_weight",
     "package_version": "0.1.0",
     "package_hash": "sha256:2bea2e2f5a12b35979b65c61f833b074e8aff5fa560da9317b4221836e7918e4",
@@ -23,17 +23,25 @@
       "helix-ontology": "1.0.0@sha256:a7c4f6b7417e83d0121330b4034550b5c608732bbe7efcd0b2bcdc30e204e92f",
       "helix-schema": "1.0.0@sha256:6409f1a6b68883471822fb2db7621827b4c3ab2376ac8de4a3f7cbaad5bee1cc",
       "helix-rules": "1.0.0@sha256:8636fd03f73959ab47567b6e33ae62fe4e374d9cc73b0a16a3af55a1d7f82f89",
-      "candidate-evaluation.schema": "1.0.0@sha256:c64a2c4c24636c239fb6a394917a01cd81860963f65ce86905b6af47f9972f2f",
+      "artifact-lineage.schema": "1.0.0@sha256:03d3474d9a98c263461cb216138dafe45b7c1a5c92367b50415a3044f0f5fa63",
+      "candidate-evaluation.schema": "1.0.0@sha256:19341fb6e95f4bfc94493f315e825bce0e58a733d7508af1480564a8a15e134e",
       "cross-section-query-receipt.schema": "1.0.0@sha256:ba30bd1cf500f251e721d3ec8c5eacb46b64b1475c4986c452dbd67d1d9b7ca1",
       "data-validation-package.schema": "1.0.0@sha256:39d6c4641c27ec44f9398e9dfe57cc2aaf5ed2f6eaee717dfc9a1af8ab955b97",
+      "drafting-cycle.schema": "1.0.0@sha256:d9e3093bb577011ae037fb639f3f6d2a5a8c7fe2889416eadf49ea2dfd733a7e",
+      "final-study-approval.schema": "1.0.0@sha256:093d8c5bcfd5ac23dccccfbfe1e74249e71a19ca733168e1644c505eb288481f",
+      "human-directed-revision-command.schema": "1.0.0@sha256:1225c39bbaa9cd8b9d4158d572f3a2119fd39dcd8a20470e88c2a9ab56bba6f9",
+      "predecessor-snapshot.schema": "1.0.0@sha256:2455b628f33962d1210bebf376fe309ec991de6920bdbbf46db89ad387748d37",
       "provenance-receipt.schema": "1.0.0@sha256:b85b3554cbd9250dd8e68bb5162d46e39efa6f91cd48b12b0f4171ce3a87ed0f",
+      "release-candidate.schema": "1.0.0@sha256:26f757d0b8982a4f4627f6092debecf507ca278ff8a5c27522ed37f05d1f31b2",
       "review-scaffold-revision.schema": "1.0.0@sha256:20a796af0c8cf2c2b98a549e1ace58ecd553ce98341c022545af4605dc8e1e10",
       "run-plan.schema": "1.0.0@sha256:0a02110d8a93b8b774d285520c4da09209715b38e65455aa7f96032e56d076cb",
-      "section-draft-candidate.schema": "1.0.0@sha256:07ea5dc4a7fe952800bae4d22a1072bec32d6f17818296b34685ed1e2b10640b",
-      "section-draft.schema": "1.0.0@sha256:a97e85262bfbda409419e674e93512cd17c80ee905be9647a9571fe6cc80e838",
+      "section-draft-candidate.schema": "1.0.0@sha256:179b5ddf23845421634e398a7634a537a6dfa1ee1881e473fedd6a66ce234e12",
+      "section-draft.schema": "1.0.0@sha256:b7fb89a065d99417c5c9e74b00002009a192ebbdd0d86d95afc5a0de6c1f8d40",
       "section-execution-envelope.schema": "1.0.0@sha256:17aaff96de81c65dcf6f157ed5a48ad509190a2de7749e22c8e45bce9e61bafc",
       "section-package.schema": "1.0.0@sha256:529f4a1f2f36f3290d08a5bf84adace65cf9a61fb3a73eda9959530db7daf295",
+      "section-promotion-decision.schema": "1.0.0@sha256:4b8ea2f65992e0e217113dca715e65933336896c734735aae673323f035e2a55",
       "study-output-evaluation-receipt.schema": "1.0.0@sha256:cc864902782a4fe009dabe5ccf090fd8e87b4cceeaa58acd67d6d5bfb06c83ac",
+      "superseding-run.schema": "1.0.0@sha256:280c7841ef71f1e41c5bb8aff3e00d76d84f484f210385610f23236acaa637fa",
       "template-conformance-receipt.schema": "1.0.0@sha256:c0f61888df930070052207a4e87b9d0b55abe9a3cf1bf4572269e389b2289d14",
       "section.5_2_3_body_weight": "0.1.0@sha256:42ac013f4015473d96ba273b7de23f2f86d2a56ce4e72743988cb7837183dbd4",
       "section.5_3_discussion": "0.1.0@sha256:280e4128a3bb34269ce206b6a6ac49960cac6aa77974161f1e2cc80c84e3b4c7",
@@ -44,7 +52,7 @@
       "repeat-dose-report-template": "1.0.0@sha256:d1c1fd73d7a75b544b02d9ff9fc585dbdbfa9244220980560bc10e9ad84c3f45",
       "codex-section-runtime": "0.1.0@sha256:1c1beb5813d3dc0c7506c28d02716b2b522f0cbcfc0aca6148ec84af4653926c"
     },
-    "input_fingerprint": "sha256:9737122106f0d3e87067b2e47b6201ddebc406794bb008ac158b4c9bdcdf4bed",
+    "input_fingerprint": "sha256:ee685a3dfd156972ed50138b92ddebbb7bb92ea36777311e696dae5381c9141c",
     "claim_ids": [
       "C-BW-MEAN-D1-G1-F",
       "C-BW-SD-D1-G1-F",
@@ -173,7 +181,7 @@
       "VR-BW-RECOMPUTE",
       "VR-BW-PROVENANCE"
     ],
-    "event_id": "EV-DVP-6EACCB9E98B1",
+    "event_id": "EV-DVP-DBC492F82A7C",
     "status": "passed",
     "idempotent_replay": true
   },
@@ -10343,26 +10351,26 @@
       "section_package_id": "section.5_2_3_body_weight",
       "title": "5.2.3 Body Weight",
       "claim_id": "C-BW-HIGH",
-      "executor_receipt_id": "RCP-DVP-470F4429923FE30D"
+      "executor_receipt_id": "RCP-DVP-28AEA2408292B751"
     },
     {
       "section_id": "S8",
       "section_package_id": "section.5_3_discussion",
       "title": "Discussion and conclusion",
       "claim_id": "C-BW-HIGH",
-      "executor_receipt_id": "RCP-DVP-470F4429923FE30D"
+      "executor_receipt_id": "RCP-DVP-28AEA2408292B751"
     }
   ],
   "event": {
-    "event_id": "EV-DVP-6EACCB9E98B1",
+    "event_id": "EV-DVP-DBC492F82A7C",
     "event": "data_validation_completed",
     "actor": "HELIX validation service",
-    "timestamp": "2026-09-24T07:51:55.052485Z",
+    "timestamp": "2026-09-24T16:30:35.514779Z",
     "outcome": "passed",
     "details": {
-      "run_id": "RUN-A5202A719DB799FA",
+      "run_id": "RUN-EA5CAAC545398B61",
       "package_id": "validation.body_weight",
-      "receipt_id": "RCP-DVP-470F4429923FE30D",
+      "receipt_id": "RCP-DVP-28AEA2408292B751",
       "executor_id": "body-weight-summary",
       "source_artifact_id": "A-BW"
     }

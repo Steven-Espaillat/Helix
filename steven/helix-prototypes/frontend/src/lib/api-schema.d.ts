@@ -106,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/studies/{study_id}/final-study-approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Final Study Approval */
+        post: operations["record_final_study_approval_api_v1_studies__study_id__final_study_approvals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/studies/{study_id}/pinned-runs": {
         parameters: {
             query?: never;
@@ -325,6 +342,13 @@ export interface components {
          * @enum {string}
          */
         ApprovalRole: "pathologist" | "peer_reviewer" | "qau" | "study_director";
+        /** ApprovedArtifactHash */
+        ApprovedArtifactHash: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Content Hash */
+            content_hash: string;
+        };
         /** ArtifactLineage */
         ArtifactLineage: {
             /** Predecessor Artifact Id */
@@ -717,6 +741,13 @@ export interface components {
             /** Triggering Event Id */
             triggering_event_id: string;
         };
+        /** DraftingCycleRef */
+        DraftingCycleRef: {
+            /** Cycle Id */
+            cycle_id: string;
+            /** Section Package Id */
+            section_package_id: string;
+        };
         /** EvidenceChain */
         EvidenceChain: {
             claim: components["schemas"]["Claim"];
@@ -781,6 +812,37 @@ export interface components {
             status: "exported";
             /** Study Id */
             study_id: string;
+        };
+        /** FinalStudyApproval */
+        FinalStudyApproval: {
+            /** Approval Id */
+            approval_id: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+            /** Included Artifact Hashes */
+            included_artifact_hashes: components["schemas"]["ApprovedArtifactHash"][];
+            /** Manifest Hash */
+            manifest_hash: string;
+            /** Recorded At */
+            recorded_at: string;
+            /** Reviewer */
+            reviewer: string;
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.final-study-approval/v1";
+            /** Study Id */
+            study_id: string;
+        };
+        /** FinalStudyApprovalCommand */
+        FinalStudyApprovalCommand: {
+            /** Idempotency Key */
+            idempotency_key: string;
+            /** Reviewer */
+            reviewer: string;
         };
         /** FreezeRunCommand */
         FreezeRunCommand: {
@@ -879,6 +941,18 @@ export interface components {
             stale_approval_ids: string[];
             /** Stale Disposition Ids */
             stale_disposition_ids: string[];
+        };
+        /** IncludedArtifact */
+        IncludedArtifact: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "pinned_run" | "section_draft_candidate" | "section_draft" | "data_validation_receipt";
         };
         /** ManifestEntry */
         ManifestEntry: {
@@ -1039,12 +1113,14 @@ export interface components {
             events: components["schemas"]["WorkflowEvent"][];
             /** Export Artifacts */
             export_artifacts: components["schemas"]["ExportArtifact"][];
+            final_study_approval?: components["schemas"]["FinalStudyApproval"] | null;
             frozen_inputs: components["schemas"]["FrozenRunInputs"];
             /** Gate Decisions */
             gate_decisions: components["schemas"]["GateDecision"][];
             pinned_run: components["schemas"]["PinnedRun"];
             /** Provenance Edges */
             provenance_edges: components["schemas"]["ProvenanceEdge"][];
+            release_candidate?: components["schemas"]["ReleaseCandidate"] | null;
             /** Review Dispositions */
             review_dispositions: components["schemas"]["ReviewDisposition"][];
             /** Review Scaffold Revisions */
@@ -1191,6 +1267,34 @@ export interface components {
             title: string;
             /** Url */
             url: string;
+        };
+        /** ReleaseCandidate */
+        ReleaseCandidate: {
+            /** Content Hash */
+            content_hash: string;
+            /** Current Drafting Cycles */
+            current_drafting_cycles: components["schemas"]["DraftingCycleRef"][];
+            /**
+             * Export Eligible
+             * @constant
+             */
+            export_eligible: true;
+            /** Included Artifacts */
+            included_artifacts: components["schemas"]["IncludedArtifact"][];
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.release-candidate/v1";
+            /**
+             * Status
+             * @constant
+             */
+            status: "release_candidate";
+            /** Study Id */
+            study_id: string;
         };
         /** ReportAssembly */
         ReportAssembly: {
@@ -1931,6 +2035,11 @@ export interface components {
         };
         /** WorkspaceResponse */
         WorkspaceResponse: {
+            /**
+             * Approval Current
+             * @default false
+             */
+            approval_current: boolean;
             /** Approvals */
             approvals: components["schemas"]["Approval"][];
             /**
@@ -1954,6 +2063,7 @@ export interface components {
             events: components["schemas"]["WorkflowEvent"][];
             /** Export Artifacts */
             export_artifacts: components["schemas"]["ExportArtifact"][];
+            final_study_approval?: components["schemas"]["FinalStudyApproval"] | null;
             /** Label */
             label: string;
             /** Manifest */
@@ -1965,6 +2075,7 @@ export interface components {
             predecessor_snapshots?: components["schemas"]["PredecessorSnapshot"][];
             /** Promotion Decisions */
             promotion_decisions?: components["schemas"]["PromotionDecision"][];
+            release_candidate?: components["schemas"]["ReleaseCandidate"] | null;
             release_gate: components["schemas"]["GateDecision"];
             report: components["schemas"]["ReportAssembly"];
             /** Review Scaffold Revisions */
@@ -2186,6 +2297,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_final_study_approval_api_v1_studies__study_id__final_study_approvals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FinalStudyApprovalCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceResponse"];
+                };
             };
             /** @description Validation Error */
             422: {
