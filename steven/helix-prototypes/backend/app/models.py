@@ -97,11 +97,15 @@ class DataValidationRunRow(Base):
 
 class SectionRunRow(Base):
     __tablename__ = "section_runs"
-    __table_args__ = (UniqueConstraint("study_id", "idempotency_key", name="uq_section_run_key"),)
+    __table_args__ = (
+        UniqueConstraint("study_id", "idempotency_key", name="uq_section_run_key"),
+        UniqueConstraint("study_id", "section_package_id", "attempt", name="uq_section_run_attempt"),
+    )
 
     run_id: Mapped[str] = mapped_column(String(80), primary_key=True)
     study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
     section_package_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False)
     idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
     request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
     envelope: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)

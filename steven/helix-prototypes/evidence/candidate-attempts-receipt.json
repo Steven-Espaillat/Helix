@@ -1,0 +1,17 @@
+{
+  "attempts": [
+    1,
+    2,
+    3
+  ],
+  "decisions": [
+    "retry",
+    "retry",
+    "stop_for_review"
+  ],
+  "cap_blocker": "ATTEMPT-CAP-section.5_2_3_body_weight",
+  "scaffold_placeholder": "[NEEDS REVIEW]",
+  "agent_calls": 3,
+  "fourth_status": 409,
+  "replay_evaluation_id": "CEV-0A7AC2AEF584"
+}

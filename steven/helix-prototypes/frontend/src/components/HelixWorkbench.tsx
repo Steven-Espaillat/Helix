@@ -105,6 +105,34 @@ export function HelixWorkbench({ studyId }: Props) {
     }
   }
 
+  async function retryBodyWeight() {
+    const latest = workspace?.section_runs.at(-1);
+    const evaluation = (workspace?.candidate_evaluations ?? []).find(
+      (item) => item.run_id === latest?.receipt.run_id,
+    );
+    if (evaluation?.next_attempt_decision.action !== "retry") {
+      return;
+    }
+    const nextAttempt = evaluation.next_attempt_decision.attempt + 1;
+    setBusy("section-run");
+    setNotice(null);
+    setError(null);
+    try {
+      const receipt = await runSectionAgent(
+        studyId,
+        `workbench-${studyId}-body-weight-attempt-${nextAttempt}`,
+      );
+      await refresh();
+      setNotice(
+        `${receipt.candidate_id} recorded from Codex SDK in Review Scaffold Revision ${receipt.review_scaffold_revision}.`,
+      );
+    } catch (cause) {
+      setError(messageFrom(cause));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function evaluateBodyWeight() {
     if (!workspace?.section_runs.at(-1)) {
       return;
@@ -310,6 +338,7 @@ export function HelixWorkbench({ studyId }: Props) {
             onValidate={() => void validate()}
             onExecuteBodyWeight={() => void executeBodyWeight()}
             onDraftBodyWeight={() => void draftBodyWeight()}
+            onRetryBodyWeight={() => void retryBodyWeight()}
             onEvaluateCandidate={() => void evaluateBodyWeight()}
             onQueryCrossSection={() => void queryBodyWeightFacts()}
           />

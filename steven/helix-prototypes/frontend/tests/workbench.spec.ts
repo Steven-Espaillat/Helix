@@ -290,6 +290,7 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   );
   await expect(page.getByTestId("next-attempt-action")).toHaveText("Next attempt hold");
   await expect(page.getByTestId("evaluation-hash")).toHaveText(INJECTED_EVALUATION_HASH);
+  await expect(page.getByTestId("retry-body-weight")).toHaveCount(0);
   expect(evaluationPosts).toBe(1);
 
   await page.getByTestId("query-cross-section").click();
@@ -299,6 +300,43 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   await expect(page.getByTestId("query-hash-claim:C-BW-HIGH")).toContainText(INJECTED_CLAIM_HASH);
   await expect(page.getByTestId("query-hash-validation.body_weight")).toContainText(INJECTED_ARTIFACT_HASH);
   expect(queryPosts).toBe(1);
+});
+
+test("shows every immutable attempt and offers no fourth attempt after stop_for_review", async ({
+  page,
+}) => {
+  let sectionRunPosts = 0;
+  await page.route("**/api/v1/studies/*/section-runs", async (route) => {
+    if (route.request().method() === "POST") {
+      sectionRunPosts += 1;
+      await route.fulfill({
+        status: 409,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "This drafting cycle already used three Candidate Attempts" }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(withStoppedCycle(workspace)),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("candidate-attempt-1")).toBeVisible();
+  await expect(page.getByTestId("candidate-attempt-2")).toBeVisible();
+  await expect(page.getByTestId("candidate-attempt-3")).toBeVisible();
+  await expect(page.getByTestId("candidate-attempt-3")).toContainText("Candidate attempt 3 of 3");
+  await expect(page.getByTestId("next-attempt-action")).toHaveText("Next attempt stop_for_review");
+  await expect(page.getByTestId("retry-body-weight")).toHaveCount(0);
+  await expect(page.getByTestId("candidate-attempt-4")).toHaveCount(0);
+  expect(sectionRunPosts).toBe(0);
 });
 
 async function recordApproval(page: import("@playwright/test").Page, label: string) {
@@ -547,6 +585,94 @@ function withRecordedCandidate(
     ],
     candidate_evaluations: options.includeEvaluation ? [options.evaluation] : [],
     cross_section_queries: options.includeQuery ? [options.query] : [],
+  };
+}
+
+function withStoppedCycle(workspace: unknown): unknown {
+  if (!isObject(workspace)) {
+    throw new Error("Workspace is missing.");
+  }
+  const runs = [1, 2, 3].map((attempt) => storedAttempt(attempt));
+  const evaluations = [1, 2, 3].map((attempt) =>
+    injectedCycleEvaluation(attempt, attempt === 3 ? "stop_for_review" : "retry"),
+  );
+  return {
+    ...workspace,
+    section_runs: runs,
+    candidate_evaluations: evaluations,
+  };
+}
+
+function storedAttempt(attempt: number): Record<string, unknown> {
+  const runId = `SRUN-CYCLE00000${attempt}`;
+  const candidateId = `SDC-CYCLE00000${attempt}`;
+  return {
+    receipt: {
+      run_id: runId,
+      section_id: "5_2_3_body_weight",
+      section_package_id: "section.5_2_3_body_weight",
+      status: "candidate_recorded",
+      candidate_id: candidateId,
+      candidate_hash: INJECTED_HASH,
+      envelope_hash: INJECTED_ARTIFACT_HASH,
+      agent_runtime: "codex_sdk",
+      codex_thread_id: `thread-cycle-00${attempt}`,
+      skill_name: "helix-section-agent",
+      skill_hash: INJECTED_CLAIM_HASH,
+      review_scaffold_revision: attempt + 1,
+      idempotent_replay: false,
+    },
+    candidate: {
+      schema_version: "helix.section-draft-candidate/v1",
+      status: "section_draft_candidate",
+      candidate_id: candidateId,
+      run_id: runId,
+      section_id: "5_2_3_body_weight",
+      section_package_id: "section.5_2_3_body_weight",
+      section_package_version: "0.1.0",
+      drafting_cycle_id: "CYCLE-BW-001",
+      attempt,
+      validated_claim_ids: ["C-BW-HIGH"],
+      content_blocks: [
+        {
+          block_id: "BW-P1",
+          kind: "paragraph",
+          content: "Terminal high-dose body weight was 286.2 g.",
+          factual_spans: [
+            { text: "Terminal high-dose body weight was 286.2 g.", claim_ids: ["C-BW-HIGH"] },
+          ],
+        },
+      ],
+      executor_receipt_ids: ["EXEC-BW-SUMMARY-001"],
+      agent_receipt: {
+        runtime: "codex_sdk",
+        thread_id: `thread-cycle-00${attempt}`,
+        skill_name: "helix-section-agent",
+        skill_hash: INJECTED_CLAIM_HASH,
+      },
+    },
+    envelope: {},
+    review_scaffold: {},
+  };
+}
+
+function injectedCycleEvaluation(
+  attempt: number,
+  action: "retry" | "stop_for_review",
+): Record<string, unknown> {
+  const evaluation = injectedEvaluation();
+  return {
+    ...evaluation,
+    evaluation_id: `CEV-CYCLE00000${attempt}`,
+    run_id: `SRUN-CYCLE00000${attempt}`,
+    candidate_id: `SDC-CYCLE00000${attempt}`,
+    next_attempt_decision: {
+      action,
+      attempt,
+      max_attempts: 3,
+      reasons: ["Provenance compilation failed"],
+      blocking_receipt_ids: ["PRV-CYCLE000001"],
+    },
   };
 }
 

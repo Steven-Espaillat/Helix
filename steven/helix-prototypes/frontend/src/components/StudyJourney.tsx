@@ -16,6 +16,7 @@ type Props = {
   onValidate: () => void;
   onExecuteBodyWeight: () => void;
   onDraftBodyWeight: () => void;
+  onRetryBodyWeight: () => void;
   onEvaluateCandidate: () => void;
   onQueryCrossSection: () => void;
 };
@@ -32,6 +33,7 @@ export function StudyJourney({
   onValidate,
   onExecuteBodyWeight,
   onDraftBodyWeight,
+  onRetryBodyWeight,
   onEvaluateCandidate,
   onQueryCrossSection,
 }: Props) {
@@ -56,10 +58,17 @@ export function StudyJourney({
   const bodyWeightEligibility = workspace.section_run_eligibility.find(
     (item) => item.section_package_id === "section.5_2_3_body_weight",
   );
-  const bodyWeightRun = workspace.section_runs.at(-1);
-  const bodyWeightEvaluation = (workspace.candidate_evaluations ?? []).find(
+  const bodyWeightRuns = workspace.section_runs.filter(
+    (item) => item.receipt.section_package_id === "section.5_2_3_body_weight",
+  );
+  const bodyWeightRun = bodyWeightRuns.at(-1);
+  const bodyWeightEvaluations = workspace.candidate_evaluations ?? [];
+  const bodyWeightEvaluation = bodyWeightEvaluations.find(
     (item) => item.run_id === bodyWeightRun?.receipt.run_id,
   );
+  const canRetry =
+    bodyWeightEvaluation?.next_attempt_decision.action === "retry" &&
+    bodyWeightEvaluation.next_attempt_decision.attempt < 3;
   const bodyWeightQuery = (workspace.cross_section_queries ?? []).find(
     (item) => item.run_id === bodyWeightRun?.receipt.run_id,
   );
@@ -257,17 +266,82 @@ export function StudyJourney({
               {bodyWeightEligibility?.reasons.join(" ")}
             </p>
           )}
-          {bodyWeightRun && (
-            <div className="section-run-receipt" data-testid="section-run-receipt">
-              <strong>Codex SDK receipt</strong>
-              <span>{bodyWeightRun.receipt.candidate_id}</span>
-              <code>{bodyWeightRun.receipt.candidate_hash}</code>
-              <span>{bodyWeightRun.receipt.skill_name}</span>
-              <code>{bodyWeightRun.receipt.skill_hash}</code>
-              <span>Thread {bodyWeightRun.receipt.codex_thread_id}</span>
-              <code>Envelope {bodyWeightRun.receipt.envelope_hash}</code>
-              <span>Review Scaffold Revision {bodyWeightRun.receipt.review_scaffold_revision}</span>
-            </div>
+          {bodyWeightRuns.map((run) => {
+            const evaluation = bodyWeightEvaluations.find((item) => item.run_id === run.receipt.run_id);
+            const isLatest = run.receipt.run_id === bodyWeightRun?.receipt.run_id;
+            return (
+              <div
+                className="section-run-receipt"
+                key={run.receipt.run_id}
+                data-testid={`candidate-attempt-${run.candidate.attempt}`}
+              >
+                <strong>
+                  Candidate attempt {run.candidate.attempt} of 3
+                </strong>
+                {isLatest ? (
+                  <span data-testid="section-run-receipt">{run.receipt.candidate_id}</span>
+                ) : (
+                  <span>{run.receipt.candidate_id}</span>
+                )}
+                <code>{run.receipt.candidate_hash}</code>
+                <span>{run.receipt.skill_name}</span>
+                <code>{run.receipt.skill_hash}</code>
+                <span>Thread {run.receipt.codex_thread_id}</span>
+                <code>Envelope {run.receipt.envelope_hash}</code>
+                <span>Review Scaffold Revision {run.receipt.review_scaffold_revision}</span>
+                {evaluation && (
+                  <div
+                    className="candidate-attempt-evaluation"
+                    data-testid={isLatest ? "candidate-evaluation" : `candidate-evaluation-${run.candidate.attempt}`}
+                  >
+                    <strong>Candidate evaluation</strong>
+                    <span data-testid={isLatest ? "evaluation-id" : undefined}>{evaluation.evaluation_id}</span>
+                    <code data-testid={isLatest ? "evaluation-candidate-hash" : undefined}>
+                      {evaluation.candidate_hash}
+                    </code>
+                    <span data-testid={isLatest ? "provenance-status" : undefined}>
+                      Provenance {evaluation.provenance_receipt.status}
+                    </span>
+                    {isLatest &&
+                      evaluation.provenance_receipt.bindings.map((item) => (
+                        <code key={item.location} data-testid={`provenance-binding-${item.location}`}>
+                          {item.claim_id} {item.claim_hash} {item.artifact_hash}
+                        </code>
+                      ))}
+                    <span data-testid={isLatest ? "study-output-status" : undefined}>
+                      Study output {evaluation.study_output_evaluation_receipt.status}{" "}
+                      {evaluation.study_output_evaluation_receipt.enforcement_class}
+                    </span>
+                    <span data-testid={isLatest ? "conformance-status" : undefined}>
+                      Conformance {evaluation.template_conformance_receipt.status}
+                    </span>
+                    {isLatest &&
+                      evaluation.template_conformance_receipt.results.map((item) => (
+                        <span key={item.rule_id} data-testid={`conformance-${item.rule_id}`}>
+                          {item.rule_id} {item.check_kind} {item.status}
+                        </span>
+                      ))}
+                    <span data-testid={isLatest ? "next-attempt-action" : undefined}>
+                      Next attempt {evaluation.next_attempt_decision.action}
+                    </span>
+                    <code data-testid={isLatest ? "evaluation-hash" : undefined}>
+                      {evaluation.hashes.evaluation}
+                    </code>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {canRetry && (
+            <button
+              className="button secondary wide"
+              type="button"
+              onClick={onRetryBodyWeight}
+              disabled={commandBusy}
+              data-testid="retry-body-weight"
+            >
+              {sectionRunBusy ? "Retrying with Codex…" : "Retry candidate"}
+            </button>
           )}
           <button
             className="button secondary wide"
@@ -287,37 +361,6 @@ export function StudyJourney({
           >
             {queryBusy ? "Querying dependencies…" : "Query declared dependencies"}
           </button>
-          {bodyWeightEvaluation && (
-            <div className="section-run-receipt" data-testid="candidate-evaluation">
-              <strong>Candidate evaluation</strong>
-              <span data-testid="evaluation-id">{bodyWeightEvaluation.evaluation_id}</span>
-              <code data-testid="evaluation-candidate-hash">{bodyWeightEvaluation.candidate_hash}</code>
-              <span data-testid="provenance-status">
-                Provenance {bodyWeightEvaluation.provenance_receipt.status}
-              </span>
-              {bodyWeightEvaluation.provenance_receipt.bindings.map((item) => (
-                <code key={item.location} data-testid={`provenance-binding-${item.location}`}>
-                  {item.claim_id} {item.claim_hash} {item.artifact_hash}
-                </code>
-              ))}
-              <span data-testid="study-output-status">
-                Study output {bodyWeightEvaluation.study_output_evaluation_receipt.status}{" "}
-                {bodyWeightEvaluation.study_output_evaluation_receipt.enforcement_class}
-              </span>
-              <span data-testid="conformance-status">
-                Conformance {bodyWeightEvaluation.template_conformance_receipt.status}
-              </span>
-              {bodyWeightEvaluation.template_conformance_receipt.results.map((item) => (
-                <span key={item.rule_id} data-testid={`conformance-${item.rule_id}`}>
-                  {item.rule_id} {item.check_kind} {item.status}
-                </span>
-              ))}
-              <span data-testid="next-attempt-action">
-                Next attempt {bodyWeightEvaluation.next_attempt_decision.action}
-              </span>
-              <code data-testid="evaluation-hash">{bodyWeightEvaluation.hashes.evaluation}</code>
-            </div>
-          )}
           {bodyWeightQuery && (
             <div className="section-run-receipt" data-testid="cross-section-query">
               <strong>Cross-section query</strong>

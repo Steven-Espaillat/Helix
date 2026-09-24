@@ -6,9 +6,11 @@ from pathlib import Path
 from uuid import uuid4
 
 from jsonschema import Draft202012Validator
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .agents.codex_section_agent import SectionAgent
+from .drafting_cycles import RejectAttempt, admit_attempt, cycle_fingerprint, load_recorded_attempts
 from .repository import StudyPackageRepository
 from .review_scaffolds import assemble_review_scaffold, record_if_changed
 from .schemas import (
@@ -59,7 +61,7 @@ def governed_versions_fingerprint(pinned_run: PinnedRun) -> str:
 
 
 class SectionRunService:
-    def __init__(self, session: Session, agent: SectionAgent, repository_root: Path):
+    def __init__(self, session: Session, agent: SectionAgent | None, repository_root: Path):
         self.session = session
         self.agent = agent
         self.repository_root = repository_root
@@ -106,6 +108,7 @@ class SectionRunService:
         run_id: str,
         event_id: str,
         candidate_id: str | None = None,
+        extra_blockers: tuple[str, ...] = (),
     ) -> StudyEvidencePackage:
         revision = assemble_review_scaffold(
             package,
@@ -113,6 +116,7 @@ class SectionRunService:
             run_id=run_id,
             event_id=event_id,
             candidate_id=candidate_id,
+            extra_blockers=extra_blockers,
         )
         schema = self._load_json(self.contracts / "review-scaffold-revision.schema.json")
         return record_if_changed(package, revision, schema)
@@ -229,24 +233,58 @@ class SectionRunService:
         pinned_run = package.pinned_run
         if pinned_run is None:
             raise SectionRunConflictError("Freeze the authorized manifest first")
+        if self.agent is None:
+            raise SectionRunUnavailableError("The Codex SDK section run failed")
 
         run_id = f"SRUN-{uuid4().hex[:12].upper()}"
         envelope = self._build_envelope(package, run_id, pinned_run)
-        envelope_hash = canonical_hash(envelope)
-        row = self.repository.add_section_run(
-            run_id=run_id,
-            study_id=study_id,
-            section_package_id=SECTION_PACKAGE_ID,
-            idempotency_key=command.idempotency_key,
-            request_hash=request_hash,
-            envelope=envelope,
+        recorded = load_recorded_attempts(
+            self.repository.list_section_runs(study_id),
+            self.repository.list_candidate_evaluations(study_id),
+            command.section_package_id,
         )
+        admission = admit_attempt(recorded, cycle_fingerprint(envelope))
+        if isinstance(admission, RejectAttempt):
+            raise SectionRunConflictError(admission.message)
+        if admission.retry_failures:
+            envelope = {
+                **envelope,
+                "structured_failures": [
+                    *list(envelope["structured_failures"]),
+                    *admission.retry_failures,
+                ],
+            }
+            schema = self._load_json(self.contracts / "section-execution-envelope.schema.json")
+            errors = list(Draft202012Validator(schema).iter_errors(envelope))
+            if errors:
+                raise CandidateValidationError(errors[0].message)
+        envelope_hash = canonical_hash(envelope)
+        try:
+            row = self.repository.add_section_run(
+                run_id=run_id,
+                study_id=study_id,
+                section_package_id=SECTION_PACKAGE_ID,
+                attempt=admission.attempt,
+                idempotency_key=command.idempotency_key,
+                request_hash=request_hash,
+                envelope=envelope,
+            )
+        except IntegrityError as error:
+            self.session.rollback()
+            prior_receipt = self._replay(study_id, command.idempotency_key, request_hash)
+            if prior_receipt is not None:
+                return prior_receipt
+            raise SectionRunConflictError(
+                "A Candidate Attempt is already recorded for this cycle slot"
+            ) from error
         candidate_schema = self._load_json(self.contracts / "section-draft-candidate.schema.json")
         skill_hash = self._file_hash(self.skill_path)
         candidate_id = f"SDC-{uuid4().hex[:12].upper()}"
         prompt = self._prompt(
             envelope=envelope,
             candidate_id=candidate_id,
+            drafting_cycle_id=admission.drafting_cycle_id,
+            attempt=admission.attempt,
             thread_receipt_instruction=(
                 "Set agent_receipt.thread_id to {{CODEX_THREAD_ID}}. "
                 f"Set skill_name to {SKILL_NAME} and skill_hash to {skill_hash}."
@@ -267,6 +305,8 @@ class SectionRunService:
                 schema=candidate_schema,
                 run_id=run_id,
                 candidate_id=candidate_id,
+                drafting_cycle_id=admission.drafting_cycle_id,
+                attempt=admission.attempt,
                 thread_id=result.thread_id,
                 skill_hash=skill_hash,
                 executor_receipt_ids=[
@@ -429,6 +469,8 @@ class SectionRunService:
         schema: dict[str, object],
         run_id: str,
         candidate_id: str,
+        drafting_cycle_id: str,
+        attempt: int,
         thread_id: str,
         skill_hash: str,
         executor_receipt_ids: list[str],
@@ -447,6 +489,8 @@ class SectionRunService:
             "section_id": SECTION_ID,
             "section_package_id": SECTION_PACKAGE_ID,
             "section_package_version": "0.1.0",
+            "drafting_cycle_id": drafting_cycle_id,
+            "attempt": attempt,
         }
         for field, value in expected.items():
             if getattr(candidate, field) != value:
@@ -487,6 +531,8 @@ class SectionRunService:
         *,
         envelope: dict[str, object],
         candidate_id: str,
+        drafting_cycle_id: str,
+        attempt: int,
         thread_receipt_instruction: str,
     ) -> str:
         return (
@@ -494,7 +540,7 @@ class SectionRunService:
             "Return exactly one JSON object that matches the supplied output schema. "
             f"Use candidate_id {candidate_id}, run_id {envelope['run_id']}, section_id {SECTION_ID}, "
             f"section_package_id {SECTION_PACKAGE_ID}, section_package_version 0.1.0, "
-            "drafting_cycle_id CYCLE-BW-001, and attempt 1. Cite only C-BW-HIGH. "
+            f"drafting_cycle_id {drafting_cycle_id}, and attempt {attempt}. Cite only C-BW-HIGH. "
             "Write one factual span containing the exact text '286.2 g'. "
             f"{thread_receipt_instruction} Envelope: "
             f"{json.dumps(envelope, separators=(',', ':'), sort_keys=True)}"

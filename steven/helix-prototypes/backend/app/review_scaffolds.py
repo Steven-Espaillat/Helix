@@ -17,6 +17,7 @@ def assemble_review_scaffold(
     run_id: str,
     event_id: str,
     candidate_id: str | None = None,
+    extra_blockers: tuple[str, ...] = (),
 ) -> dict[str, object]:
     now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     prior = package.review_scaffold_revisions
@@ -34,6 +35,7 @@ def assemble_review_scaffold(
             section.title,
             by_package,
             candidate_id,
+            extra_blockers,
         )
         for section in package.report_sections
     ]
@@ -95,6 +97,7 @@ def _section_entry(
     heading: str,
     by_package: dict[str, SectionRunEligibility],
     candidate_id: str | None,
+    extra_blockers: tuple[str, ...] = (),
 ) -> dict[str, object]:
     display_id = {
         "S5": "5_2_3_body_weight",
@@ -115,7 +118,7 @@ def _section_entry(
         return _needs_review(
             display_id,
             heading,
-            ["VR-004", f"PROMOTION-DISABLED-{BODY_WEIGHT_PACKAGE_ID}"],
+            ["VR-004", f"PROMOTION-DISABLED-{BODY_WEIGHT_PACKAGE_ID}", *extra_blockers],
             artifact_ids=[candidate_id],
             validated_claim_ids=["C-BW-HIGH"],
         )

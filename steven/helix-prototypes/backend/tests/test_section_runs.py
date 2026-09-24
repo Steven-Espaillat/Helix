@@ -64,6 +64,10 @@ class FakeSectionAgent:
         candidate_id = re.search(r"candidate_id (SDC-[A-Z0-9-]+)", prompt).group(1)
         run_id = re.search(r"run_id (SRUN-[A-Z0-9-]+)", prompt).group(1)
         skill_hash = re.search(r"skill_hash to (sha256:[a-f0-9]{64})", prompt).group(1)
+        cycle_match = re.search(r"drafting_cycle_id ([A-Z0-9-]+)", prompt)
+        attempt_match = re.search(r"and attempt (\d+)", prompt)
+        drafting_cycle_id = cycle_match.group(1) if cycle_match else "CYCLE-BW-001"
+        attempt = int(attempt_match.group(1)) if attempt_match else 1
         claim_ids = ["C-NOT-ALLOWED"] if self.mode == "unapproved" else ["C-BW-HIGH"]
         span_claim_ids = claim_ids
         content: object = "Terminal high-dose body weight was 286.2 g."
@@ -101,8 +105,8 @@ class FakeSectionAgent:
             "section_id": "5_2_3_body_weight",
             "section_package_id": "section.5_2_3_body_weight",
             "section_package_version": "0.1.0",
-            "drafting_cycle_id": "CYCLE-BW-001",
-            "attempt": 1,
+            "drafting_cycle_id": drafting_cycle_id,
+            "attempt": attempt,
             "validated_claim_ids": claim_ids,
             "content_blocks": body_weight_blocks(self.mode, content, span_claim_ids),
             "executor_receipt_ids": (

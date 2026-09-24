@@ -902,9 +902,10 @@ code {
   font-size: 9px;
 }
 
-.section-run-receipt strong {
-  color: var(--ink-900);
-  font-size: 11px;
+.section-run-receipt .candidate-attempt-evaluation {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #92c4df;
 }
 
 .section-run-receipt code {

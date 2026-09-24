@@ -56,12 +56,15 @@ export async function runDataValidation(studyId: string): Promise<DataValidation
   return value;
 }
 
-export async function runSectionAgent(studyId: string): Promise<SectionRunReceipt> {
+export async function runSectionAgent(
+  studyId: string,
+  idempotencyKey = `workbench-${studyId}-body-weight-v1`,
+): Promise<SectionRunReceipt> {
   const value = await request(`/studies/${encodeURIComponent(studyId)}/section-runs`, {
     method: "POST",
     body: JSON.stringify({
       section_package_id: "section.5_2_3_body_weight",
-      idempotency_key: `workbench-${studyId}-body-weight-v1`,
+      idempotency_key: idempotencyKey,
     }),
   });
   assertSectionRunReceipt(value);

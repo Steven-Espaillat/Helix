@@ -3,10 +3,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .contract_schema import draft202012_validator
 from .cross_section_queries import execute_cross_section_query
+from .drafting_cycles import CAP_BLOCKER_ID, MAX_ATTEMPTS
 from .provenance_compiler import allowed_claims_for, compile_provenance
 from .repository import StudyPackageRepository
 from .run_plans import canonical_hash
@@ -25,10 +27,9 @@ from .schemas import (
     TemplateConformanceReceipt,
     WorkflowEvent,
 )
+from .section_runs import SectionRunService
 from .study_output_evaluation import evaluate_study_output
 from .template_conformance import evaluate_template_conformance
-
-MAX_ATTEMPTS = 3
 
 
 class CandidateEvaluationConflictError(RuntimeError):
@@ -66,8 +67,22 @@ class CandidateEvaluationService:
         if canonical_hash(stored.candidate) != original_hash:
             raise CandidateEvaluationConflictError("Evaluation must not rewrite the stored candidate")
         now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        event_id = f"EV-{uuid4().hex[:12].upper()}"
+        extra_blockers = (
+            (CAP_BLOCKER_ID,)
+            if evaluation.next_attempt_decision.action == "stop_for_review"
+            else ()
+        )
+        if extra_blockers:
+            package = SectionRunService(self.session, None, self.repository_root).persist_contract_revision(
+                package,
+                run_id=run_id,
+                event_id=event_id,
+                candidate_id=evaluation.candidate_id,
+                extra_blockers=extra_blockers,
+            )
         event = WorkflowEvent(
-            event_id=f"EV-{uuid4().hex[:12].upper()}",
+            event_id=event_id,
             event="candidate_evaluated",
             actor="HELIX candidate evaluation",
             timestamp=now,
@@ -81,14 +96,23 @@ class CandidateEvaluationService:
         )
         updated = package.model_copy(update={"events": [*package.events, event]})
         self.repository.save(updated)
-        self.repository.add_candidate_evaluation(
-            study_id=study_id,
-            run_id=run_id,
-            candidate_id=evaluation.candidate_id,
-            idempotency_key=command.idempotency_key,
-            request_hash=request_hash,
-            evaluation=evaluation,
-        )
+        try:
+            self.repository.add_candidate_evaluation(
+                study_id=study_id,
+                run_id=run_id,
+                candidate_id=evaluation.candidate_id,
+                idempotency_key=command.idempotency_key,
+                request_hash=request_hash,
+                evaluation=evaluation,
+            )
+        except IntegrityError as error:
+            self.session.rollback()
+            prior = self._replay_evaluation(study_id, command.idempotency_key, request_hash)
+            if prior is not None:
+                return prior.model_copy(update={"idempotent_replay": True})
+            raise CandidateEvaluationConflictError(
+                "A Candidate Attempt evaluation is already recorded"
+            ) from error
         self.repository.append_event(
             study_id=study_id,
             event_type=event.event,
