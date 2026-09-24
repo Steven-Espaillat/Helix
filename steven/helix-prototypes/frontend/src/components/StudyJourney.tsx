@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { PlannerMode, Workspace } from "@/lib/types";
 
+import { ArrowIcon, CheckIcon } from "./icons";
+
 type Props = {
   workspace: Workspace;
   planner: PlannerMode;
@@ -180,7 +182,9 @@ export function StudyJourney({
           <div className="check-list">
             {stage.checks.map((check) => (
               <div className="check-row" key={check}>
-                <span className="check-icon">✓</span>
+                <span className="check-icon">
+                  <CheckIcon size={12} />
+                </span>
                 <span>{check}</span>
               </div>
             ))}
@@ -193,7 +197,9 @@ export function StudyJourney({
               </div>
               {workspace.manifest.map((entry) => (
                 <div className="source-manifest-row" key={entry.artifact_id}>
-                  <span className="manifest-lock">✓</span>
+                  <span className="manifest-lock">
+                    <CheckIcon size={12} />
+                  </span>
                   <div>
                     <strong>{entry.name}</strong>
                     <span>
@@ -224,7 +230,7 @@ export function StudyJourney({
               <code>{stage.input_detail}</code>
             </div>
             <div className="flow-arrow" aria-hidden="true">
-              →
+              <ArrowIcon size={16} />
             </div>
             <div className="flow-node output">
               <span>Output</span>
@@ -872,7 +878,7 @@ function PackageNode({ label, value, detail }: { label: string; value: string; d
 function MapArrow() {
   return (
     <div className="map-arrow" aria-hidden="true">
-      →
+      <ArrowIcon size={14} />
     </div>
   );
 }

@@ -46,8 +46,9 @@ test("runs the synthetic study from validation through explicit export", async (
 
   await page.goto("/");
   await expect(page.getByTestId("helix-workbench")).toBeVisible();
-  await expect(page.getByText("Synthetic / not for submission", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("release-status")).toHaveText("blocked");
+  await expect(page.getByText("Synthetic data · Not for submission", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("release-status")).toHaveText("Release blocked");
+  await expect(page.getByTestId("release-status")).toHaveAttribute("data-status", "blocked");
   await expect(page.getByTestId("draft-body-weight")).toBeDisabled();
   await expect(page.getByTestId("evaluate-candidate")).toBeDisabled();
   await expect(page.getByTestId("query-cross-section")).toBeDisabled();
@@ -88,9 +89,6 @@ test("runs the synthetic study from validation through explicit export", async (
   expect(triggeringEventId).toBeTruthy();
   await expect(page.getByTestId("review-scaffold-history")).toContainText(String(triggeringEventId));
   await expect(page.getByText("3", { exact: true }).first()).toBeVisible();
-  await page.getByRole("button", { name: /Report assembly/ }).click();
-  await expect(page.getByTestId("review-scaffold-history")).toHaveCount(0);
-  await page.getByRole("button", { name: /Study journey/ }).click();
   const runPlan = page.getByTestId("run-plan");
   await expect(runPlan.getByText(/^RUN-/)).toBeVisible();
   await expect(runPlan.getByText("REPEAT_DOSE_28D_RODENT", { exact: true })).toBeVisible();
@@ -124,7 +122,6 @@ test("runs the synthetic study from validation through explicit export", async (
   );
   await page.screenshot({ path: "../evidence/helix-body-weight-validation.png", fullPage: true });
 
-  await page.getByRole("button", { name: /Evidence chain/ }).click();
   await expect(page.getByTestId("evidence-chain")).toBeVisible();
   await expect(page.getByText("286.2 g", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("10 exact records", { exact: true })).toBeVisible();
@@ -147,7 +144,6 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByText("Source and claim agree.", { exact: true })).toBeVisible();
   await expect(page.getByText("agent source severity match", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: /Report assembly/ }).click();
   await expect(page.getByRole("heading", { name: "Anatomic pathology" })).toBeVisible();
   await expect(
     page.locator(".report-paper").getByText("The pattern draft says moderate.", { exact: false }),
@@ -169,16 +165,16 @@ test("runs the synthetic study from validation through explicit export", async (
   await recordApproval(page, "Quality Assurance Unit statement");
   await recordApproval(page, "Study director approval");
 
-  await expect(page.getByTestId("release-status")).toHaveText("ready for signature");
+  await expect(page.getByTestId("release-status")).toHaveText("Ready for signature");
   await expect(page.getByText("FDA approved")).toHaveCount(0);
   await expect(page.getByTestId("final-study-approval-scope")).toBeVisible();
   await page.getByTestId("record-final-study-approval").click();
   await expect(page.getByTestId("approval-current")).toHaveText("current");
   await expect(page.getByTestId("approval-manifest-hash")).toHaveText(/^sha256:[a-f0-9]{64}$/);
-  await expect(page.getByTestId("release-status")).toHaveText("ready for export");
+  await expect(page.getByTestId("release-status")).toHaveText("Ready for export");
   await expect(page.getByTestId("export-package")).toBeEnabled();
   await page.getByTestId("export-package").click();
-  await expect(page.getByTestId("release-status")).toHaveText("exported");
+  await expect(page.getByTestId("release-status")).toHaveText("Package exported");
   await expect(page.getByText(/\d+ approved artifacts exported\. Status: exported\./)).toBeVisible();
   await expect(page.getByText("FDA approved")).toHaveCount(0);
 
@@ -412,7 +408,6 @@ test("renders predecessor run identity and carry-forward counts from the workspa
   });
 
   await page.goto("/");
-  await page.getByRole("button", { name: /Study journey/ }).click();
   await expect(page.getByTestId("superseding-run")).toBeVisible();
   await expect(page.getByTestId("predecessor-run-id")).toHaveText("RUN-PRED00000001");
   await expect(page.getByTestId("supersession-reason")).toHaveText(
@@ -436,7 +431,6 @@ test("renders the exact Final Study Approval scope from the workspace", async ({
   });
 
   await page.goto("/");
-  await page.getByRole("button", { name: /Report assembly/ }).click();
   await expect(page.getByTestId("final-study-approval-scope")).toBeVisible();
   await expect(page.getByTestId("approval-current")).toHaveText("current");
   await expect(page.getByTestId("approval-manifest-hash")).toHaveText(INJECTED_HASH);

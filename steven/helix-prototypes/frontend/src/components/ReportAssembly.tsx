@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { artifactDownloadUrl } from "@/lib/api";
 import type { ApprovalRole, ValidationResult, Workspace } from "@/lib/types";
 
+import { CheckIcon } from "./icons";
+
 type Props = {
   workspace: Workspace;
   busy: string | null;
@@ -286,7 +288,10 @@ export function ReportAssembly({
                       <span>{approval ? `${approval.reviewer} · recorded` : approvalDetail(role)}</span>
                     </div>
                     {approval ? (
-                      <span className="approval-check">✓</span>
+                      <span className="approval-check">
+                        <CheckIcon size={14} />
+                        <span className="hx-sr">Recorded</span>
+                      </span>
                     ) : (
                       <button
                         type="button"
@@ -347,7 +352,10 @@ export function ReportAssembly({
               </div>
             )}
             {workspace.approval_current ? (
-              <span className="approval-check">✓</span>
+              <span className="approval-check">
+                        <CheckIcon size={14} />
+                        <span className="hx-sr">Recorded</span>
+                      </span>
             ) : (
               <button
                 type="button"
@@ -374,7 +382,7 @@ export function ReportAssembly({
               {workspace.export_artifacts.map((artifact) => (
                 <div key={artifact.artifact_id}>
                   <span className={`artifact-icon ${artifact.status}`}>
-                    {artifact.status === "exported" ? "✓" : ""}
+                    {artifact.status === "exported" ? <CheckIcon size={12} /> : null}
                   </span>
                   <div>
                     {artifact.status === "exported" ? (

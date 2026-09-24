@@ -20,24 +20,30 @@ import {
 import type { ApprovalRole, PlannerMode, Workspace } from "@/lib/types";
 
 import { EvidenceChain } from "./EvidenceChain";
+import { CloseIcon, HelixLogo, PersonIcon, RetryIcon } from "./icons";
 import { ReportAssembly } from "./ReportAssembly";
 import { StudyJourney } from "./StudyJourney";
-
-type View = "journey" | "evidence" | "report";
 
 type Props = {
   studyId: string;
 };
 
-const viewLabels: Record<View, { label: string; eyebrow: string }> = {
-  journey: { label: "Study journey", eyebrow: "Workflow" },
-  evidence: { label: "Evidence chain", eyebrow: "Traceability" },
-  report: { label: "Report assembly", eyebrow: "Structured output" },
+type ReleaseStatus = Workspace["release_gate"]["status"];
+
+// Presentation only: label and tone for the server-reported release gate
+// status. The shell never derives or recalculates release readiness.
+const releasePresentation: Record<ReleaseStatus, { label: string; tone: string }> = {
+  blocked: { label: "Release blocked", tone: "t-block" },
+  ready_for_review: { label: "Ready for review", tone: "t-warn" },
+  ready_for_signature: { label: "Ready for signature", tone: "t-warn" },
+  ready_for_export: { label: "Ready for export", tone: "t-pass" },
+  exported: { label: "Package exported", tone: "t-info" },
 };
+
+const SYNTHETIC_BADGE = "Synthetic data \u00b7 Not for submission";
 
 export function HelixWorkbench({ studyId }: Props) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [activeView, setActiveView] = useState<View>("journey");
   const [selectedClaimId, setSelectedClaimId] = useState("C-BW-HIGH");
   const [planner, setPlanner] = useState<PlannerMode>("fixture");
   const [busy, setBusy] = useState<string | null>(null);
@@ -290,153 +296,198 @@ export function HelixWorkbench({ studyId }: Props) {
 
   function inspectClaim(claimId: string) {
     setSelectedClaimId(claimId);
-    setActiveView("evidence");
+    window.requestAnimationFrame(() => {
+      document.getElementById("hx-evidence")?.scrollIntoView({ block: "start" });
+    });
   }
-
-  if (error && !workspace) {
-    return (
-      <main className="boot-state">
-        <div className="boot-mark">H</div>
-        <p className="eyebrow">HELIX could not load</p>
-        <h1>The workbench API is unavailable.</h1>
-        <p>{error}</p>
-        <button className="button primary" type="button" onClick={() => void refresh()}>
-          Retry connection
-        </button>
-      </main>
-    );
-  }
-
-  if (!workspace) {
-    return (
-      <main className="boot-state" aria-live="polite">
-        <div className="boot-mark pulse">H</div>
-        <p className="eyebrow">Loading synthetic study</p>
-        <h1>Building the evidence workspace.</h1>
-      </main>
-    );
-  }
-
-  const releaseStatus = workspace.release_gate.status;
 
   return (
-    <main className="app-shell" data-testid="helix-workbench">
-      <header className="topbar">
-        <div className="brand-block">
-          <div className="brand-mark" aria-hidden="true">
-            H
+    <div id="helix-e2e" className="hx-app" data-testid="helix-shell">
+      <header className="hx-top" data-testid="shell-header">
+        <div className="hx-brand">
+          <div className="hx-logo">
+            <HelixLogo />
+            <span>HELIX</span>
           </div>
-          <div>
-            <div className="brand-name">HELIX</div>
-            <div className="brand-subtitle">Nonclinical evidence workbench</div>
-          </div>
+          <div className="hx-vr" aria-hidden="true" />
+          {workspace ? (
+            <div className="hx-study" data-testid="study-identity" title={workspace.study.study_type_id}>
+              <strong className="hx-study-id" data-testid="study-id">
+                {workspace.study.study_id}
+              </strong>
+              <span data-testid="study-descriptor">{studyDescriptor(workspace)}</span>
+            </div>
+          ) : (
+            <div className="hx-study">
+              <strong className="hx-study-id">{studyId}</strong>
+              <span>{error ? "Workspace unavailable" : "Loading workspace"}</span>
+            </div>
+          )}
         </div>
-        <div className="study-heading">
-          <p className="eyebrow">Active study</p>
-          <div className="study-title-row">
-            <h1>{workspace.study.study_id}</h1>
-            <span className="quiet-separator">/</span>
-            <span>
-              {workspace.study.duration_days}-day {workspace.study.route} toxicity
-            </span>
-          </div>
-        </div>
-        <div className="topbar-status">
-          <span className="badge synthetic">Synthetic / not for submission</span>
-          <span className={`badge release ${releaseStatus}`} data-testid="release-status">
-            {formatStatus(releaseStatus)}
+        <div className="hx-top-meta">
+          <span className="hx-synthetic" data-testid="synthetic-badge">
+            {SYNTHETIC_BADGE}
+          </span>
+          {workspace && <ReleasePill workspace={workspace} />}
+          <span
+            className="hx-avatar"
+            role="img"
+            aria-label="Synthetic demo identity. Not an authenticated user or signer."
+            title="Synthetic demo identity (not authenticated)"
+            data-testid="demo-avatar"
+          >
+            <PersonIcon size={16} />
           </span>
         </div>
       </header>
 
-      <div className="workspace-nav-wrap">
-        <nav className="workspace-nav" aria-label="Workspace views">
-          {(Object.keys(viewLabels) as View[]).map((view) => (
-            <button
-              className={activeView === view ? "view-tab active" : "view-tab"}
-              key={view}
-              type="button"
-              aria-current={activeView === view ? "page" : undefined}
-              onClick={() => setActiveView(view)}
-            >
-              <span>{viewLabels[view].eyebrow}</span>
-              {viewLabels[view].label}
+      {!workspace && error ? (
+        <main className="hx-main">
+          <section className="hx-card hx-boundary-state" role="alert" aria-labelledby="hx-load-error">
+            <div className="hx-kicker">HELIX could not load</div>
+            <h1 id="hx-load-error">The workbench API is unavailable.</h1>
+            <p className="hx-sub">{error}</p>
+            <button className="hx-btn primary" type="button" onClick={() => void refresh()}>
+              <RetryIcon size={16} />
+              Retry connection
             </button>
-          ))}
-        </nav>
-        <div className="nav-meta">
-          <span>Template {workspace.report.template.version}</span>
-          <span>{workspace.report.template.ctd_location}</span>
-        </div>
-      </div>
-
-      {(notice || error) && (
-        <div className={error ? "notice error" : "notice"} role="status">
-          <span>{error ?? notice}</span>
-          <button
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => {
-              setError(null);
-              setNotice(null);
-            }}
+          </section>
+        </main>
+      ) : !workspace ? (
+        <main className="hx-main">
+          <section className="hx-card hx-boundary-state" role="status" aria-live="polite">
+            <span className="hx-spin" aria-hidden="true" />
+            <div className="hx-kicker">Loading synthetic study</div>
+            <h1>Building the evidence workspace.</h1>
+            <p className="hx-sub">Requesting the workspace from the HELIX API.</p>
+          </section>
+        </main>
+      ) : (
+        <main className="hx-main" data-testid="helix-workbench">
+          <h1 className="hx-sr">HELIX report workspace for {workspace.study.study_id}</h1>
+          <section
+            className="hx-stepper hx-reserved"
+            aria-labelledby="hx-progress-heading"
+            data-testid="progress-region"
           >
-            Close
-          </button>
-        </div>
+            <div className="hx-stepper-head">
+              <div className="hx-progress">
+                <span className="hx-kicker" id="hx-progress-heading">
+                  Journey progress
+                </span>
+                <span className="hx-sub">
+                  Server workflow state{" "}
+                  <span className="hx-mono" data-testid="workflow-state">
+                    {workspace.workflow_state}
+                  </span>
+                </span>
+              </div>
+              <span className="hx-sub">
+                The stage-gated progress bar arrives with the server journey projection.
+              </span>
+            </div>
+          </section>
+
+          {(notice || error) && (
+            <div className={error ? "hx-notice t-block" : "hx-notice t-info"} role="status">
+              <span>{error ?? notice}</span>
+              <button
+                className="hx-btn sm"
+                type="button"
+                aria-label="Dismiss message"
+                onClick={() => {
+                  setError(null);
+                  setNotice(null);
+                }}
+              >
+                <CloseIcon size={14} />
+                Close
+              </button>
+            </div>
+          )}
+
+          <section className="hx-stage-view" aria-label="Stage view" data-testid="stage-view">
+            <StudyJourney
+              workspace={workspace}
+              planner={planner}
+              validationBusy={busy === "validation"}
+              dataValidationBusy={busy === "data-validation"}
+              sectionRunBusy={busy === "section-run"}
+              evaluationBusy={busy === "candidate-evaluation"}
+              queryBusy={busy === "cross-section-query"}
+              promotionBusy={busy === "section-promotion"}
+              revisionBusy={busy === "section-revision"}
+              onPlannerChange={setPlanner}
+              onValidate={() => void validate()}
+              onExecuteBodyWeight={() => void executeBodyWeight()}
+              onDraftBodyWeight={() => void draftBodyWeight()}
+              onReviseBodyWeight={() => void reviseBodyWeight()}
+              onRetryBodyWeight={() => void retryBodyWeight()}
+              onEvaluateCandidate={() => void evaluateBodyWeight()}
+              onQueryCrossSection={() => void queryBodyWeightFacts()}
+              onPromoteSectionDraft={() => void promoteBodyWeight()}
+            />
+            <div id="hx-evidence" className="hx-stage-block">
+              <EvidenceChain
+                workspace={workspace}
+                selectedClaimId={selectedClaimId}
+                onSelectClaim={setSelectedClaimId}
+              />
+            </div>
+            <ReportAssembly
+              workspace={workspace}
+              busy={busy}
+              onInspectClaim={inspectClaim}
+              onResolve={(resultId, message) => void resolve(resultId, message)}
+              onApprove={(role) => void approve(role)}
+              onFinalStudyApproval={() => void approveFinalStudy()}
+              onExport={() => void performExport()}
+            />
+          </section>
+
+          <footer className="hx-footer">
+            <span>Pattern test bed</span>
+            <span>Rule bundle helix-rules-1.0.0</span>
+            <span>Regulatory sources retrieved 2026-09-22</span>
+            <span>Not a validated production system</span>
+          </footer>
+        </main>
       )}
-
-      <div className="workspace-body">
-        {activeView === "journey" && (
-          <StudyJourney
-            workspace={workspace}
-            planner={planner}
-            validationBusy={busy === "validation"}
-            dataValidationBusy={busy === "data-validation"}
-            sectionRunBusy={busy === "section-run"}
-            evaluationBusy={busy === "candidate-evaluation"}
-            queryBusy={busy === "cross-section-query"}
-            promotionBusy={busy === "section-promotion"}
-            revisionBusy={busy === "section-revision"}
-            onPlannerChange={setPlanner}
-            onValidate={() => void validate()}
-            onExecuteBodyWeight={() => void executeBodyWeight()}
-            onDraftBodyWeight={() => void draftBodyWeight()}
-            onReviseBodyWeight={() => void reviseBodyWeight()}
-            onRetryBodyWeight={() => void retryBodyWeight()}
-            onEvaluateCandidate={() => void evaluateBodyWeight()}
-            onQueryCrossSection={() => void queryBodyWeightFacts()}
-            onPromoteSectionDraft={() => void promoteBodyWeight()}
-          />
-        )}
-        {activeView === "evidence" && (
-          <EvidenceChain
-            workspace={workspace}
-            selectedClaimId={selectedClaimId}
-            onSelectClaim={setSelectedClaimId}
-          />
-        )}
-        {activeView === "report" && (
-          <ReportAssembly
-            workspace={workspace}
-            busy={busy}
-            onInspectClaim={inspectClaim}
-            onResolve={(resultId, message) => void resolve(resultId, message)}
-            onApprove={(role) => void approve(role)}
-            onFinalStudyApproval={() => void approveFinalStudy()}
-            onExport={() => void performExport()}
-          />
-        )}
-      </div>
-
-      <footer className="app-footer">
-        <span>Pattern test bed</span>
-        <span>Rule bundle helix-rules-1.0.0</span>
-        <span>Regulatory sources retrieved 2026-09-22</span>
-        <span>Not a validated production system</span>
-      </footer>
-    </main>
+    </div>
   );
+}
+
+function ReleasePill({ workspace }: { workspace: Workspace }) {
+  const status = workspace.release_gate.status;
+  const presentation = releasePresentation[status] ?? {
+    label: formatStatus(status),
+    tone: "t-muted",
+  };
+  return (
+    <span
+      className={`hx-pill ${presentation.tone}`}
+      data-testid="release-status"
+      data-status={status}
+      data-workflow-state={workspace.workflow_state}
+      title={`Release gate ${formatStatus(status)}. Workflow state ${formatStatus(workspace.workflow_state)}.`}
+    >
+      {presentation.label}
+    </span>
+  );
+}
+
+function studyDescriptor(workspace: Workspace): string {
+  const { study, report } = workspace;
+  const plannedAnimals = study.dose_groups.reduce(
+    (total, group) => total + group.planned_n_per_sex * group.sexes.length,
+    0,
+  );
+  return [
+    `${study.duration_days}-day ${study.route} toxicity`,
+    study.species,
+    `${plannedAnimals} planned animals`,
+    `Template ${report.template.version}`,
+  ].join(" \u00b7 ");
 }
 
 function draftIdempotencyKey(studyId: string, workspace: Workspace | null): string {

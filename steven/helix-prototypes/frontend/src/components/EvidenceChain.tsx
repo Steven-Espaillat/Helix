@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { getEvidence } from "@/lib/api";
 import type { EvidenceChainData, Workspace } from "@/lib/types";
 
+import { ArrowIcon } from "./icons";
+
 type Props = {
   workspace: Workspace;
   selectedClaimId: string;
@@ -320,7 +322,7 @@ function ChainCard({
 function ChainConnector() {
   return (
     <div className="chain-connector" aria-hidden="true">
-      <span>→</span>
+      <ArrowIcon size={16} />
     </div>
   );
 }
