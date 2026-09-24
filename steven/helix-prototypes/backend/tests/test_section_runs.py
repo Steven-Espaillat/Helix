@@ -17,6 +17,7 @@ from app.models import AuditEventRow, SectionRunRow
 from app.repository import StudyPackageRepository
 from app.schemas import SectionRunCommand
 from app.section_runs import SectionRunService
+from app.template_contracts import evaluate_template_contract
 
 ROOT = Path(__file__).resolve().parents[2]
 STUDY_ID = "STUDY-HLX-028"
@@ -24,6 +25,29 @@ COMMAND = {
     "section_package_id": "section.5_2_3_body_weight",
     "idempotency_key": "workbench-STUDY-HLX-028-body-weight-v1",
 }
+
+
+def by_package(workspace: dict[str, object], package_id: str) -> dict[str, object]:
+    return next(
+        item
+        for item in workspace["section_run_eligibility"]
+        if item["section_package_id"] == package_id
+    )
+
+
+def assert_ready(eligibility: dict[str, object], package_id: str) -> None:
+    assert eligibility["section_package_id"] == package_id
+    assert eligibility["eligible"] is True
+    assert eligibility["reasons"] == []
+    assert eligibility["gate_results"]
+    assert all(item["status"] == "passed" for item in eligibility["gate_results"])
+    assert all(item["waivable"] is False for item in eligibility["gate_results"])
+    assert all(item["enforcement_class"] == "hard_blocker" for item in eligibility["gate_results"])
+    assert eligibility["impact_set"] == {
+        "origin_section_package_id": package_id,
+        "direct": [package_id],
+        "transitive": [],
+    }
 
 
 class FakeSectionAgent:
@@ -149,14 +173,19 @@ def test_section_run_records_candidate_receipt_scaffold_and_exact_replay() -> No
     client, engine = build_client(agent)
     with client:
         before = client.get(f"/api/v1/studies/{STUDY_ID}/workspace").json()
-        assert before["section_run_eligibility"][0]["eligible"] is False
+        assert by_package(before, "section.5_2_3_body_weight")["eligible"] is False
         validate(client)
         eligible = client.get(f"/api/v1/studies/{STUDY_ID}/workspace").json()
-        assert eligible["section_run_eligibility"][0] == {
-            "section_package_id": "section.5_2_3_body_weight",
-            "eligible": True,
-            "reasons": [],
-        }
+        body_weight = by_package(eligible, "section.5_2_3_body_weight")
+        discussion = by_package(eligible, "section.5_3_discussion")
+        assert_ready(body_weight, "section.5_2_3_body_weight")
+        assert_ready(discussion, "section.5_3_discussion")
+        assert [item["section_package_id"] for item in eligible["section_run_eligibility"]] == [
+            "section.5_2_3_body_weight",
+            "section.5_3_discussion",
+        ]
+        assert eligible["review_scaffold_revisions"][0]["sequence"] == 1
+        assert eligible["review_scaffold_revisions"][0]["section_impact_sets"] == []
 
         first = client.post(f"/api/v1/studies/{STUDY_ID}/section-runs", json=COMMAND)
         replay = client.post(f"/api/v1/studies/{STUDY_ID}/section-runs", json=COMMAND)
@@ -179,6 +208,8 @@ def test_section_run_records_candidate_receipt_scaffold_and_exact_replay() -> No
         assert stored["candidate"]["validated_claim_ids"] == ["C-BW-HIGH"]
         assert "286.2 g" in json.dumps(stored["candidate"])
         assert stored["review_scaffold"]["export_eligible"] is False
+        assert "section_impact_sets" in stored["review_scaffold"]
+        assert by_package(workspace, "section.5_3_discussion")["eligible"] is True
         body_weight_section = next(
             section
             for section in stored["review_scaffold"]["sections"]
@@ -457,7 +488,7 @@ def test_inapplicable_section_package_is_excluded_and_cannot_execute(tmp_path: P
         )
         validate(client)
         workspace = client.get(f"/api/v1/studies/{STUDY_ID}/workspace").json()
-        eligibility = workspace["section_run_eligibility"][0]
+        eligibility = by_package(workspace, "section.5_2_3_body_weight")
         assert eligibility["eligible"] is False
         assert "The Section Package does not apply to the resolved study type" in eligibility["reasons"]
 
@@ -497,28 +528,31 @@ def test_eligibility_distinguishes_input_claim_grain_from_required_output_grain(
     engine.dispose()
 
 
-def test_template_contract_gates_inspect_the_pinned_template(tmp_path: Path) -> None:
+def test_template_contract_gates_inspect_the_pinned_template() -> None:
     template = json.loads((ROOT / "backend/app/data/report-template.json").read_text())
     section = next(item for item in template["sections"] if item["section_id"] == "S5")
     field = next(item for item in section["fields"] if item["field_id"] == "body-weight")
     field["expected_grain"] = "dose_group"
-    template_path = tmp_path / "report-template.json"
-    template_path.write_text(json.dumps(template))
     package_definition = json.loads(
         (ROOT / "skills/helix-evidence-pipeline/packages/sections/5_2_3_body_weight/package.json").read_text()
     )
-    service = object.__new__(SectionRunService)
-    service.template_path = template_path
 
-    failures = service._template_contract_gate_failures(package_definition)
+    failures = [
+        item.message
+        for item in evaluate_template_contract(package_definition, template)
+        if item.status == "blocked"
+    ]
 
     assert failures == ["Template Contract Gate body-weight-table-shape failed"]
 
     field["expected_grain"] = "dose_group_x_sex"
-    template_path.write_text(json.dumps(template))
     package_definition["required_claims"][0]["output_grain"] = "dose_group"
 
-    failures = service._template_contract_gate_failures(package_definition)
+    failures = [
+        item.message
+        for item in evaluate_template_contract(package_definition, template)
+        if item.status == "blocked"
+    ]
 
     assert failures == ["Template Contract Gate body-weight-table-shape failed"]
 

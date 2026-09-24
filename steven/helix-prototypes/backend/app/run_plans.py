@@ -136,17 +136,25 @@ class PinnedRunService:
             }
         )
         run_id = f"RUN-{run_seed.removeprefix('sha256:')[:16].upper()}"
-        if package.pinned_run is not None:
-            if package.pinned_run.run_id != run_id:
+        current = package.pinned_run
+        superseded = list(package.superseded_pinned_runs)
+        if current is not None:
+            if current.run_id == run_id:
+                self.repository.add_pinned_run(
+                    run_id=run_id,
+                    study_id=study_id,
+                    idempotency_key=command.idempotency_key,
+                    request_hash=request_hash,
+                )
+                self.session.commit()
+                return current
+            if command.supersession is None:
                 raise RunConflictError("The study already has a different immutable Pinned Run")
-            self.repository.add_pinned_run(
-                run_id=run_id,
-                study_id=study_id,
-                idempotency_key=command.idempotency_key,
-                request_hash=request_hash,
-            )
-            self.session.commit()
-            return package.pinned_run
+            if command.supersession.predecessor_run_id != current.run_id:
+                raise RunConflictError("Supersession must name the current Pinned Run")
+            superseded.append(current)
+        elif command.supersession is not None:
+            raise RunConflictError("Supersession requires a current Pinned Run")
         created_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
         plan = self._build_plan(
             package_definitions,
@@ -190,8 +198,14 @@ class PinnedRunService:
             run_plan=plan,
             receipt=receipt,
             event_history=[event],
+            predecessor_run_id=(
+                command.supersession.predecessor_run_id if command.supersession is not None else None
+            ),
+            supersession_reason=command.supersession.reason if command.supersession is not None else None,
         )
-        self.repository.save(package.model_copy(update={"pinned_run": pinned}))
+        self.repository.save(
+            package.model_copy(update={"pinned_run": pinned, "superseded_pinned_runs": superseded})
+        )
         self.repository.add_pinned_run(
             run_id=run_id,
             study_id=study_id,

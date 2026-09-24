@@ -275,6 +275,8 @@ class StudyEvidencePackage(StrictModel):
     events: list[WorkflowEvent]
     pinned_run: "PinnedRun | None" = None
     data_validation_executions: list["DataValidationExecution"] = Field(default_factory=list)
+    review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
+    superseded_pinned_runs: list["PinnedRun"] = Field(default_factory=list)
 
 
 class PlannerMode(StrEnum):
@@ -387,6 +389,19 @@ class RegulatoryReference(StrictModel):
     binding: bool
 
 
+class TemplateTableShape(StrictModel):
+    grain: str
+    row_axis: str
+    column_axis: str
+    value_columns: list[str] = Field(min_length=1)
+
+
+class TemplateStyleConstraints(StrictModel):
+    decimal_places: int = Field(ge=0, le=6)
+    unit_display: str
+    forbidden_terms: list[str] = Field(default_factory=list)
+
+
 class ReportFieldTemplate(StrictModel):
     field_id: str
     label: str
@@ -395,6 +410,10 @@ class ReportFieldTemplate(StrictModel):
     human_judgment: bool
     source_expectation: str
     regulatory_reference_ids: list[str]
+    location: str | None = None
+    unit: str | None = None
+    table_shape: TemplateTableShape | None = None
+    style_constraints: TemplateStyleConstraints | None = None
 
 
 class ReportSectionTemplate(StrictModel):
@@ -500,9 +519,15 @@ class StudyListItem(StrictModel):
     label: str
 
 
+class SupersessionRef(StrictModel):
+    predecessor_run_id: str = Field(min_length=1, max_length=80)
+    reason: str = Field(min_length=8, max_length=240)
+
+
 class FreezeRunCommand(StrictModel):
     actor: str = Field(min_length=2, max_length=120)
     idempotency_key: str = Field(min_length=8, max_length=160)
+    supersession: SupersessionRef | None = None
 
 
 class PlanningEvidence(StrictModel):
@@ -582,6 +607,8 @@ class PinnedRun(StrictModel):
     run_plan: RunPlan
     receipt: RunReceipt
     event_history: list[WorkflowEvent]
+    predecessor_run_id: str | None = None
+    supersession_reason: str | None = None
 
 
 class SectionRunCommand(StrictModel):
@@ -589,10 +616,29 @@ class SectionRunCommand(StrictModel):
     idempotency_key: str = Field(min_length=8, max_length=160)
 
 
+class TemplateContractGateResult(StrictModel):
+    gate_id: str
+    section_package_id: str
+    result_id: str
+    status: Literal["passed", "blocked"]
+    enforcement_class: Literal["hard_blocker"]
+    waivable: Literal[False]
+    check_kind: Literal["fields", "locations", "table_shapes", "labels", "units", "style_constraints"]
+    message: str
+
+
+class SectionImpactSet(StrictModel):
+    origin_section_package_id: str
+    direct: list[str]
+    transitive: list[str]
+
+
 class SectionRunEligibility(StrictModel):
     section_package_id: str
     eligible: bool
     reasons: list[str]
+    gate_results: list[TemplateContractGateResult]
+    impact_set: SectionImpactSet
 
 
 class SectionDraftCandidate(StrictModel):
@@ -654,6 +700,7 @@ class WorkspaceResponse(StrictModel):
     data_validation_executions: list[DataValidationExecution]
     section_run_eligibility: list[SectionRunEligibility]
     section_runs: list[StoredSectionRun]
+    review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
 
 
 class ExportReceipt(StrictModel):

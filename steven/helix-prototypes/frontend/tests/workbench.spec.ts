@@ -19,6 +19,9 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("release-status")).toHaveText("blocked");
   await expect(page.getByTestId("draft-body-weight")).toBeDisabled();
   await expect(page.getByTestId("section-run-ineligible")).toContainText("Run hybrid validation first");
+  await expect(page.getByTestId("template-contract-gates")).toBeVisible();
+  await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("blocked");
+  await expect(page.getByTestId("eligibility-section.5_3_discussion")).toHaveText("blocked");
   await expect(page.getByLabel("Study summary").getByText("1,662", { exact: true })).toBeVisible();
   await page.screenshot({ path: "../evidence/helix-workbench-initial.png", fullPage: true });
 
@@ -30,6 +33,18 @@ test("runs the synthetic study from validation through explicit export", async (
   await page.getByTestId("run-validation").click();
   await expect(page.getByRole("status")).toContainText("13 checks completed");
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
+  await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("ready");
+  await expect(page.getByTestId("eligibility-section.5_3_discussion")).toHaveText("ready");
+  const workspaceBeforeDraft = await request.get(`${apiRoot}/studies/STUDY-HLX-028/workspace`);
+  expect(workspaceBeforeDraft.ok()).toBeTruthy();
+  const eligibilityWorkspace: unknown = await workspaceBeforeDraft.json();
+  await assertRenderedEligibility(page, eligibilityWorkspace);
+  await expect(page.getByTestId("gate-TCR-BW-FIELDS")).toContainText("passed");
+  await expect(page.getByTestId("gate-TCR-DISC-FIELDS")).toContainText("passed");
+  await expect(page.getByTestId("impact-section.5_2_3_body_weight")).toContainText(
+    "origin section.5_2_3_body_weight",
+  );
+  await expect(page.getByTestId("review-scaffold-revision")).toBeVisible();
   await expect(page.getByText("3", { exact: true }).first()).toBeVisible();
   const runPlan = page.getByTestId("run-plan");
   await expect(runPlan.getByText(/^RUN-/)).toBeVisible();
@@ -130,6 +145,71 @@ test("runs the synthetic study from validation through explicit export", async (
   expect(browserErrors).toEqual([]);
 });
 
+test("keeps draft blocked when the API reports ineligible despite ready-looking claims", async ({
+  page,
+}) => {
+  let sectionRunPosts = 0;
+  await page.route("**/api/v1/studies/*/section-runs", async (route) => {
+    if (route.request().method() === "POST") {
+      sectionRunPosts += 1;
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "The Codex SDK adapter must not start." }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(withBlockedBodyWeight(workspace)),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("helix-workbench")).toBeVisible();
+  await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("blocked");
+  await expect(page.getByTestId("eligibility-section.5_3_discussion")).toHaveText("ready");
+  await expect(page.getByTestId("draft-body-weight")).toBeDisabled();
+  await expect(page.getByTestId("gate-TCR-BW-FIELDS")).toContainText("blocked");
+  expect(sectionRunPosts).toBe(0);
+});
+
+test("enables draft from backend eligibility even when claims look incomplete", async ({ page }) => {
+  let sectionRunPosts = 0;
+  await page.route("**/api/v1/studies/*/section-runs", async (route) => {
+    if (route.request().method() === "POST") {
+      sectionRunPosts += 1;
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "The test must not start a Codex thread." }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(withForcedEligibility(workspace, true)),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("ready");
+  await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
+  expect(sectionRunPosts).toBe(0);
+});
+
 async function recordApproval(page: import("@playwright/test").Page, label: string) {
   const row = page.locator(".approval-row").filter({ hasText: label });
   await row.getByRole("button", { name: "Record" }).click();
@@ -205,4 +285,120 @@ function isExportedWorkspace(value: unknown): boolean {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function withBlockedBodyWeight(workspace: unknown): unknown {
+  if (!isObject(workspace) || !Array.isArray(workspace.section_run_eligibility)) {
+    throw new Error("Workspace eligibility is missing.");
+  }
+  const claims = Array.isArray(workspace.claims) ? [...workspace.claims] : [];
+  if (!claims.some((item) => isObject(item) && item.claim_id === "C-BW-HIGH")) {
+    claims.push({
+      claim_id: "C-BW-HIGH",
+      section_id: "S5",
+      field_id: "body-weight",
+      value: 286.2,
+      unit: "g",
+      grain: "dose_group",
+      status: "validated",
+      claim_type: "mean",
+    });
+  } else {
+    workspace.claims = claims.map((item) =>
+      isObject(item) && item.claim_id === "C-BW-HIGH" ? { ...item, status: "validated" } : item,
+    );
+  }
+  return {
+    ...workspace,
+    claims,
+    section_run_eligibility: workspace.section_run_eligibility.map((item) => {
+      if (!isObject(item)) {
+        return item;
+      }
+      if (item.section_package_id === "section.5_2_3_body_weight") {
+        const gateResults = Array.isArray(item.gate_results) ? [...item.gate_results] : [];
+        const fieldsIndex = gateResults.findIndex(
+          (result) => isObject(result) && result.result_id === "TCR-BW-FIELDS",
+        );
+        const blockedFields = {
+          gate_id: "body-weight-template-fields",
+          section_package_id: "section.5_2_3_body_weight",
+          result_id: "TCR-BW-FIELDS",
+          status: "blocked",
+          enforcement_class: "hard_blocker",
+          waivable: false,
+          check_kind: "fields",
+          message: "Template Contract Gate body-weight-template-fields failed",
+        };
+        if (fieldsIndex >= 0) {
+          gateResults[fieldsIndex] = { ...gateResults[fieldsIndex], ...blockedFields };
+        } else {
+          gateResults.unshift(blockedFields);
+        }
+        return {
+          ...item,
+          eligible: false,
+          reasons: ["Template Contract Gate body-weight-template-fields failed"],
+          gate_results: gateResults,
+        };
+      }
+      return {
+        ...item,
+        eligible: true,
+        reasons: [],
+      };
+    }),
+  };
+}
+
+function withForcedEligibility(workspace: unknown, eligible: boolean): unknown {
+  if (!isObject(workspace) || !Array.isArray(workspace.section_run_eligibility)) {
+    throw new Error("Workspace eligibility is missing.");
+  }
+  return {
+    ...workspace,
+    claims: [],
+    section_run_eligibility: workspace.section_run_eligibility.map((item) =>
+      isObject(item)
+        ? {
+            ...item,
+            eligible,
+            reasons: eligible ? [] : ["blocked by test"],
+          }
+        : item,
+    ),
+  };
+}
+
+async function assertRenderedEligibility(
+  page: import("@playwright/test").Page,
+  workspace: unknown,
+) {
+  if (!isObject(workspace) || !Array.isArray(workspace.section_run_eligibility)) {
+    throw new Error("Workspace eligibility is missing.");
+  }
+  for (const item of workspace.section_run_eligibility) {
+    if (!isObject(item) || typeof item.section_package_id !== "string") {
+      throw new Error("Eligibility is missing a section package id.");
+    }
+    await expect(page.getByTestId(`eligibility-${item.section_package_id}`)).toHaveText(
+      item.eligible === true ? "ready" : "blocked",
+    );
+    if (!Array.isArray(item.gate_results) || !isObject(item.impact_set)) {
+      throw new Error("Eligibility is missing backend gate results.");
+    }
+    await expect(page.getByTestId(`impact-${item.section_package_id}`)).toContainText(
+      `origin ${String(item.impact_set.origin_section_package_id)}`,
+    );
+    for (const result of item.gate_results) {
+      if (!isObject(result) || typeof result.result_id !== "string") {
+        throw new Error("Gate result is missing a result id.");
+      }
+      const row = page.getByTestId(`gate-${result.result_id}`);
+      await expect(row).toContainText(String(result.status));
+      await expect(row).toContainText(String(result.check_kind));
+      await expect(row).toContainText(String(result.message));
+      await expect(row).toContainText(result.waivable === true ? "waivable" : "non-waivable");
+    }
+  }
 }

@@ -504,6 +504,7 @@ export interface components {
             actor: string;
             /** Idempotency Key */
             idempotency_key: string;
+            supersession?: components["schemas"]["SupersessionRef"] | null;
         };
         /** GateDecision */
         GateDecision: {
@@ -572,6 +573,8 @@ export interface components {
             governed_inputs: components["schemas"]["GovernedArtifact"][];
             /** Manifest Hash */
             manifest_hash: string;
+            /** Predecessor Run Id */
+            predecessor_run_id?: string | null;
             receipt: components["schemas"]["RunReceipt"];
             /** Run Id */
             run_id: string;
@@ -584,6 +587,8 @@ export interface components {
             /** Study Id */
             study_id: string;
             study_type_resolution: components["schemas"]["StudyTypeResolution"];
+            /** Supersession Reason */
+            supersession_reason?: string | null;
         };
         /** PlannerCapability */
         PlannerCapability: {
@@ -681,12 +686,18 @@ export interface components {
             human_judgment: boolean;
             /** Label */
             label: string;
+            /** Location */
+            location?: string | null;
             /** Regulatory Reference Ids */
             regulatory_reference_ids: string[];
             /** Required */
             required: boolean;
             /** Source Expectation */
             source_expectation: string;
+            style_constraints?: components["schemas"]["TemplateStyleConstraints"] | null;
+            table_shape?: components["schemas"]["TemplateTableShape"] | null;
+            /** Unit */
+            unit?: string | null;
         };
         /** ReportSectionTemplate */
         ReportSectionTemplate: {
@@ -852,6 +863,15 @@ export interface components {
             /** Validated Claim Ids */
             validated_claim_ids: string[];
         };
+        /** SectionImpactSet */
+        SectionImpactSet: {
+            /** Direct */
+            direct: string[];
+            /** Origin Section Package Id */
+            origin_section_package_id: string;
+            /** Transitive */
+            transitive: string[];
+        };
         /** SectionRunCommand */
         SectionRunCommand: {
             /** Idempotency Key */
@@ -863,6 +883,9 @@ export interface components {
         SectionRunEligibility: {
             /** Eligible */
             eligible: boolean;
+            /** Gate Results */
+            gate_results: components["schemas"]["TemplateContractGateResult"][];
+            impact_set: components["schemas"]["SectionImpactSet"];
             /** Reasons */
             reasons: string[];
             /** Section Package Id */
@@ -1030,6 +1053,64 @@ export interface components {
             /** Study Type Id */
             study_type_id: string | null;
         };
+        /** SupersessionRef */
+        SupersessionRef: {
+            /** Predecessor Run Id */
+            predecessor_run_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /** TemplateContractGateResult */
+        TemplateContractGateResult: {
+            /**
+             * Check Kind
+             * @enum {string}
+             */
+            check_kind: "fields" | "locations" | "table_shapes" | "labels" | "units" | "style_constraints";
+            /**
+             * Enforcement Class
+             * @constant
+             */
+            enforcement_class: "hard_blocker";
+            /** Gate Id */
+            gate_id: string;
+            /** Message */
+            message: string;
+            /** Result Id */
+            result_id: string;
+            /** Section Package Id */
+            section_package_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "blocked";
+            /**
+             * Waivable
+             * @constant
+             */
+            waivable: false;
+        };
+        /** TemplateStyleConstraints */
+        TemplateStyleConstraints: {
+            /** Decimal Places */
+            decimal_places: number;
+            /** Forbidden Terms */
+            forbidden_terms?: string[];
+            /** Unit Display */
+            unit_display: string;
+        };
+        /** TemplateTableShape */
+        TemplateTableShape: {
+            /** Column Axis */
+            column_axis: string;
+            /** Grain */
+            grain: string;
+            /** Row Axis */
+            row_axis: string;
+            /** Value Columns */
+            value_columns: string[];
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -1152,6 +1233,10 @@ export interface components {
             planner_capabilities: components["schemas"]["PlannerCapability"][];
             release_gate: components["schemas"]["GateDecision"];
             report: components["schemas"]["ReportAssembly"];
+            /** Review Scaffold Revisions */
+            review_scaffold_revisions?: {
+                [key: string]: unknown;
+            }[];
             /** Section Run Eligibility */
             section_run_eligibility: components["schemas"]["SectionRunEligibility"][];
             /** Section Runs */

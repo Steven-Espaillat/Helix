@@ -208,6 +208,12 @@ class StudyService:
             idempotency_key=f"validation:{run.run_id}",
             occurred_at=now,
         )
+        updated = self.section_runs.persist_contract_revision(
+            updated,
+            run_id=pinned_run.run_id,
+            event_id=event.event_id,
+        )
+        self.repository.save(updated)
         self.session.commit()
         return run
 
@@ -259,6 +265,11 @@ class StudyService:
         )
 
     def disposition(self, study_id: str, result_id: str, command: DispositionCommand) -> WorkspaceResponse:
+        if result_id.startswith("TCR-"):
+            raise WorkflowConflictError(
+                "Template Contract Gate failures are non-waivable. "
+                "Correct the governed template through a superseding run."
+            )
         package = self.repository.get(study_id, for_update=True)
         self._ensure_mutable(package)
         dvp_match = next(
@@ -606,8 +617,9 @@ class StudyService:
             ],
             pinned_run=self.pinned_runs.latest(package.study.study_id),
             data_validation_executions=package.data_validation_executions,
-            section_run_eligibility=[self.section_runs.eligibility(package)],
+            section_run_eligibility=self.section_runs.eligibilities(package),
             section_runs=self.repository.list_section_runs(package.study.study_id),
+            review_scaffold_revisions=package.review_scaffold_revisions,
         )
 
     @staticmethod

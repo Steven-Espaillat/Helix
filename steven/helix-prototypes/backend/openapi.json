@@ -871,6 +871,16 @@
             "minLength": 8,
             "title": "Idempotency Key",
             "type": "string"
+          },
+          "supersession": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupersessionRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1056,6 +1066,17 @@
             "title": "Manifest Hash",
             "type": "string"
           },
+          "predecessor_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predecessor Run Id"
+          },
           "receipt": {
             "$ref": "#/components/schemas/RunReceipt"
           },
@@ -1080,6 +1101,17 @@
           },
           "study_type_resolution": {
             "$ref": "#/components/schemas/StudyTypeResolution"
+          },
+          "supersession_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersession Reason"
           }
         },
         "required": [
@@ -1350,6 +1382,17 @@
             "title": "Label",
             "type": "string"
           },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
           "regulatory_reference_ids": {
             "items": {
               "type": "string"
@@ -1364,6 +1407,37 @@
           "source_expectation": {
             "title": "Source Expectation",
             "type": "string"
+          },
+          "style_constraints": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemplateStyleConstraints"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "table_shape": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemplateTableShape"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
           }
         },
         "required": [
@@ -1854,6 +1928,36 @@
         "title": "SectionDraftCandidate",
         "type": "object"
       },
+      "SectionImpactSet": {
+        "additionalProperties": false,
+        "properties": {
+          "direct": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Direct",
+            "type": "array"
+          },
+          "origin_section_package_id": {
+            "title": "Origin Section Package Id",
+            "type": "string"
+          },
+          "transitive": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Transitive",
+            "type": "array"
+          }
+        },
+        "required": [
+          "origin_section_package_id",
+          "direct",
+          "transitive"
+        ],
+        "title": "SectionImpactSet",
+        "type": "object"
+      },
       "SectionRunCommand": {
         "additionalProperties": false,
         "properties": {
@@ -1884,6 +1988,16 @@
             "title": "Eligible",
             "type": "boolean"
           },
+          "gate_results": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateContractGateResult"
+            },
+            "title": "Gate Results",
+            "type": "array"
+          },
+          "impact_set": {
+            "$ref": "#/components/schemas/SectionImpactSet"
+          },
           "reasons": {
             "items": {
               "type": "string"
@@ -1899,7 +2013,9 @@
         "required": [
           "section_package_id",
           "eligible",
-          "reasons"
+          "reasons",
+          "gate_results",
+          "impact_set"
         ],
         "title": "SectionRunEligibility",
         "type": "object"
@@ -2327,6 +2443,153 @@
         "title": "StudyTypeResolution",
         "type": "object"
       },
+      "SupersessionRef": {
+        "additionalProperties": false,
+        "properties": {
+          "predecessor_run_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Predecessor Run Id",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 240,
+            "minLength": 8,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "predecessor_run_id",
+          "reason"
+        ],
+        "title": "SupersessionRef",
+        "type": "object"
+      },
+      "TemplateContractGateResult": {
+        "additionalProperties": false,
+        "properties": {
+          "check_kind": {
+            "enum": [
+              "fields",
+              "locations",
+              "table_shapes",
+              "labels",
+              "units",
+              "style_constraints"
+            ],
+            "title": "Check Kind",
+            "type": "string"
+          },
+          "enforcement_class": {
+            "const": "hard_blocker",
+            "title": "Enforcement Class",
+            "type": "string"
+          },
+          "gate_id": {
+            "title": "Gate Id",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "result_id": {
+            "title": "Result Id",
+            "type": "string"
+          },
+          "section_package_id": {
+            "title": "Section Package Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "blocked"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "waivable": {
+            "const": false,
+            "title": "Waivable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gate_id",
+          "section_package_id",
+          "result_id",
+          "status",
+          "enforcement_class",
+          "waivable",
+          "check_kind",
+          "message"
+        ],
+        "title": "TemplateContractGateResult",
+        "type": "object"
+      },
+      "TemplateStyleConstraints": {
+        "additionalProperties": false,
+        "properties": {
+          "decimal_places": {
+            "maximum": 6.0,
+            "minimum": 0.0,
+            "title": "Decimal Places",
+            "type": "integer"
+          },
+          "forbidden_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Forbidden Terms",
+            "type": "array"
+          },
+          "unit_display": {
+            "title": "Unit Display",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decimal_places",
+          "unit_display"
+        ],
+        "title": "TemplateStyleConstraints",
+        "type": "object"
+      },
+      "TemplateTableShape": {
+        "additionalProperties": false,
+        "properties": {
+          "column_axis": {
+            "title": "Column Axis",
+            "type": "string"
+          },
+          "grain": {
+            "title": "Grain",
+            "type": "string"
+          },
+          "row_axis": {
+            "title": "Row Axis",
+            "type": "string"
+          },
+          "value_columns": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Value Columns",
+            "type": "array"
+          }
+        },
+        "required": [
+          "grain",
+          "row_axis",
+          "column_axis",
+          "value_columns"
+        ],
+        "title": "TemplateTableShape",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -2704,6 +2967,14 @@
           },
           "report": {
             "$ref": "#/components/schemas/ReportAssembly"
+          },
+          "review_scaffold_revisions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Review Scaffold Revisions",
+            "type": "array"
           },
           "section_run_eligibility": {
             "items": {

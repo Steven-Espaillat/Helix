@@ -121,7 +121,7 @@
         {"field_id": "mortality-morbidity", "label": "Mortality and morbidity", "required": true, "expected_grain": "animal_x_day", "human_judgment": false, "source_expectation": "Disposition and clinical observation records", "regulatory_reference_ids": ["OECD-TG-407"]},
         {"field_id": "clinical-observations", "label": "Clinical observations", "required": true, "expected_grain": "animal_x_day", "human_judgment": true, "source_expectation": "Locked clinical observation records", "regulatory_reference_ids": ["OECD-TG-407"]},
         {"field_id": "functional-observations", "label": "Functional observations", "required": true, "expected_grain": "animal", "human_judgment": true, "source_expectation": "Locked functional observation records", "regulatory_reference_ids": ["OECD-TG-407"]},
-        {"field_id": "body-weight", "label": "Body weight and changes by sex and dose", "required": true, "expected_grain": "dose_group_x_sex", "human_judgment": false, "source_expectation": "Locked body weight records and deterministic summaries", "regulatory_reference_ids": ["OECD-TG-407", "FDA-SDTCG-2026"]},
+        {"field_id": "body-weight", "label": "Body weight and changes by sex and dose", "required": true, "expected_grain": "dose_group_x_sex", "human_judgment": false, "source_expectation": "Locked body weight records and deterministic summaries", "regulatory_reference_ids": ["OECD-TG-407", "FDA-SDTCG-2026"], "location": "Module 4.2.3.2 / 5.2.3 Body Weight", "unit": "g", "table_shape": {"grain": "dose_group_x_sex", "row_axis": "dose_group", "column_axis": "sex", "value_columns": ["mean", "sd", "n"]}, "style_constraints": {"decimal_places": 1, "unit_display": "g", "forbidden_terms": ["treatment related", "adverse", "statistically significant"]}},
         {"field_id": "food-water-consumption", "label": "Food and water consumption when applicable", "required": true, "expected_grain": "group_x_week", "human_judgment": false, "source_expectation": "Locked consumption records", "regulatory_reference_ids": ["OECD-TG-407"]}
       ]
     },
@@ -152,10 +152,10 @@
       "title": "Discussion and conclusion",
       "purpose": "Summarize the data, discuss biological relevance, and record qualified scientific conclusions.",
       "fields": [
-        {"field_id": "data-summary-analysis", "label": "Data summary and analysis", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Validated claims and signed statistical output", "regulatory_reference_ids": ["CFR-58.185", "OECD-TG-407"]},
-        {"field_id": "discussion", "label": "Discussion of results", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Qualified scientist assessment", "regulatory_reference_ids": ["OECD-TG-407"]},
-        {"field_id": "study-conclusions", "label": "Study conclusions", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Study director conclusion", "regulatory_reference_ids": ["CFR-58.185"]},
-        {"field_id": "noael", "label": "NOAEL or reason no NOAEL is assigned", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Study director interpretation with peer review", "regulatory_reference_ids": ["CFR-58.185", "OECD-TG-407"]}
+        {"field_id": "data-summary-analysis", "label": "Data summary and analysis", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Validated claims and signed statistical output", "regulatory_reference_ids": ["CFR-58.185", "OECD-TG-407"], "location": "Module 4.2.3.2 / Discussion data summary"},
+        {"field_id": "discussion", "label": "Discussion of results", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Qualified scientist assessment", "regulatory_reference_ids": ["OECD-TG-407"], "location": "Module 4.2.3.2 / Discussion"},
+        {"field_id": "study-conclusions", "label": "Study conclusions", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Study director conclusion", "regulatory_reference_ids": ["CFR-58.185"], "location": "Module 4.2.3.2 / Conclusions"},
+        {"field_id": "noael", "label": "NOAEL or reason no NOAEL is assigned", "required": true, "expected_grain": "study", "human_judgment": true, "source_expectation": "Study director interpretation with peer review", "regulatory_reference_ids": ["CFR-58.185", "OECD-TG-407"], "location": "Module 4.2.3.2 / NOAEL"}
       ]
     }
   ]

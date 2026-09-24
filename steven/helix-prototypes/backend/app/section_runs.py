@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from .agents.codex_section_agent import SectionAgent
 from .repository import StudyPackageRepository
+from .review_scaffolds import assemble_review_scaffold, record_if_changed
 from .schemas import (
     ClaimStatus,
     PinnedRun,
@@ -20,6 +21,7 @@ from .schemas import (
     StudyEvidencePackage,
     WorkflowEvent,
 )
+from .template_contracts import evaluate_template_contract, impact_set_for
 
 SECTION_PACKAGE_ID = "section.5_2_3_body_weight"
 SECTION_ID = "5_2_3_body_weight"
@@ -75,9 +77,54 @@ class SectionRunService:
         self.template_path = repository_root / "backend" / "app" / "data" / "report-template.json"
         self.skill_path = repository_root / ".agents" / "skills" / SKILL_NAME / "SKILL.md"
 
+    def eligibilities(self, package: StudyEvidencePackage) -> list[SectionRunEligibility]:
+        definitions = self._section_package_definitions()
+        return [self._eligibility_for(package, definition, definitions) for definition in definitions]
+
     def eligibility(self, package: StudyEvidencePackage) -> SectionRunEligibility:
+        return self.eligibility_for(package, SECTION_PACKAGE_ID)
+
+    def eligibility_for(
+        self, package: StudyEvidencePackage, section_package_id: str
+    ) -> SectionRunEligibility:
+        match = next(
+            (
+                item
+                for item in self.eligibilities(package)
+                if item.section_package_id == section_package_id
+            ),
+            None,
+        )
+        if match is None:
+            raise UnknownSectionPackageError(f"Unknown Section Package {section_package_id}")
+        return match
+
+    def persist_contract_revision(
+        self,
+        package: StudyEvidencePackage,
+        *,
+        run_id: str,
+        event_id: str,
+        candidate_id: str | None = None,
+    ) -> StudyEvidencePackage:
+        revision = assemble_review_scaffold(
+            package,
+            self.eligibilities(package),
+            run_id=run_id,
+            event_id=event_id,
+            candidate_id=candidate_id,
+        )
+        schema = self._load_json(self.contracts / "review-scaffold-revision.schema.json")
+        return record_if_changed(package, revision, schema)
+
+    def _eligibility_for(
+        self,
+        package: StudyEvidencePackage,
+        package_definition: dict[str, object],
+        all_definitions: list[dict[str, object]],
+    ) -> SectionRunEligibility:
         reasons: list[str] = []
-        package_definition = self._load_json(self.package_path)
+        package_id = str(package_definition["package_id"])
         required_claim = next(
             (
                 item
@@ -115,7 +162,7 @@ class SectionRunService:
             ):
                 reasons.append("The Section Package does not apply to the resolved study type")
             if not any(
-                node.node_id == SECTION_PACKAGE_ID and node.package_id == SECTION_PACKAGE_ID
+                node.node_id == package_id and node.package_id == package_id
                 for node in pinned_run.run_plan.nodes
             ):
                 reasons.append("The Section Package is not part of the Pinned Run")
@@ -127,67 +174,25 @@ class SectionRunService:
                 reasons.append("The Pinned Run governed-input fingerprint does not match")
         if self.repository.latest_event(package.study.study_id, "validation_run") is None:
             reasons.append("Run hybrid validation first")
-        reasons.extend(self._template_contract_gate_failures(package_definition))
+        gate_results = evaluate_template_contract(package_definition, self._load_json(self.template_path))
+        reasons.extend(item.message for item in gate_results if item.status == "blocked")
         if package_definition.get("maturity") != "vertical_slice":
             reasons.append("The Section Package is not the vertical slice")
         if package_definition.get("promotion_allowed") is not False:
             reasons.append("The Section Package must prohibit promotion")
         return SectionRunEligibility(
-            section_package_id=SECTION_PACKAGE_ID,
+            section_package_id=package_id,
             eligible=not reasons,
             reasons=reasons,
+            gate_results=gate_results,
+            impact_set=impact_set_for(package_id, all_definitions),
         )
 
-    def _template_contract_gate_failures(self, package_definition: dict[str, object]) -> list[str]:
-        required_gates = {
-            "body-weight-template-fields",
-            "body-weight-table-shape",
-            "body-weight-style-policy",
-        }
-        declared_gates = set(package_definition.get("template_contract_gate_ids", []))
-        failures = []
-        if declared_gates != required_gates:
-            failures.append("The body-weight Template Contract Gates are incomplete")
-
-        template = self._load_json(self.template_path)
-        section = next(
-            (item for item in template.get("sections", []) if item.get("section_id") == "S5"),
-            None,
+    def _section_package_definitions(self) -> list[dict[str, object]]:
+        directory = (
+            self.repository_root / "skills" / "helix-evidence-pipeline" / "packages" / "sections"
         )
-        field = (
-            next(
-                (item for item in section.get("fields", []) if item.get("field_id") == "body-weight"),
-                None,
-            )
-            if section
-            else None
-        )
-        required_claim = next(
-            (
-                item
-                for item in package_definition.get("required_claims", [])
-                if item.get("claim_selector") == CLAIM_ID and item.get("required") is True
-            ),
-            None,
-        )
-        checks = {
-            "body-weight-template-fields": field is not None and field.get("required") is True,
-            "body-weight-table-shape": field is not None
-            and required_claim is not None
-            and field.get("expected_grain") == "dose_group_x_sex"
-            and required_claim.get("output_grain") == field.get("expected_grain"),
-            "body-weight-style-policy": field is not None
-            and bool(section.get("purpose"))
-            and bool(field.get("label"))
-            and bool(field.get("source_expectation"))
-            and bool(field.get("regulatory_reference_ids")),
-        }
-        failures.extend(
-            f"Template Contract Gate {gate_id} failed"
-            for gate_id, passed in checks.items()
-            if gate_id in declared_gates and not passed
-        )
-        return failures
+        return [self._load_json(path) for path in sorted(directory.glob("*/package.json"))]
 
     def run(self, study_id: str, command: SectionRunCommand) -> SectionRunReceipt:
         request_hash = canonical_hash(
@@ -203,8 +208,23 @@ class SectionRunService:
         prior_receipt = self._replay(study_id, command.idempotency_key, request_hash)
         if prior_receipt is not None:
             return prior_receipt
-        eligibility = self.eligibility(package)
+        eligibility = self.eligibility_for(package, command.section_package_id)
         if not eligibility.eligible:
+            if any(item.status == "blocked" for item in eligibility.gate_results):
+                event_id = f"EV-{uuid4().hex[:12].upper()}"
+                blocked_run_id = (
+                    package.pinned_run.run_id
+                    if package.pinned_run is not None
+                    else f"RUN-{uuid4().hex[:12].upper()}"
+                )
+                updated = self.persist_contract_revision(
+                    package,
+                    run_id=blocked_run_id,
+                    event_id=event_id,
+                )
+                if updated.review_scaffold_revisions != package.review_scaffold_revisions:
+                    self.repository.save(updated)
+                    self.session.commit()
             raise SectionRunConflictError("; ".join(eligibility.reasons))
         pinned_run = package.pinned_run
         if pinned_run is None:
@@ -255,7 +275,13 @@ class SectionRunService:
             )
             now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
             event_id = f"EV-{uuid4().hex[:12].upper()}"
-            revision = self._review_scaffold(package, candidate, run_id, event_id, now)
+            package = self.persist_contract_revision(
+                package,
+                run_id=run_id,
+                event_id=event_id,
+                candidate_id=candidate.candidate_id,
+            )
+            revision = package.review_scaffold_revisions[-1]
             receipt = SectionRunReceipt(
                 run_id=run_id,
                 section_id=SECTION_ID,
@@ -455,67 +481,6 @@ class SectionRunService:
         if "286.2 g" not in json.dumps(candidate.content_blocks, ensure_ascii=False):
             raise CandidateValidationError("Codex candidate did not preserve the validated value 286.2 g")
         return candidate
-
-    def _review_scaffold(
-        self,
-        package: StudyEvidencePackage,
-        candidate: SectionDraftCandidate,
-        run_id: str,
-        event_id: str,
-        now: str,
-    ) -> dict[str, object]:
-        completed_runs = self.repository.list_section_runs(package.study.study_id)
-        sequence = len(completed_runs) + 2
-        predecessor_id = completed_runs[-1].review_scaffold.get("revision_id") if completed_runs else None
-        sections = []
-        for section in package.report_sections:
-            if section.section_id == "S5":
-                sections.append(
-                    {
-                        "section_id": SECTION_ID,
-                        "heading": section.title,
-                        "render_state": "needs_review",
-                        "artifact_ids": [candidate.candidate_id],
-                        "validated_claim_ids": [CLAIM_ID],
-                        "blocker_result_ids": [
-                            "VR-004",
-                            f"PROMOTION-DISABLED-{SECTION_PACKAGE_ID}",
-                        ],
-                        "placeholder": "[NEEDS REVIEW]",
-                    }
-                )
-            else:
-                sections.append(
-                    {
-                        "section_id": section.section_id,
-                        "heading": section.title,
-                        "render_state": "needs_review",
-                        "artifact_ids": [],
-                        "validated_claim_ids": [],
-                        "blocker_result_ids": [f"PENDING-{section.section_id}"],
-                        "placeholder": "[NEEDS REVIEW]",
-                    }
-                )
-        content = {
-            "schema_version": "helix.review-scaffold-revision/v1",
-            "status": "review_scaffold",
-            "revision_id": f"RSR-{uuid4().hex[:12].upper()}",
-            "run_id": run_id,
-            "study_id": package.study.study_id,
-            "sequence": sequence,
-            "created_at": now,
-            "triggering_event_id": event_id,
-            "predecessor_id": predecessor_id,
-            "overall_study_context": {"release_status": "blocked", "synthetic": True},
-            "sections": sections,
-            "export_eligible": False,
-        }
-        content["content_hash"] = canonical_hash(content)
-        schema = self._load_json(self.contracts / "review-scaffold-revision.schema.json")
-        errors = list(Draft202012Validator(schema).iter_errors(content))
-        if errors:
-            raise CandidateValidationError(errors[0].message)
-        return content
 
     def _prompt(
         self,

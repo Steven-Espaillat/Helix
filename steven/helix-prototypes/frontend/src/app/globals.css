@@ -970,6 +970,48 @@ code {
   margin-top: 12px;
 }
 
+.eligibility-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 0;
+  color: var(--ink-700);
+  font-size: 9px;
+}
+
+.contract-package + .contract-package,
+.scaffold-revision {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.contract-package-heading,
+.impact-set {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.contract-package-heading strong,
+.impact-set span,
+.scaffold-revision strong {
+  color: var(--navy-900);
+  font-size: 10px;
+}
+
+.impact-set {
+  margin-top: 8px;
+}
+
+.impact-set code,
+.impact-set small {
+  color: var(--ink-500);
+  font-size: 8px;
+}
+
 .dvp-claim-block {
   display: grid;
   gap: 4px;

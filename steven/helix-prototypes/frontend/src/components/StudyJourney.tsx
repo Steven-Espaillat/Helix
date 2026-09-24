@@ -52,6 +52,7 @@ export function StudyJourney({
   const dataValidation = workspace.data_validation_executions.at(-1);
   const terminalClaim = dataValidation?.claims.find((claim) => claim.claim_id === "C-BW-HIGH");
   const commandBusy = validationBusy || dataValidationBusy || sectionRunBusy;
+  const latestScaffold = workspace.review_scaffold_revisions?.at(-1);
 
   if (!stage) {
     return null;
@@ -219,6 +220,14 @@ export function StudyJourney({
           >
             {dataValidationBusy ? "Executing package…" : "Execute body-weight package"}
           </button>
+          {workspace.section_run_eligibility.map((item) => (
+            <div className="eligibility-summary" key={item.section_package_id}>
+              <strong>{item.section_package_id}</strong>
+              <span data-testid={`eligibility-${item.section_package_id}`}>
+                {item.eligible ? "ready" : "blocked"}
+              </span>
+            </div>
+          ))}
           <button
             className="button secondary wide"
             type="button"
@@ -397,6 +406,63 @@ export function StudyJourney({
         </article>
       )}
 
+      <article className="panel run-plan-card" data-testid="template-contract-gates">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Template Contract Gates</p>
+            <h3>Backend eligibility before any Codex thread.</h3>
+          </div>
+        </div>
+        {workspace.section_run_eligibility.map((item) => (
+          <div className="contract-package" key={item.section_package_id}>
+            <div className="contract-package-heading">
+              <strong>{item.section_package_id}</strong>
+              <span className={`status-dot-label ${item.eligible ? "complete" : "blocked"}`}>
+                <span />
+                {item.eligible ? "ready" : "blocked"}
+              </span>
+            </div>
+            <div className="dvp-rule-list">
+              {item.gate_results.map((result) => (
+                <div className="run-plan-row" key={result.result_id} data-testid={`gate-${result.result_id}`}>
+                  <span className={`result-chip ${result.status}`}>{result.status}</span>
+                  <div>
+                    <strong>{result.result_id}</strong>
+                    <small>
+                      {result.check_kind} · {result.message}
+                    </small>
+                  </div>
+                  <code>{result.waivable ? "waivable" : "non-waivable"}</code>
+                </div>
+              ))}
+            </div>
+            <div className="impact-set" data-testid={`impact-${item.section_package_id}`}>
+              <span>Section Impact Set</span>
+              <code>origin {item.impact_set.origin_section_package_id}</code>
+              <small>direct {item.impact_set.direct.join(", ") || "none"}</small>
+              <small>transitive {item.impact_set.transitive.join(", ") || "none"}</small>
+            </div>
+          </div>
+        ))}
+        {isRecord(latestScaffold) && (
+          <div className="scaffold-revision" data-testid="review-scaffold-revision">
+            <strong>
+              Review Scaffold Revision {String(latestScaffold.sequence)} · {String(latestScaffold.revision_id)}
+            </strong>
+            {scaffoldEntries(latestScaffold).map((section) => (
+              <div className="run-plan-row" key={section.section_id}>
+                <span className={`result-chip ${section.render_state}`}>{section.render_state}</span>
+                <div>
+                  <strong>{section.section_id}</strong>
+                  <small>{section.heading}</small>
+                </div>
+                <code>{section.placeholder ?? "none"}</code>
+              </div>
+            ))}
+          </div>
+        )}
+      </article>
+
       <div className="journey-lower-grid">
         <article className="panel source-map-card">
           <div className="panel-heading">
@@ -500,6 +566,30 @@ function humanize(value: string): string {
 
 function displayGrain(grain: string): string {
   return grain.replaceAll("_x_", " × ");
+}
+
+function scaffoldEntries(revision: Record<string, unknown>) {
+  const sections = revision.sections;
+  if (!Array.isArray(sections)) {
+    return [];
+  }
+  return sections.flatMap((item) => {
+    if (!isRecord(item) || typeof item.section_id !== "string" || typeof item.heading !== "string") {
+      return [];
+    }
+    return [
+      {
+        section_id: item.section_id,
+        heading: item.heading,
+        render_state: typeof item.render_state === "string" ? item.render_state : "unknown",
+        placeholder: typeof item.placeholder === "string" ? item.placeholder : null,
+      },
+    ];
+  });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 function formatTime(value: string): string {

@@ -1,0 +1,103 @@
+{
+  "body_weight_eligibility": {
+    "section_package_id": "section.5_2_3_body_weight",
+    "eligible": true,
+    "reasons": [],
+    "gate_results": [
+      {
+        "gate_id": "body-weight-template-fields",
+        "section_package_id": "section.5_2_3_body_weight",
+        "result_id": "TCR-BW-FIELDS",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "fields",
+        "message": "Template Contract Gate body-weight-template-fields passed"
+      },
+      {
+        "gate_id": "body-weight-template-fields",
+        "section_package_id": "section.5_2_3_body_weight",
+        "result_id": "TCR-BW-LOCATION",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "locations",
+        "message": "Template Contract Gate body-weight-template-fields passed"
+      },
+      {
+        "gate_id": "body-weight-table-shape",
+        "section_package_id": "section.5_2_3_body_weight",
+        "result_id": "TCR-BW-TABLE-SHAPE",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "table_shapes",
+        "message": "Template Contract Gate body-weight-table-shape passed"
+      },
+      {
+        "gate_id": "body-weight-style-policy",
+        "section_package_id": "section.5_2_3_body_weight",
+        "result_id": "TCR-BW-LABEL",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "labels",
+        "message": "Template Contract Gate body-weight-style-policy passed"
+      },
+      {
+        "gate_id": "body-weight-style-policy",
+        "section_package_id": "section.5_2_3_body_weight",
+        "result_id": "TCR-BW-UNIT",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "units",
+        "message": "Template Contract Gate body-weight-style-policy passed"
+      },
+      {
+        "gate_id": "body-weight-style-policy",
+        "section_package_id": "section.5_2_3_body_weight",
+        "result_id": "TCR-BW-STYLE",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "style_constraints",
+        "message": "Template Contract Gate body-weight-style-policy passed"
+      }
+    ],
+    "impact_set": {
+      "origin_section_package_id": "section.5_2_3_body_weight",
+      "direct": [
+        "section.5_2_3_body_weight"
+      ],
+      "transitive": []
+    }
+  },
+  "discussion_eligibility": {
+    "section_package_id": "section.5_3_discussion",
+    "eligible": true,
+    "reasons": [],
+    "gate_results": [
+      {
+        "gate_id": "discussion-template-fields",
+        "section_package_id": "section.5_3_discussion",
+        "result_id": "TCR-DISC-FIELDS",
+        "status": "passed",
+        "enforcement_class": "hard_blocker",
+        "waivable": false,
+        "check_kind": "fields",
+        "message": "Template Contract Gate discussion-template-fields passed"
+      }
+    ],
+    "impact_set": {
+      "origin_section_package_id": "section.5_3_discussion",
+      "direct": [
+        "section.5_3_discussion"
+      ],
+      "transitive": []
+    }
+  },
+  "review_scaffold_revision": 1,
+  "waiver_status": 409,
+  "waiver_detail": "Template Contract Gate failures are non-waivable. Correct the governed template through a superseding run."
+}
