@@ -195,9 +195,10 @@ def build_client(
     *,
     repository_root: Path = ROOT,
     raise_server_exceptions: bool = True,
+    database_url: str = "sqlite+pysqlite:///:memory:",
 ):
     settings = Settings(
-        database_url="sqlite+pysqlite:///:memory:",
+        database_url=database_url,
         seed_path=ROOT / "synthetic-e2e" / "helix-synthetic-bundle.json",
         codex_repository_root=repository_root,
         auto_seed=True,

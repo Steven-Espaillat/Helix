@@ -245,6 +245,33 @@ class StudyPackageRepository:
             for row in rows
         ]
 
+    def list_recorded_candidates(self, study_id: str) -> list[tuple[str, dict[str, Any]]]:
+        rows = self.session.scalars(
+            select(SectionRunRow)
+            .where(SectionRunRow.study_id == study_id, SectionRunRow.candidate.is_not(None))
+            .order_by(SectionRunRow.created_at, SectionRunRow.run_id)
+        ).all()
+        return [(row.section_package_id, row.candidate) for row in rows if row.candidate is not None]
+
+    def review_scaffold_revisions(self, study_id: str) -> list[dict[str, Any]]:
+        row = self.session.get(StudyPackageRow, study_id)
+        if row is None:
+            return []
+        self.session.refresh(row)
+        revisions = row.data.get("review_scaffold_revisions")
+        return list(revisions) if isinstance(revisions, list) else []
+
+    def replace_review_scaffold_revisions(
+        self, study_id: str, revisions: list[dict[str, Any]]
+    ) -> None:
+        row = self.session.get(StudyPackageRow, study_id)
+        if row is None:
+            raise StudyNotFoundError(study_id)
+        self.session.refresh(row)
+        row.data = {**row.data, "review_scaffold_revisions": revisions}
+        row.version += 1
+        self.session.flush()
+
     def get_section_run_by_id(self, study_id: str, run_id: str) -> SectionRunRow | None:
         return self.session.scalar(
             select(SectionRunRow).where(

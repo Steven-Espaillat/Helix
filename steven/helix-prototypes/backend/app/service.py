@@ -9,6 +9,7 @@ from .config import Settings
 from .data_validation import DataValidationService, as_validation_results, policy_for
 from .reporting import assemble_report, claim_report_text
 from .repository import StudyPackageRepository
+from .review_scaffolds import ExportAdmissionError, admit_export_document
 from .run_plans import PinnedRunService
 from .schemas import (
     RESOLVED_DISPOSITIONS,
@@ -216,7 +217,6 @@ class StudyService:
         )
         updated = self.section_runs.persist_contract_revision(
             updated,
-            run_id=pinned_run.run_id,
             event_id=event.event_id,
         )
         self.repository.save(updated)
@@ -360,6 +360,7 @@ class StudyService:
             }
         )
         updated = self._with_derived_gate(updated, timestamp)
+        updated = self.section_runs.persist_contract_revision(updated, event_id=event.event_id)
         self.repository.save(updated)
         self.repository.append_event(
             study_id=study_id,
@@ -417,6 +418,7 @@ class StudyService:
             }
         )
         updated = self._with_derived_gate(updated, timestamp)
+        updated = self.section_runs.persist_contract_revision(updated, event_id=event.event_id)
         self.repository.save(updated)
         self.repository.append_event(
             study_id=study_id,
@@ -496,6 +498,7 @@ class StudyService:
             }
         )
         updated = self._with_derived_gate(updated, timestamp)
+        updated = self.section_runs.persist_contract_revision(updated, event_id=event.event_id)
         self.repository.save(updated)
         self.repository.append_event(
             study_id=study_id,
@@ -577,6 +580,7 @@ class StudyService:
             }
         )
         updated = self._with_derived_gate(updated, timestamp)
+        updated = self.section_runs.persist_contract_revision(updated, event_id=event.event_id)
         self.repository.save(updated)
         self.repository.append_event(
             study_id=study_id,
@@ -605,6 +609,12 @@ class StudyService:
         gate = self._release_gate(package)
         if gate.status != GateStatus.READY_FOR_EXPORT:
             raise WorkflowConflictError("The release gate is not ready for export")
+        for revision in package.review_scaffold_revisions:
+            try:
+                admit_export_document(revision)
+            except ExportAdmissionError:
+                continue
+            raise WorkflowConflictError("A Review Scaffold revision was admitted for export")
         timestamp = self._now()
         event = self._event(
             "explicit_export",

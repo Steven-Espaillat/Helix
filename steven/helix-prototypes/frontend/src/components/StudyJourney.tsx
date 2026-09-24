@@ -91,7 +91,33 @@ export function StudyJourney({
     evaluationBusy ||
     queryBusy ||
     promotionBusy;
-  const latestScaffold = workspace.review_scaffold_revisions?.at(-1);
+  const scaffoldRevisions = workspace.review_scaffold_revisions ?? [];
+  const [selectedScaffoldSequence, setSelectedScaffoldSequence] = useState<number | null>(null);
+  const selectedScaffold = useMemo(() => {
+    const selected = scaffoldRevisions.find(
+      (item) => isRecord(item) && item.sequence === selectedScaffoldSequence,
+    );
+    const latest = scaffoldRevisions.at(-1);
+    return isRecord(selected) ? selected : isRecord(latest) ? latest : null;
+  }, [scaffoldRevisions, selectedScaffoldSequence]);
+
+  useEffect(() => {
+    const latest = scaffoldRevisions.at(-1);
+    if (!isRecord(latest) || typeof latest.sequence !== "number") {
+      return;
+    }
+    if (
+      selectedScaffoldSequence != null &&
+      scaffoldRevisions.some((item) => isRecord(item) && item.sequence === selectedScaffoldSequence)
+    ) {
+      return;
+    }
+    setSelectedScaffoldSequence(latest.sequence);
+  }, [scaffoldRevisions, selectedScaffoldSequence]);
+  const eventNames = useMemo(
+    () => new Map(workspace.events.map((item) => [item.event_id, item.event])),
+    [workspace.events],
+  );
 
   if (!stage) {
     return null;
@@ -631,24 +657,69 @@ export function StudyJourney({
             </div>
           </div>
         ))}
-        {isRecord(latestScaffold) && (
-          <div className="scaffold-revision" data-testid="review-scaffold-revision">
-            <strong>
-              Review Scaffold Revision {String(latestScaffold.sequence)} · {String(latestScaffold.revision_id)}
-            </strong>
-            {scaffoldEntries(latestScaffold).map((section) => (
-              <div className="run-plan-row" key={section.section_id}>
-                <span className={`result-chip ${section.render_state}`}>{section.render_state}</span>
-                <div>
-                  <strong>{section.section_id}</strong>
-                  <small>{section.heading}</small>
-                </div>
-                <code>{section.placeholder ?? "none"}</code>
-              </div>
-            ))}
-          </div>
-        )}
       </article>
+
+      {scaffoldRevisions.length > 0 && (
+        <article className="panel run-plan-card" data-testid="review-scaffold-history">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Review Scaffold history</p>
+              <h3>Ordered control-plane revisions. Not a draft report. Not exportable.</h3>
+            </div>
+          </div>
+          <p className="fine-print">
+            This is Review Scaffold history. It is not a draft report and it is not exportable.
+          </p>
+          <div className="scaffold-history-list">
+            {scaffoldRevisions.map((revision) => {
+              if (!isRecord(revision) || typeof revision.sequence !== "number") {
+                return null;
+              }
+              const sequence = revision.sequence;
+              const eventId =
+                typeof revision.triggering_event_id === "string" ? revision.triggering_event_id : "";
+              const selected = sequence === selectedScaffold?.sequence;
+              return (
+                <button
+                  key={String(revision.revision_id ?? sequence)}
+                  type="button"
+                  className={`scaffold-history-item ${selected ? "selected" : ""}`}
+                  onClick={() => setSelectedScaffoldSequence(sequence)}
+                  aria-current={selected ? "true" : undefined}
+                >
+                  <strong>Revision {sequence}</strong>
+                  <code>{String(revision.revision_id ?? "")}</code>
+                  <span>{eventId}</span>
+                  <span>{eventNames.get(eventId) ?? ""}</span>
+                  <small>
+                    {typeof revision.created_at === "string" ? formatTime(revision.created_at) : ""}
+                  </small>
+                </button>
+              );
+            })}
+          </div>
+          {isRecord(selectedScaffold) && (
+            <div className="scaffold-revision" data-testid="review-scaffold-revision">
+              <strong>
+                Review Scaffold Revision {String(selectedScaffold.sequence)} ·{" "}
+                {String(selectedScaffold.revision_id)}
+              </strong>
+              {scaffoldEntries(selectedScaffold).map((section) => (
+                <div className="run-plan-row" key={section.section_id}>
+                  <span className={`result-chip ${section.render_state}`}>{section.render_state}</span>
+                  <div>
+                    <strong>{section.section_id}</strong>
+                    <small>{section.heading}</small>
+                    <small>blockers {section.blocker_result_ids.join(", ") || "none"}</small>
+                    <small>artifacts {section.artifact_ids.join(", ") || "none"}</small>
+                  </div>
+                  <code>{section.placeholder ?? "none"}</code>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
+      )}
 
       <div className="journey-lower-grid">
         <article className="panel source-map-card">
@@ -770,9 +841,18 @@ function scaffoldEntries(revision: Record<string, unknown>) {
         heading: item.heading,
         render_state: typeof item.render_state === "string" ? item.render_state : "unknown",
         placeholder: typeof item.placeholder === "string" ? item.placeholder : null,
+        blocker_result_ids: stringList(item.blocker_result_ids),
+        artifact_ids: stringList(item.artifact_ids),
       },
     ];
   });
+}
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is string => typeof item === "string");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

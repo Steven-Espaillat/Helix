@@ -353,6 +353,7 @@ class SectionPromotionService:
             decision=decision,
         )
         if not decision.eligible:
+            self._persist_scaffold(package, event_id=f"EV-{uuid4().hex[:12].upper()}")
             self.session.commit()
             raise PromotionRejectedError(decision)
         now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -373,6 +374,7 @@ class SectionPromotionService:
             if prior is not None:
                 return SectionDraft.model_validate(prior.draft)
             raise PromotionConflictError("A Section Draft is already recorded for this candidate") from error
+        self._persist_scaffold(package, event_id=f"EV-{uuid4().hex[:12].upper()}")
         self.session.commit()
         return draft
 
@@ -410,7 +412,18 @@ class SectionPromotionService:
             ),
             decision=decision,
         )
+        self._persist_scaffold(package, event_id=f"EV-{uuid4().hex[:12].upper()}")
         return decision
+
+    def _persist_scaffold(self, package: StudyEvidencePackage, *, event_id: str) -> StudyEvidencePackage:
+        from .section_runs import SectionRunService
+
+        updated = SectionRunService(self.session, None, self.repository_root).persist_contract_revision(
+            package,
+            event_id=event_id,
+        )
+        self.repository.save(updated)
+        return updated
 
     def _validate_draft(self, draft: SectionDraft) -> None:
         schema = json.loads((self.contracts / "section-draft.schema.json").read_text())

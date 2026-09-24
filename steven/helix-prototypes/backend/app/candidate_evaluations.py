@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from .contract_schema import draft202012_validator
 from .cross_section_queries import execute_cross_section_query
-from .drafting_cycles import CAP_BLOCKER_ID, MAX_ATTEMPTS
+from .drafting_cycles import MAX_ATTEMPTS
 from .provenance_compiler import allowed_claims_for, compile_provenance
 from .repository import StudyPackageRepository
 from .run_plans import canonical_hash
@@ -69,19 +69,6 @@ class CandidateEvaluationService:
             raise CandidateEvaluationConflictError("Evaluation must not rewrite the stored candidate")
         now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
         event_id = f"EV-{uuid4().hex[:12].upper()}"
-        extra_blockers = (
-            (CAP_BLOCKER_ID,)
-            if evaluation.next_attempt_decision.action == "stop_for_review"
-            else ()
-        )
-        if extra_blockers:
-            package = SectionRunService(self.session, None, self.repository_root).persist_contract_revision(
-                package,
-                run_id=run_id,
-                event_id=event_id,
-                candidate_id=evaluation.candidate_id,
-                extra_blockers=extra_blockers,
-            )
         event = WorkflowEvent(
             event_id=event_id,
             event="candidate_evaluated",
@@ -114,6 +101,11 @@ class CandidateEvaluationService:
             raise CandidateEvaluationConflictError(
                 "A Candidate Attempt evaluation is already recorded"
             ) from error
+        updated = SectionRunService(self.session, None, self.repository_root).persist_contract_revision(
+            updated,
+            event_id=event_id,
+        )
+        self.repository.save(updated)
         SectionPromotionService(self.session, self.repository_root).record_decision_for_evaluation(
             study_id,
             evaluation,

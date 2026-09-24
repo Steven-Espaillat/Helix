@@ -1,0 +1,29 @@
+{
+  "sequences": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "history_length": 6,
+  "replay_history_length": 2,
+  "export_eligible": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "triggering_event_ids": [
+    "EV-EA8C6E4D6A0A",
+    "EV-4B7A6A1F3FD2",
+    "EV-2FE2E80833DB",
+    "EV-F83876DFD6C1",
+    "EV-F8D8398257A0",
+    "EV-40B6419F1A3E"
+  ],
+  "admit_export_rejected": true
+}

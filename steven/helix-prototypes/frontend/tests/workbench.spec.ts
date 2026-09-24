@@ -50,8 +50,16 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("impact-section.5_2_3_body_weight")).toContainText(
     "origin section.5_2_3_body_weight",
   );
+  await expect(page.getByTestId("review-scaffold-history")).toBeVisible();
   await expect(page.getByTestId("review-scaffold-revision")).toBeVisible();
+  const workspaceAfterValidation = eligibilityWorkspace as { review_scaffold_revisions?: Array<{ triggering_event_id?: string }> };
+  const triggeringEventId = workspaceAfterValidation.review_scaffold_revisions?.[0]?.triggering_event_id;
+  expect(triggeringEventId).toBeTruthy();
+  await expect(page.getByTestId("review-scaffold-history")).toContainText(String(triggeringEventId));
   await expect(page.getByText("3", { exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: /Report assembly/ }).click();
+  await expect(page.getByTestId("review-scaffold-history")).toHaveCount(0);
+  await page.getByRole("button", { name: /Study journey/ }).click();
   const runPlan = page.getByTestId("run-plan");
   await expect(runPlan.getByText(/^RUN-/)).toBeVisible();
   await expect(runPlan.getByText("REPEAT_DOSE_28D_RODENT", { exact: true })).toBeVisible();

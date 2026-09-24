@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from .agents.codex_section_agent import SectionAgent
 from .drafting_cycles import RejectAttempt, admit_attempt, cycle_fingerprint, load_recorded_attempts
 from .repository import StudyPackageRepository
-from .review_scaffolds import assemble_review_scaffold, record_if_changed
+from .review_scaffolds import persist
 from .schemas import (
     ClaimStatus,
     PinnedRun,
@@ -105,21 +105,16 @@ class SectionRunService:
         self,
         package: StudyEvidencePackage,
         *,
-        run_id: str,
         event_id: str,
-        candidate_id: str | None = None,
-        extra_blockers: tuple[str, ...] = (),
     ) -> StudyEvidencePackage:
-        revision = assemble_review_scaffold(
+        return persist(
+            self.repository,
             package,
-            self.eligibilities(package),
-            run_id=run_id,
             event_id=event_id,
-            candidate_id=candidate_id,
-            extra_blockers=extra_blockers,
+            contracts=self.contracts,
+            eligibilities=self.eligibilities(package),
+            repository_root=self.repository_root,
         )
-        schema = self._load_json(self.contracts / "review-scaffold-revision.schema.json")
-        return record_if_changed(package, revision, schema)
 
     def _eligibility_for(
         self,
@@ -216,14 +211,8 @@ class SectionRunService:
         if not eligibility.eligible:
             if any(item.status == "blocked" for item in eligibility.gate_results):
                 event_id = f"EV-{uuid4().hex[:12].upper()}"
-                blocked_run_id = (
-                    package.pinned_run.run_id
-                    if package.pinned_run is not None
-                    else f"RUN-{uuid4().hex[:12].upper()}"
-                )
                 updated = self.persist_contract_revision(
                     package,
-                    run_id=blocked_run_id,
                     event_id=event_id,
                 )
                 if updated.review_scaffold_revisions != package.review_scaffold_revisions:
@@ -315,11 +304,11 @@ class SectionRunService:
             )
             now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
             event_id = f"EV-{uuid4().hex[:12].upper()}"
+            row.candidate = candidate.model_dump(mode="json")
+            self.session.flush()
             package = self.persist_contract_revision(
                 package,
-                run_id=run_id,
                 event_id=event_id,
-                candidate_id=candidate.candidate_id,
             )
             revision = package.review_scaffold_revisions[-1]
             receipt = SectionRunReceipt(
@@ -336,7 +325,6 @@ class SectionRunService:
                 skill_hash=skill_hash,
                 review_scaffold_revision=int(revision["sequence"]),
             )
-            row.candidate = candidate.model_dump(mode="json")
             row.receipt = receipt.model_dump(mode="json")
             row.review_scaffold = revision
             event = WorkflowEvent(

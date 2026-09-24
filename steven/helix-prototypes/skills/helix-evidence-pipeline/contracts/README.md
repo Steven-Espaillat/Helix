@@ -10,6 +10,7 @@ These JSON Schemas define the records that connect deterministic validation, Cod
 | `section-draft-candidate.schema.json` | Validates the only successful output that a Section Agent can return. |
 | `section-draft.schema.json` | Records deterministic promotion of one exact candidate after blocking gates pass. |
 | `review-scaffold-revision.schema.json` | Records one immutable, study-wide review rendering that can contain `[NEEDS REVIEW]` placeholders and can never be exported. |
+| `release-candidate.schema.json` | Rejects `status: "review_scaffold"` and requires `export_eligible: true` so a Review Scaffold cannot be admitted as a release candidate. |
 | `run-plan.schema.json` | Stores the immutable dependency graph resolved for one Pinned Run. |
 | `provenance-receipt.schema.json` | Records deterministic claim bindings for one Section Draft Candidate. |
 | `study-output-evaluation-receipt.schema.json` | Records advisory Promptfoo study-output results without gate authority. |

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/release-candidate/v1",
+  "title": "HELIX Release Candidate",
+  "type": "object",
+  "required": ["status", "export_eligible"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "not": {
+        "const": "review_scaffold"
+      }
+    },
+    "export_eligible": {
+      "const": true
+    }
+  }
+}
