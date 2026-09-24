@@ -1,7 +1,6 @@
 import json
 import re
 from pathlib import Path
-import re
 
 
 def extract_report_metadata(text: str) -> tuple[str, str, str]:
@@ -34,11 +33,6 @@ def extract_report_metadata(text: str) -> tuple[str, str, str]:
 
     report_id_match = re.search(
         r"\*\*Study Number:\*\*\s*([^\*\n]+)",
-        text
-    )
-
-    report_type_match = re.search(
-        r"\*\*Report Type:\*\*\s*([^\*\n]+)",
         text
     )
 
@@ -134,7 +128,6 @@ def add_report(
 
         with open(
             kb_file,
-            "r",
             encoding="utf-8"
         ) as f:
 
@@ -159,10 +152,7 @@ def add_report(
 
         start = match.end()
 
-        if idx < len(matches) - 1:
-            end = matches[idx + 1].start()
-        else:
-            end = len(text)
+        end = matches[idx + 1].start() if idx < len(matches) - 1 else len(text)
 
         content = text[start:end].strip()
 

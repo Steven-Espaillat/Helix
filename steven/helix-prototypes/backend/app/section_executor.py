@@ -132,9 +132,10 @@ def compute_body_weight(package: StudyEvidencePackage) -> SectionResult:
                         cell_ids.append(r.record_id)
                 if vals:
                     table.setdefault(gid, {})[day] = round(mean(vals), 1)
+                    cell_mean = round(mean(vals), 1)
                     prov.append(Provenance(
                         section_id="5_2_3_body_weight",
-                        claim=f"{_sex_label(sex)} {gid} Day {day} mean {round(mean(vals),1)} g (n={len(vals)})",
+                        claim=f"{_sex_label(sex)} {gid} Day {day} mean {cell_mean} g (n={len(vals)})",
                         source_record_ids=cell_ids,
                         agg="mean",
                     ))
@@ -154,7 +155,7 @@ def compute_body_weight(package: StudyEvidencePackage) -> SectionResult:
     return SectionResult(
         section_id="5_2_3_body_weight",
         title="5.2.3 Body Weight",
-        skill_file=f"skill_5_2_3_body_weight.md",
+        skill_file="skill_5_2_3_body_weight.md",
         data_available=bool(male or female),
         facts=facts,
         provenance=male_prov + female_prov,
@@ -308,9 +309,10 @@ def compute_microscopic(package: StudyEvidencePackage) -> SectionResult:
                     "n_total": n_by_group.get(gid, 0),
                     "severities": sorted(cell["severities"]),
                 }
+                severities = sorted(cell["severities"])
                 prov.append(Provenance(
                     section_id="5_3_3_microscopic",
-                    claim=f"{tissue} {finding} in {cell['count']} {gid} animals (severity {sorted(cell['severities'])})",
+                    claim=f"{tissue} {finding} in {cell['count']} {gid} animals (severity {severities})",
                     source_record_ids=cell["record_ids"],
                     agg="incidence",
                 ))
@@ -576,9 +578,13 @@ def to_markdown(result: SectionResult) -> str:
             f"## {result.title}\n\n"
             f"Body weights were recorded on Day 1 (pre-dose) and weekly through "
             f"Day {f['duration_days']}.\n\n"
-            + _bw_table_markdown("Male Mean Body Weights (g)", f["male_means"], f["recording_days"], f["groups"])
+            + _bw_table_markdown(
+                "Male Mean Body Weights (g)", f["male_means"], f["recording_days"], f["groups"]
+            )
             + "\n\n"
-            + _bw_table_markdown("Female Mean Body Weights (g)", f["female_means"], f["recording_days"], f["groups"])
+            + _bw_table_markdown(
+                "Female Mean Body Weights (g)", f["female_means"], f["recording_days"], f["groups"]
+            )
             + f"\n\n_Provenance: {len(result.provenance)} source-backed means._"
         )
     header = f"## {result.title}"
