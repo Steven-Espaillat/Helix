@@ -10,11 +10,18 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .agents.codex_section_agent import SectionAgent
-from .drafting_cycles import RejectAttempt, admit_attempt, cycle_fingerprint, load_recorded_attempts
+from .drafting_cycles import (
+    DRAFTING_CYCLE_ID,
+    RejectAttempt,
+    admit_attempt,
+    cycle_fingerprint,
+    load_recorded_attempts,
+)
 from .repository import StudyPackageRepository
 from .review_scaffolds import persist
 from .schemas import (
     ClaimStatus,
+    DraftingCycle,
     PinnedRun,
     SectionDraftCandidate,
     SectionRunCommand,
@@ -227,12 +234,14 @@ class SectionRunService:
 
         run_id = f"SRUN-{uuid4().hex[:12].upper()}"
         envelope = self._build_envelope(package, run_id, pinned_run)
+        cycle = self._ensure_implicit_cycle(package, command.section_package_id, pinned_run)
         recorded = load_recorded_attempts(
             self.repository.list_section_runs(study_id),
             self.repository.list_candidate_evaluations(study_id),
             command.section_package_id,
+            cycle.cycle_id,
         )
-        admission = admit_attempt(recorded, cycle_fingerprint(envelope))
+        admission = admit_attempt(recorded, cycle_fingerprint(envelope), cycle.cycle_id)
         if isinstance(admission, RejectAttempt):
             raise SectionRunConflictError(admission.message)
         if admission.retry_failures:
@@ -253,6 +262,7 @@ class SectionRunService:
                 run_id=run_id,
                 study_id=study_id,
                 section_package_id=SECTION_PACKAGE_ID,
+                drafting_cycle_id=admission.drafting_cycle_id,
                 attempt=admission.attempt,
                 idempotency_key=command.idempotency_key,
                 request_hash=request_hash,
@@ -355,6 +365,41 @@ class SectionRunService:
         except Exception:
             self.session.rollback()
             raise
+
+    def _ensure_implicit_cycle(
+        self,
+        package: StudyEvidencePackage,
+        section_package_id: str,
+        pinned_run: PinnedRun,
+    ) -> DraftingCycle:
+        existing = self.repository.latest_drafting_cycle(package.study.study_id, section_package_id)
+        if existing is not None:
+            return existing
+        now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        cycle = DraftingCycle(
+            schema_version="helix.drafting-cycle/v1",
+            cycle_id=DRAFTING_CYCLE_ID,
+            run_id=pinned_run.run_id,
+            section_package_id=section_package_id,
+            predecessor_cycle_id=None,
+            max_attempts=3,
+            impact_set=impact_set_for(section_package_id, self._section_package_definitions()),
+            opened_at=now,
+            opened_by="HELIX Codex section runtime",
+            triggering_event_id=f"EV-{uuid4().hex[:12].upper()}",
+        )
+        self.repository.add_drafting_cycle(
+            study_id=package.study.study_id,
+            cycle=cycle,
+            idempotency_key=f"implicit:{package.study.study_id}:{section_package_id}:{DRAFTING_CYCLE_ID}",
+            request_hash=canonical_hash(
+                {"study_id": package.study.study_id, "section_package_id": section_package_id}
+            ),
+            stale_disposition_ids=[],
+            stale_approval_ids=[],
+            review_scaffold_revision=0,
+        )
+        return cycle
 
     def _replay(
         self,

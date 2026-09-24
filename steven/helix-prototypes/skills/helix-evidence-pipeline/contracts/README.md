@@ -18,6 +18,8 @@ These JSON Schemas define the records that connect deterministic validation, Cod
 | `cross-section-query-receipt.schema.json` | Records requested artifact IDs and returned hashes for one audited query. |
 | `candidate-evaluation.schema.json` | Persists one Candidate Attempt with its three evaluation receipts and next-attempt decision. |
 | `section-promotion-decision.schema.json` | Records the five deterministic promotion conditions, failed IDs, warnings, and current dispositions for one candidate. |
+| `human-directed-revision-command.schema.json` | Opens a new Drafting Cycle for one section without editing candidates or invoking Codex. |
+| `drafting-cycle.schema.json` | Records one separately audited three-attempt window for one section package inside one pinned run. |
 
 JSON Schema cannot prove that a `RunPlan` is acyclic or that each dependency exists. The backend must check both conditions before it stores the plan.
 

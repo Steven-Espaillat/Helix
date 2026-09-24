@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/studies/{study_id}/section-revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revise Section */
+        post: operations["revise_section_api_v1_studies__study_id__section_revisions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/studies/{study_id}/section-runs": {
         parameters: {
             query?: never;
@@ -267,6 +284,10 @@ export interface components {
         Approval: {
             /** Approval Id */
             approval_id: string;
+            /** Artifact Hash */
+            artifact_hash?: string | null;
+            /** Dependency Fingerprint */
+            dependency_fingerprint?: string | null;
             /** Meaning */
             meaning: string;
             /** Reviewer */
@@ -603,6 +624,34 @@ export interface components {
             /** Study Id */
             study_id: string;
         };
+        /** DraftingCycle */
+        DraftingCycle: {
+            /** Cycle Id */
+            cycle_id: string;
+            impact_set: components["schemas"]["SectionImpactSet"];
+            /**
+             * Max Attempts
+             * @constant
+             */
+            max_attempts: 3;
+            /** Opened At */
+            opened_at: string;
+            /** Opened By */
+            opened_by: string;
+            /** Predecessor Cycle Id */
+            predecessor_cycle_id: string | null;
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.drafting-cycle/v1";
+            /** Section Package Id */
+            section_package_id: string;
+            /** Triggering Event Id */
+            triggering_event_id: string;
+        };
         /** EvidenceChain */
         EvidenceChain: {
             claim: components["schemas"]["Claim"];
@@ -713,6 +762,30 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HumanDirectedRevisionCommand */
+        HumanDirectedRevisionCommand: {
+            /** Actor */
+            actor: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+            /** Section Package Id */
+            section_package_id: string;
+        };
+        /** HumanDirectedRevisionReceipt */
+        HumanDirectedRevisionReceipt: {
+            cycle: components["schemas"]["DraftingCycle"];
+            /**
+             * Idempotent Replay
+             * @default false
+             */
+            idempotent_replay: boolean;
+            /** Review Scaffold Revision */
+            review_scaffold_revision: number;
+            /** Stale Approval Ids */
+            stale_approval_ids: string[];
+            /** Stale Disposition Ids */
+            stale_disposition_ids: string[];
         };
         /** ManifestEntry */
         ManifestEntry: {
@@ -1624,6 +1697,11 @@ export interface components {
         WorkspaceResponse: {
             /** Approvals */
             approvals: components["schemas"]["Approval"][];
+            /**
+             * Can Open Revision
+             * @default false
+             */
+            can_open_revision: boolean;
             /** Candidate Evaluations */
             candidate_evaluations?: components["schemas"]["CandidateEvaluation"][];
             /** Claims */
@@ -1634,6 +1712,8 @@ export interface components {
             data_validation_executions: components["schemas"]["DataValidationExecution"][];
             /** Dispositions */
             dispositions: components["schemas"]["ReviewDisposition"][];
+            /** Drafting Cycles */
+            drafting_cycles?: components["schemas"]["DraftingCycle"][];
             /** Events */
             events: components["schemas"]["WorkflowEvent"][];
             /** Export Artifacts */
@@ -1901,6 +1981,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PinnedRun"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revise_section_api_v1_studies__study_id__section_revisions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HumanDirectedRevisionCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HumanDirectedRevisionReceipt"];
                 };
             };
             /** @description Validation Error */

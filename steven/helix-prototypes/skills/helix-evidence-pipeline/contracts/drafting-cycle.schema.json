@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/drafting-cycle/v1",
+  "title": "HELIX Drafting Cycle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "cycle_id",
+    "run_id",
+    "section_package_id",
+    "predecessor_cycle_id",
+    "max_attempts",
+    "impact_set",
+    "opened_at",
+    "opened_by",
+    "triggering_event_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "helix.drafting-cycle/v1"
+    },
+    "cycle_id": {
+      "type": "string",
+      "pattern": "^CYCLE-[A-Z0-9-]+$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "section_package_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "predecessor_cycle_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^CYCLE-[A-Z0-9-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "max_attempts": {
+      "const": 3
+    },
+    "impact_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin_section_package_id", "direct", "transitive"],
+      "properties": {
+        "origin_section_package_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "direct": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "transitive": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "opened_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "opened_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "triggering_event_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

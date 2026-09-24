@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/human-directed-revision-command/v1",
+  "title": "HELIX Human Directed Revision Command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["section_package_id", "actor", "idempotency_key"],
+  "properties": {
+    "section_package_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 160
+    }
+  }
+}

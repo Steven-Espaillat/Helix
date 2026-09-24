@@ -9,6 +9,7 @@ from .models import (
     CandidateEvaluationRow,
     CrossSectionQueryRow,
     DataValidationRunRow,
+    DraftingCycleRow,
     ExportFileRow,
     PinnedRunRow,
     PromotionDecisionRow,
@@ -21,6 +22,7 @@ from .schemas import (
     CandidateEvaluation,
     CrossSectionQueryReceipt,
     DataValidationExecution,
+    DraftingCycle,
     PromotionDecision,
     SectionDraft,
     StoredSectionRun,
@@ -209,6 +211,7 @@ class StudyPackageRepository:
         run_id: str,
         study_id: str,
         section_package_id: str,
+        drafting_cycle_id: str,
         attempt: int,
         idempotency_key: str,
         request_hash: str,
@@ -218,6 +221,7 @@ class StudyPackageRepository:
             run_id=run_id,
             study_id=study_id,
             section_package_id=section_package_id,
+            drafting_cycle_id=drafting_cycle_id,
             attempt=attempt,
             idempotency_key=idempotency_key,
             request_hash=request_hash,
@@ -271,6 +275,62 @@ class StudyPackageRepository:
         row.data = {**row.data, "review_scaffold_revisions": revisions}
         row.version += 1
         self.session.flush()
+
+    def get_drafting_cycle(self, study_id: str, idempotency_key: str) -> DraftingCycleRow | None:
+        return self.session.scalar(
+            select(DraftingCycleRow).where(
+                DraftingCycleRow.study_id == study_id,
+                DraftingCycleRow.idempotency_key == idempotency_key,
+            )
+        )
+
+    def latest_drafting_cycle(self, study_id: str, section_package_id: str) -> DraftingCycle | None:
+        row = self.session.scalar(
+            select(DraftingCycleRow)
+            .where(
+                DraftingCycleRow.study_id == study_id,
+                DraftingCycleRow.section_package_id == section_package_id,
+            )
+            .order_by(DraftingCycleRow.created_at.desc(), DraftingCycleRow.id.desc())
+            .limit(1)
+        )
+        if row is None:
+            return None
+        return DraftingCycle.model_validate(row.cycle)
+
+    def list_drafting_cycles(self, study_id: str) -> list[DraftingCycle]:
+        rows = self.session.scalars(
+            select(DraftingCycleRow)
+            .where(DraftingCycleRow.study_id == study_id)
+            .order_by(DraftingCycleRow.created_at, DraftingCycleRow.id)
+        ).all()
+        return [DraftingCycle.model_validate(row.cycle) for row in rows]
+
+    def add_drafting_cycle(
+        self,
+        *,
+        study_id: str,
+        cycle: DraftingCycle,
+        idempotency_key: str,
+        request_hash: str,
+        stale_disposition_ids: list[str],
+        stale_approval_ids: list[str],
+        review_scaffold_revision: int,
+    ) -> DraftingCycleRow:
+        row = DraftingCycleRow(
+            study_id=study_id,
+            cycle_id=cycle.cycle_id,
+            section_package_id=cycle.section_package_id,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash,
+            cycle=cycle.model_dump(mode="json"),
+            stale_disposition_ids=stale_disposition_ids,
+            stale_approval_ids=stale_approval_ids,
+            review_scaffold_revision=review_scaffold_revision,
+        )
+        self.session.add(row)
+        self.session.flush()
+        return row
 
     def get_section_run_by_id(self, study_id: str, run_id: str) -> SectionRunRow | None:
         return self.session.scalar(

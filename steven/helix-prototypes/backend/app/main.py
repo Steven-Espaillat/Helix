@@ -31,6 +31,8 @@ from .schemas import (
     ExportCommand,
     ExportReceipt,
     FreezeRunCommand,
+    HumanDirectedRevisionCommand,
+    HumanDirectedRevisionReceipt,
     PinnedRun,
     PromotionCommand,
     SectionDraft,
@@ -47,6 +49,7 @@ from .section_promotion import (
     SectionPromotionService,
     UnknownPromotionTargetError,
 )
+from .section_revisions import RevisionConflictError, SectionRevisionService
 from .section_runs import (
     CandidateValidationError,
     SectionRunConflictError,
@@ -200,6 +203,26 @@ def create_app(
     ) -> SectionRunReceipt:
         return _call(lambda: section_service.run(study_id, command))
 
+    def section_revision_service(session: SessionDependency) -> SectionRevisionService:
+        return SectionRevisionService(session, section_run_service(session))
+
+    SectionRevisionServiceDependency = Annotated[
+        SectionRevisionService, Depends(section_revision_service)
+    ]
+
+    @app.post(
+        "/api/v1/studies/{study_id}/section-revisions",
+        response_model=HumanDirectedRevisionReceipt,
+        status_code=status.HTTP_201_CREATED,
+        tags=["section-revisions"],
+    )
+    def revise_section(
+        study_id: str,
+        command: HumanDirectedRevisionCommand,
+        revisions: SectionRevisionServiceDependency,
+    ) -> HumanDirectedRevisionReceipt:
+        return _call(lambda: revisions.revise(study_id, command))
+
     @app.post(
         "/api/v1/studies/{study_id}/section-runs/{run_id}/evaluations",
         response_model=CandidateEvaluation,
@@ -332,6 +355,7 @@ def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:
     except (
         WorkflowConflictError,
         SectionRunConflictError,
+        RevisionConflictError,
         RunConflictError,
         CandidateEvaluationConflictError,
         DataValidationConflictError,

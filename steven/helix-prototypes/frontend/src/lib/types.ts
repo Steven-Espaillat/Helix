@@ -16,3 +16,5 @@ export type CandidateEvaluation = components["schemas"]["CandidateEvaluation"];
 export type CrossSectionQueryReceipt = components["schemas"]["CrossSectionQueryReceipt"];
 export type SectionDraft = components["schemas"]["SectionDraft"];
 export type PromotionDecision = components["schemas"]["PromotionDecision"];
+export type HumanDirectedRevisionReceipt = components["schemas"]["HumanDirectedRevisionReceipt"];
+export type DraftingCycle = components["schemas"]["DraftingCycle"];

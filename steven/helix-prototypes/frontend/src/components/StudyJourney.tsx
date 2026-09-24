@@ -13,10 +13,12 @@ type Props = {
   evaluationBusy: boolean;
   queryBusy: boolean;
   promotionBusy: boolean;
+  revisionBusy: boolean;
   onPlannerChange: (planner: PlannerMode) => void;
   onValidate: () => void;
   onExecuteBodyWeight: () => void;
   onDraftBodyWeight: () => void;
+  onReviseBodyWeight: () => void;
   onRetryBodyWeight: () => void;
   onEvaluateCandidate: () => void;
   onQueryCrossSection: () => void;
@@ -32,10 +34,12 @@ export function StudyJourney({
   evaluationBusy,
   queryBusy,
   promotionBusy,
+  revisionBusy,
   onPlannerChange,
   onValidate,
   onExecuteBodyWeight,
   onDraftBodyWeight,
+  onReviseBodyWeight,
   onRetryBodyWeight,
   onEvaluateCandidate,
   onQueryCrossSection,
@@ -90,7 +94,8 @@ export function StudyJourney({
     sectionRunBusy ||
     evaluationBusy ||
     queryBusy ||
-    promotionBusy;
+    promotionBusy ||
+    revisionBusy;
   const scaffoldRevisions = workspace.review_scaffold_revisions ?? [];
   const [selectedScaffoldSequence, setSelectedScaffoldSequence] = useState<number | null>(null);
   const selectedScaffold = useMemo(() => {
@@ -314,10 +319,10 @@ export function StudyJourney({
               <div
                 className="section-run-receipt"
                 key={run.receipt.run_id}
-                data-testid={`candidate-attempt-${run.candidate.attempt}`}
+                data-testid={`candidate-attempt-${run.candidate.drafting_cycle_id}-${run.candidate.attempt}`}
               >
                 <strong>
-                  Candidate attempt {run.candidate.attempt} of 3
+                  Candidate attempt {run.candidate.attempt} of 3 · {run.candidate.drafting_cycle_id}
                 </strong>
                 {isLatest ? (
                   <span data-testid="section-run-receipt">{run.receipt.candidate_id}</span>
@@ -384,6 +389,25 @@ export function StudyJourney({
               {sectionRunBusy ? "Retrying with Codex…" : "Retry candidate"}
             </button>
           )}
+          <button
+            className="button secondary wide"
+            type="button"
+            onClick={onReviseBodyWeight}
+            disabled={!workspace.can_open_revision || commandBusy}
+            data-testid="revise-body-weight"
+          >
+            {revisionBusy ? "Opening revision cycle…" : "Revise body-weight cycle"}
+          </button>
+          {(workspace.drafting_cycles ?? []).map((cycle) => (
+            <div
+              className="section-run-receipt"
+              key={cycle.cycle_id}
+              data-testid={`drafting-cycle-${cycle.cycle_id}`}
+            >
+              <strong>{cycle.cycle_id}</strong>
+              <span>{cycle.predecessor_cycle_id ?? "first cycle"}</span>
+            </div>
+          ))}
           <button
             className="button secondary wide"
             type="button"

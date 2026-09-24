@@ -421,14 +421,64 @@ test("shows every immutable attempt and offers no fourth attempt after stop_for_
   });
 
   await page.goto("/");
-  await expect(page.getByTestId("candidate-attempt-1")).toBeVisible();
-  await expect(page.getByTestId("candidate-attempt-2")).toBeVisible();
-  await expect(page.getByTestId("candidate-attempt-3")).toBeVisible();
-  await expect(page.getByTestId("candidate-attempt-3")).toContainText("Candidate attempt 3 of 3");
+  await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-1")).toBeVisible();
+  await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-2")).toBeVisible();
+  await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-3")).toBeVisible();
+  await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-3")).toContainText(
+    "Candidate attempt 3 of 3",
+  );
   await expect(page.getByTestId("next-attempt-action")).toHaveText("Next attempt stop_for_review");
   await expect(page.getByTestId("retry-body-weight")).toHaveCount(0);
-  await expect(page.getByTestId("candidate-attempt-4")).toHaveCount(0);
+  await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-4")).toHaveCount(0);
   expect(sectionRunPosts).toBe(0);
+});
+
+test("offers revise after stop_for_review and shows a new cycle without changing discussion hashes", async ({
+  page,
+}) => {
+  const cycleTwo = "CYCLE-REV0000001";
+  let revised = false;
+  let revisionPosts = 0;
+  await page.route("**/api/v1/studies/*/section-runs", async (route) => {
+    if (route.request().method() === "POST") {
+      await route.fulfill({
+        status: 409,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "This drafting cycle already used three Candidate Attempts" }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route("**/api/v1/studies/*/section-revisions", async (route) => {
+    revisionPosts += 1;
+    revised = true;
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(injectedRevisionReceipt(cycleTwo)),
+    });
+  });
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(
+        revised ? withRevisedCycle(workspace, cycleTwo) : withStoppedCycle(workspace, true),
+      ),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("revise-body-weight")).toBeEnabled();
+  const discussionBefore = await page.getByTestId("impact-section.5_3_discussion").textContent();
+  await page.getByTestId("revise-body-weight").click();
+  await expect(page.getByTestId(`drafting-cycle-${cycleTwo}`)).toBeVisible();
+  await expect(page.getByTestId("revise-body-weight")).toBeDisabled();
+  await expect(page.getByTestId("impact-section.5_3_discussion")).toHaveText(discussionBefore ?? "");
+  expect(revisionPosts).toBe(1);
 });
 
 async function recordApproval(page: import("@playwright/test").Page, label: string) {
@@ -755,7 +805,7 @@ function withRecordedCandidate(
   };
 }
 
-function withStoppedCycle(workspace: unknown): unknown {
+function withStoppedCycle(workspace: unknown, canOpenRevision = false): unknown {
   if (!isObject(workspace)) {
     throw new Error("Workspace is missing.");
   }
@@ -767,6 +817,52 @@ function withStoppedCycle(workspace: unknown): unknown {
     ...workspace,
     section_runs: runs,
     candidate_evaluations: evaluations,
+    drafting_cycles: [injectedCycle("CYCLE-BW-001", null)],
+    can_open_revision: canOpenRevision,
+  };
+}
+
+function withRevisedCycle(workspace: unknown, cycleId: string): unknown {
+  if (!isObject(workspace)) {
+    throw new Error("Workspace is missing.");
+  }
+  const stopped = withStoppedCycle(workspace, false);
+  if (!isObject(stopped)) {
+    throw new Error("Stopped workspace is missing.");
+  }
+  return {
+    ...stopped,
+    drafting_cycles: [injectedCycle("CYCLE-BW-001", null), injectedCycle(cycleId, "CYCLE-BW-001")],
+    can_open_revision: false,
+  };
+}
+
+function injectedCycle(cycleId: string, predecessor: string | null): Record<string, unknown> {
+  return {
+    schema_version: "helix.drafting-cycle/v1",
+    cycle_id: cycleId,
+    run_id: "RUN-CYCLE000001",
+    section_package_id: "section.5_2_3_body_weight",
+    predecessor_cycle_id: predecessor,
+    max_attempts: 3,
+    impact_set: {
+      origin_section_package_id: "section.5_2_3_body_weight",
+      direct: ["section.5_2_3_body_weight"],
+      transitive: [],
+    },
+    opened_at: "2026-09-24T12:00:00Z",
+    opened_by: predecessor ? "Dr. Ada Path" : "HELIX Codex section runtime",
+    triggering_event_id: `EV-${cycleId.replace("CYCLE-", "")}`,
+  };
+}
+
+function injectedRevisionReceipt(cycleId: string): Record<string, unknown> {
+  return {
+    cycle: injectedCycle(cycleId, "CYCLE-BW-001"),
+    stale_disposition_ids: [],
+    stale_approval_ids: [],
+    review_scaffold_revision: 4,
+    idempotent_replay: false,
   };
 }
 

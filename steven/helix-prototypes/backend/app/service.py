@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from .artifacts import GeneratedArtifact, generate_artifact
 from .config import Settings
 from .data_validation import DataValidationService, as_validation_results, policy_for
+from .drafting_cycles import current_cycle, cycle_exhausted, load_recorded_attempts
 from .reporting import assemble_report, claim_report_text
 from .repository import StudyPackageRepository
 from .review_scaffolds import ExportAdmissionError, admit_export_document
@@ -54,10 +55,12 @@ from .section_promotion import (
     section_package_definition,
 )
 from .section_runs import (
+    SECTION_PACKAGE_ID,
     SectionRunService,
     governed_versions_fingerprint,
     manifest_fingerprint,
 )
+from .template_contracts import BODY_WEIGHT_PACKAGE_ID
 from .validation import (
     FixturePlanner,
     OpenAICompatiblePlanner,
@@ -550,12 +553,33 @@ class StudyService:
                     "Pathologist, peer reviewer, and Quality Assurance Unit records are required first"
                 )
         timestamp = self._now()
+        artifact_hash = None
+        dependency_fingerprint = None
+        body_weight = next(
+            (
+                run
+                for run in reversed(self.repository.list_section_runs(study_id))
+                if run.receipt.section_package_id == BODY_WEIGHT_PACKAGE_ID
+            ),
+            None,
+        )
+        if body_weight is not None:
+            definition = section_package_definition(
+                self.settings.codex_repository_root,
+                BODY_WEIGHT_PACKAGE_ID,
+            )
+            artifact_hash = body_weight.receipt.candidate_hash
+            dependency_fingerprint = dependency_fingerprint_for(
+                package, [str(item) for item in definition.get("depends_on", [])]
+            )
         approval = Approval(
             approval_id=f"APR-{uuid4().hex[:12].upper()}",
             role=command.role,
             reviewer=command.reviewer,
             meaning=command.meaning,
             timestamp=timestamp,
+            artifact_hash=artifact_hash,
+            dependency_fingerprint=dependency_fingerprint,
         )
         sections = [section.model_copy() for section in package.report_sections]
         if command.role == ApprovalRole.STUDY_DIRECTOR:
@@ -739,7 +763,22 @@ class StudyService:
             section_drafts=self.repository.list_section_drafts(package.study.study_id),
             cross_section_queries=self.repository.list_cross_section_queries(package.study.study_id),
             review_scaffold_revisions=package.review_scaffold_revisions,
+            drafting_cycles=self.repository.list_drafting_cycles(package.study.study_id),
+            can_open_revision=self._can_open_revision(package.study.study_id),
         )
+
+    def _can_open_revision(self, study_id: str) -> bool:
+        cycles = self.repository.list_drafting_cycles(study_id)
+        latest = current_cycle(cycles, SECTION_PACKAGE_ID)
+        if latest is None:
+            return False
+        recorded = load_recorded_attempts(
+            self.repository.list_section_runs(study_id),
+            self.repository.list_candidate_evaluations(study_id),
+            SECTION_PACKAGE_ID,
+            latest.cycle_id,
+        )
+        return cycle_exhausted(recorded)
 
     @staticmethod
     def _ensure_mutable(package: StudyEvidencePackage) -> None:

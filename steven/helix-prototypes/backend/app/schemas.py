@@ -13,6 +13,9 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+Sha256 = Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")]
+
+
 class ManifestEntry(StrictModel):
     artifact_id: str
     kind: str
@@ -210,6 +213,8 @@ class Approval(StrictModel):
     reviewer: str
     meaning: str
     timestamp: str
+    artifact_hash: Sha256 | None = None
+    dependency_fingerprint: Sha256 | None = None
 
 
 class GateStatus(StrEnum):
@@ -618,6 +623,12 @@ class SectionRunCommand(StrictModel):
     idempotency_key: str = Field(min_length=8, max_length=160)
 
 
+class HumanDirectedRevisionCommand(StrictModel):
+    section_package_id: str = Field(min_length=1, max_length=120)
+    actor: str = Field(min_length=2, max_length=120)
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
 class TemplateContractGateResult(StrictModel):
     gate_id: str
     section_package_id: str
@@ -633,6 +644,27 @@ class SectionImpactSet(StrictModel):
     origin_section_package_id: str
     direct: list[str]
     transitive: list[str]
+
+
+class DraftingCycle(StrictModel):
+    schema_version: Literal["helix.drafting-cycle/v1"]
+    cycle_id: Annotated[str, Field(pattern=r"^CYCLE-[A-Z0-9-]+$")]
+    run_id: str
+    section_package_id: str
+    predecessor_cycle_id: Annotated[str, Field(pattern=r"^CYCLE-[A-Z0-9-]+$")] | None
+    max_attempts: Literal[3]
+    impact_set: SectionImpactSet
+    opened_at: str
+    opened_by: str
+    triggering_event_id: str
+
+
+class HumanDirectedRevisionReceipt(StrictModel):
+    cycle: DraftingCycle
+    stale_disposition_ids: list[str]
+    stale_approval_ids: list[str]
+    review_scaffold_revision: int
+    idempotent_replay: bool = False
 
 
 class SectionRunEligibility(StrictModel):
@@ -680,9 +712,6 @@ class StoredSectionRun(StrictModel):
     candidate: SectionDraftCandidate
     envelope: dict[str, object]
     review_scaffold: dict[str, object]
-
-
-Sha256 = Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")]
 
 
 class CandidateEvaluationCommand(StrictModel):
@@ -905,6 +934,8 @@ class WorkspaceResponse(StrictModel):
     section_drafts: list[SectionDraft] = Field(default_factory=list)
     cross_section_queries: list[CrossSectionQueryReceipt] = Field(default_factory=list)
     review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
+    drafting_cycles: list[DraftingCycle] = Field(default_factory=list)
+    can_open_revision: bool = False
 
 
 class ExportReceipt(StrictModel):

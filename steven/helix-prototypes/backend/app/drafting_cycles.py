@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from .run_plans import canonical_hash
-from .schemas import CandidateEvaluation, SectionDraftCandidate, StoredSectionRun
+from .schemas import CandidateEvaluation, DraftingCycle, SectionDraftCandidate, StoredSectionRun
 
 MAX_ATTEMPTS = 3
 DRAFTING_CYCLE_ID = "CYCLE-BW-001"
@@ -54,10 +54,28 @@ def cycle_fingerprint(envelope: dict[str, object]) -> CycleFingerprint:
     )
 
 
+def current_cycle(cycles: list[DraftingCycle], section_package_id: str) -> DraftingCycle | None:
+    matches = [item for item in cycles if item.section_package_id == section_package_id]
+    return matches[-1] if matches else None
+
+
+def cycle_exhausted(recorded: tuple[RecordedAttempt, ...]) -> bool:
+    if not recorded:
+        return False
+    if len(recorded) >= MAX_ATTEMPTS:
+        return True
+    latest = recorded[-1]
+    return (
+        latest.evaluation is not None
+        and latest.evaluation.next_attempt_decision.action != "retry"
+    )
+
+
 def load_recorded_attempts(
     runs: list[StoredSectionRun],
     evaluations: list[CandidateEvaluation],
     section_package_id: str,
+    drafting_cycle_id: str,
 ) -> tuple[RecordedAttempt, ...]:
     by_run = {item.run_id: item for item in evaluations}
     recorded = [
@@ -68,6 +86,7 @@ def load_recorded_attempts(
         )
         for run in runs
         if run.receipt.section_package_id == section_package_id
+        and run.candidate.drafting_cycle_id == drafting_cycle_id
     ]
     return tuple(sorted(recorded, key=lambda item: item.candidate.attempt))
 
@@ -88,12 +107,13 @@ def retry_failures(evaluation: CandidateEvaluation) -> tuple[dict[str, str], ...
 def admit_attempt(
     recorded: tuple[RecordedAttempt, ...],
     proposed: CycleFingerprint,
+    drafting_cycle_id: str,
 ) -> Admission:
     if not recorded:
         return StartAttempt(
             kind="start",
             attempt=1,
-            drafting_cycle_id=DRAFTING_CYCLE_ID,
+            drafting_cycle_id=drafting_cycle_id,
             retry_failures=(),
         )
     if len(recorded) >= MAX_ATTEMPTS:
@@ -127,6 +147,6 @@ def admit_attempt(
     return StartAttempt(
         kind="start",
         attempt=latest.candidate.attempt + 1,
-        drafting_cycle_id=latest.candidate.drafting_cycle_id,
+        drafting_cycle_id=drafting_cycle_id,
         retry_failures=retry_failures(latest.evaluation),
     )

@@ -1,0 +1,16 @@
+{
+  "schema_version": "helix.drafting-cycle/v1",
+  "cycle_id": "CYCLE-REV0000001",
+  "run_id": "RUN-VALID000001",
+  "section_package_id": "section.5_2_3_body_weight",
+  "predecessor_cycle_id": "CYCLE-BW-001",
+  "max_attempts": 3,
+  "impact_set": {
+    "origin_section_package_id": "section.5_2_3_body_weight",
+    "direct": ["section.5_2_3_body_weight"],
+    "transitive": []
+  },
+  "opened_at": "2026-09-24T12:00:00Z",
+  "opened_by": "Dr. Ada Path",
+  "triggering_event_id": "EV-REV000000001"
+}

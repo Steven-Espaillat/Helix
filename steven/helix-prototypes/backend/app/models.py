@@ -99,12 +99,19 @@ class SectionRunRow(Base):
     __tablename__ = "section_runs"
     __table_args__ = (
         UniqueConstraint("study_id", "idempotency_key", name="uq_section_run_key"),
-        UniqueConstraint("study_id", "section_package_id", "attempt", name="uq_section_run_attempt"),
+        UniqueConstraint(
+            "study_id",
+            "section_package_id",
+            "drafting_cycle_id",
+            "attempt",
+            name="uq_section_run_attempt",
+        ),
     )
 
     run_id: Mapped[str] = mapped_column(String(80), primary_key=True)
     study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
     section_package_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    drafting_cycle_id: Mapped[str] = mapped_column(String(80), nullable=False)
     attempt: Mapped[int] = mapped_column(Integer, nullable=False)
     idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
     request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
@@ -153,6 +160,26 @@ class PromotionDecisionRow(Base):
     idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
     request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
     decision: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+
+class DraftingCycleRow(Base):
+    __tablename__ = "drafting_cycles"
+    __table_args__ = (
+        UniqueConstraint("study_id", "idempotency_key", name="uq_drafting_cycle_key"),
+        UniqueConstraint("study_id", "cycle_id", name="uq_drafting_cycle_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    cycle_id: Mapped[str] = mapped_column(String(80), nullable=False)
+    section_package_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
+    cycle: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)
+    stale_disposition_ids: Mapped[list[str]] = mapped_column(JsonDocument, nullable=False)
+    stale_approval_ids: Mapped[list[str]] = mapped_column(JsonDocument, nullable=False)
+    review_scaffold_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
 
 

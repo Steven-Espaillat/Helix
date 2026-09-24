@@ -6,6 +6,7 @@ import type {
   EvidenceChainData,
   ExportReceipt,
   PlannerMode,
+  HumanDirectedRevisionReceipt,
   SectionDraft,
   SectionRunReceipt,
   ValidationRun,
@@ -54,6 +55,22 @@ export async function runDataValidation(studyId: string): Promise<DataValidation
     }),
   });
   assertDataValidationExecution(value);
+  return value;
+}
+
+export async function reviseSection(
+  studyId: string,
+  idempotencyKey = `workbench-${studyId}-revise-body-weight-v1`,
+): Promise<HumanDirectedRevisionReceipt> {
+  const value = await request(`/studies/${encodeURIComponent(studyId)}/section-revisions`, {
+    method: "POST",
+    body: JSON.stringify({
+      section_package_id: "section.5_2_3_body_weight",
+      actor: "Dr. Ada Path",
+      idempotency_key: idempotencyKey,
+    }),
+  });
+  assertRevisionReceipt(value);
   return value;
 }
 
@@ -249,6 +266,19 @@ function assertDataValidationExecution(value: unknown): asserts value is DataVal
     !Array.isArray(value.section_references)
   ) {
     throw new Error("The data-validation response does not match the generated API contract.");
+  }
+}
+
+function assertRevisionReceipt(value: unknown): asserts value is HumanDirectedRevisionReceipt {
+  if (
+    !isObject(value) ||
+    !isObject(value.cycle) ||
+    typeof value.cycle.cycle_id !== "string" ||
+    !Array.isArray(value.stale_disposition_ids) ||
+    !Array.isArray(value.stale_approval_ids) ||
+    typeof value.review_scaffold_revision !== "number"
+  ) {
+    throw new Error("The revision response does not match the generated API contract.");
   }
 }
 

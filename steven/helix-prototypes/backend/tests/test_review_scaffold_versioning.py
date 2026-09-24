@@ -288,6 +288,7 @@ def test_soe_disposition_then_new_candidate_marks_stale() -> None:
                 run_id="SRUN-STALE000001",
                 study_id=STUDY_ID,
                 section_package_id="section.5_2_3_body_weight",
+                drafting_cycle_id=str(prior.candidate.get("drafting_cycle_id") or "CYCLE-BW-001"),
                 attempt=2,
                 idempotency_key="stale-second-candidate",
                 request_hash="sha256:" + "1" * 64,

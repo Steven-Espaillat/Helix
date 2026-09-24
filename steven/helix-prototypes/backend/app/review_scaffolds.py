@@ -13,8 +13,10 @@ from .drafting_cycles import CAP_BLOCKER_ID
 from .repository import StudyPackageRepository
 from .run_plans import canonical_hash
 from .schemas import (
+    Approval,
     BoundDisposition,
     CandidateEvaluation,
+    DraftingCycle,
     ReviewDisposition,
     SectionDraft,
     SectionRunEligibility,
@@ -40,7 +42,7 @@ IDENTITY_FIELDS = frozenset(
         "run_id",
     }
 )
-NEW_CONTEXT_KEYS = ("dispositions", "approvals", "stale_disposition_ids")
+NEW_CONTEXT_KEYS = ("dispositions", "approvals", "stale_disposition_ids", "stale_approval_ids")
 
 _STUDY_LOCKS: dict[str, Lock] = {}
 _STUDY_LOCKS_GUARD = Lock()
@@ -76,6 +78,7 @@ class DispositionBinding:
 class ApprovalBinding:
     approval_id: str
     role: str
+    stale: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +90,8 @@ class ReviewObservation:
     dispositions: tuple[DispositionBinding, ...]
     approvals: tuple[ApprovalBinding, ...]
     stale_result_ids: tuple[str, ...]
+    stale_disposition_ids: tuple[str, ...]
+    stale_approval_ids: tuple[str, ...]
 
 
 def persist(
@@ -118,19 +123,36 @@ def observe(
 ) -> ReviewObservation:
     study_id = package.study.study_id
     by_package = {item.section_package_id: item for item in eligibilities}
-    impact_sets = tuple(
-        item.impact_set.model_dump(mode="json") for item in eligibilities if not item.eligible
-    )
+    cycles = repository.list_drafting_cycles(study_id)
+    impact_sets = _impact_sets(eligibilities, cycles)
     candidates = {
         package_id: candidate
         for package_id, candidate in repository.list_recorded_candidates(study_id)
     }
     evaluations = repository.list_candidate_evaluations(study_id)
     drafts = {item.section_id: item for item in repository.list_section_drafts(study_id)}
-    current_hash, current_fingerprint = _current_binding(package, candidates, repository_root)
+    current = next(
+        (item for item in reversed(cycles) if item.section_package_id == BODY_WEIGHT_PACKAGE_ID),
+        None,
+    )
+    current_hash, current_fingerprint = _current_binding(
+        package,
+        candidates,
+        repository_root,
+        current.cycle_id if current is not None else None,
+    )
     dispositions = _latest_dispositions(package, current_hash, current_fingerprint)
     stale_result_ids = tuple(item.result_id for item in dispositions if item.stale)
-    approvals = _latest_approvals(package)
+    stale_disposition_ids = tuple(
+        dict.fromkeys(
+            [
+                *[item.result_id for item in dispositions if item.stale],
+                *[item.disposition_id for item in dispositions if item.stale],
+            ]
+        )
+    )
+    approvals = _latest_approvals(package, current_hash, current_fingerprint)
+    stale_approval_ids = tuple(item.approval_id for item in approvals if item.stale)
     sections = tuple(
         _section_projection(
             section.section_id,
@@ -151,6 +173,8 @@ def observe(
         dispositions=dispositions,
         approvals=approvals,
         stale_result_ids=stale_result_ids,
+        stale_disposition_ids=stale_disposition_ids,
+        stale_approval_ids=stale_approval_ids,
     )
 
 
@@ -167,7 +191,8 @@ def assemble_visible(observation: ReviewObservation) -> dict[str, object]:
             "approvals": [
                 {"approval_id": item.approval_id, "role": item.role} for item in observation.approvals
             ],
-            "stale_disposition_ids": list(observation.stale_result_ids),
+            "stale_disposition_ids": list(observation.stale_disposition_ids),
+            "stale_approval_ids": list(observation.stale_approval_ids),
         },
         "sections": [_section_payload(item) for item in observation.sections],
         "section_impact_sets": list(observation.impact_sets),
@@ -398,26 +423,66 @@ def _disposition_stale(
     )
 
 
-def _latest_approvals(package: StudyEvidencePackage) -> tuple[ApprovalBinding, ...]:
+def _latest_approvals(
+    package: StudyEvidencePackage,
+    current_hash: str | None,
+    current_fingerprint: str | None,
+) -> tuple[ApprovalBinding, ...]:
     latest: dict[str, ApprovalBinding] = {}
     for item in package.approvals:
-        latest[item.role.value] = ApprovalBinding(approval_id=item.approval_id, role=item.role.value)
+        latest[item.role.value] = ApprovalBinding(
+            approval_id=item.approval_id,
+            role=item.role.value,
+            stale=_approval_stale(item, current_hash, current_fingerprint),
+        )
     return tuple(latest.values())
+
+
+def _approval_stale(
+    item: Approval,
+    current_hash: str | None,
+    current_fingerprint: str | None,
+) -> bool:
+    if not item.artifact_hash or not item.dependency_fingerprint:
+        return False
+    if current_hash is None or current_fingerprint is None:
+        return True
+    return (
+        item.artifact_hash != current_hash or item.dependency_fingerprint != current_fingerprint
+    )
 
 
 def _current_binding(
     package: StudyEvidencePackage,
     candidates: dict[str, dict[str, object]],
     repository_root: Path,
+    current_cycle_id: str | None,
 ) -> tuple[str | None, str | None]:
     candidate = candidates.get(BODY_WEIGHT_PACKAGE_ID)
     if candidate is None:
+        return None, None
+    if current_cycle_id is not None and candidate.get("drafting_cycle_id") != current_cycle_id:
         return None, None
     definition = section_package_definition(repository_root, BODY_WEIGHT_PACKAGE_ID)
     fingerprint = dependency_fingerprint_for(
         package, [str(item) for item in definition.get("depends_on", [])]
     )
     return canonical_hash(candidate), fingerprint
+
+
+def _impact_sets(
+    eligibilities: list[SectionRunEligibility],
+    cycles: list[DraftingCycle],
+) -> tuple[Mapping[str, object], ...]:
+    by_origin: dict[str, Mapping[str, object]] = {}
+    for item in eligibilities:
+        if not item.eligible:
+            payload = item.impact_set.model_dump(mode="json")
+            by_origin[item.impact_set.origin_section_package_id] = payload
+    for cycle in cycles:
+        payload = cycle.impact_set.model_dump(mode="json")
+        by_origin[cycle.impact_set.origin_section_package_id] = payload
+    return tuple(by_origin.values())
 
 
 def _visible_digest(revision: Mapping[str, object]) -> str:
