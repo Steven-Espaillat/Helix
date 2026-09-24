@@ -797,14 +797,26 @@ export interface components {
             /** Idempotency Key */
             idempotency_key: string;
         };
+        /** ExportInstrumentation */
+        ExportInstrumentation: {
+            /** Agent Starts */
+            agent_starts: number;
+            /** Calculation Runs */
+            calculation_runs: number;
+        };
         /** ExportReceipt */
         ExportReceipt: {
+            /** Approval Id */
+            approval_id: string;
             /** Artifacts */
             artifacts: components["schemas"]["ExportArtifact"][];
             /** Exported At */
             exported_at: string;
             /** Idempotent Replay */
             idempotent_replay: boolean;
+            instrumentation: components["schemas"]["ExportInstrumentation"];
+            /** Manifest Hash */
+            manifest_hash: string;
             /**
              * Status
              * @constant

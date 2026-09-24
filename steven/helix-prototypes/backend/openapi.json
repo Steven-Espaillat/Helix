@@ -1473,9 +1473,34 @@
         "title": "ExportCommand",
         "type": "object"
       },
+      "ExportInstrumentation": {
+        "additionalProperties": false,
+        "properties": {
+          "agent_starts": {
+            "minimum": 0.0,
+            "title": "Agent Starts",
+            "type": "integer"
+          },
+          "calculation_runs": {
+            "minimum": 0.0,
+            "title": "Calculation Runs",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agent_starts",
+          "calculation_runs"
+        ],
+        "title": "ExportInstrumentation",
+        "type": "object"
+      },
       "ExportReceipt": {
         "additionalProperties": false,
         "properties": {
+          "approval_id": {
+            "title": "Approval Id",
+            "type": "string"
+          },
           "artifacts": {
             "items": {
               "$ref": "#/components/schemas/ExportArtifact"
@@ -1491,6 +1516,14 @@
             "title": "Idempotent Replay",
             "type": "boolean"
           },
+          "instrumentation": {
+            "$ref": "#/components/schemas/ExportInstrumentation"
+          },
+          "manifest_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Manifest Hash",
+            "type": "string"
+          },
           "status": {
             "const": "exported",
             "title": "Status",
@@ -1505,8 +1538,11 @@
           "study_id",
           "status",
           "exported_at",
+          "approval_id",
+          "manifest_hash",
           "artifacts",
-          "idempotent_replay"
+          "idempotent_replay",
+          "instrumentation"
         ],
         "title": "ExportReceipt",
         "type": "object"

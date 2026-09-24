@@ -1,18 +1,18 @@
 {
   "study_id": "STUDY-HLX-028",
-  "manifest_hash": "sha256:85869f4dd7cda5cc9a146b5eec0bafcf6cc18f80a82e6107fd0b33001ff3b9ba",
-  "approval_id": "FSA-3091998B81A2",
+  "manifest_hash": "sha256:0345b5ccb90b25af67d1ec3be13998ff2145f774ced8bbcf66825791645a5d1a",
+  "approval_id": "FSA-53EB3382F7AD",
   "included_artifact_count": 2,
   "included_artifact_ids": [
-    "RCP-DVP-28AEA2408292B751",
-    "RUN-EA5CAAC545398B61"
+    "RCP-DVP-5CFA0CA5D4DAFAE4",
+    "RUN-F31359F303CBD4A3"
   ],
   "exact_replay_reused_approval_id": true,
   "conflicting_key_status": 409,
   "stale_after_included_change": true,
   "stale_blocks_export": true,
   "superseding_run_clears_approval": true,
-  "predecessor_snapshot_keeps_approval_id": "FSA-7A283A126B69",
+  "predecessor_snapshot_keeps_approval_id": "FSA-51674F450C1A",
   "language": [
     "ready_for_signature",
     "ready_for_export"

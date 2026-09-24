@@ -279,7 +279,7 @@ export function HelixWorkbench({ studyId }: Props) {
       const receipt = await exportPackage(studyId);
       await refresh();
       setNotice(
-        `${receipt.artifacts.length} synthetic artifacts checksummed. This is not an FDA submission.`,
+        `${receipt.artifacts.length} approved artifacts exported. Status: exported. Never a regulator approval claim.`,
       );
     } catch (cause) {
       setError(messageFrom(cause));

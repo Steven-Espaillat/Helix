@@ -369,7 +369,7 @@ export function ReportAssembly({
 
           <section className="panel export-card">
             <p className="eyebrow">Explicit action</p>
-            <h3>Submission-support package</h3>
+            <h3>Approved artifact export</h3>
             <div className="artifact-list">
               {workspace.export_artifacts.map((artifact) => (
                 <div key={artifact.artifact_id}>
@@ -384,7 +384,9 @@ export function ReportAssembly({
                         download
                       >
                         <strong>{artifactLabel(artifact.kind)}</strong>
-                        <code>Download · {artifact.path}</code>
+                        <code data-testid={`export-checksum-${artifact.artifact_id}`}>
+                          Download · {artifact.checksum}
+                        </code>
                       </a>
                     ) : (
                       <>
@@ -404,13 +406,14 @@ export function ReportAssembly({
               data-testid="export-package"
             >
               {workspace.release_gate.status === "exported"
-                ? "Synthetic package exported"
+                ? "Approved artifacts exported"
                 : busy === "export"
-                  ? "Checksumming artifacts…"
-                  : "Export synthetic package"}
+                  ? "Exporting approved hashes…"
+                  : "Export approved artifacts"}
             </button>
             <p className="fine-print">
-              A prepared or exported prototype package is not FDA acceptance.
+              Export packages only Final Study Approval hashes. Status language stays at exported —
+              never a regulator approval claim.
             </p>
           </section>
         </aside>
@@ -466,6 +469,10 @@ function approvalDetail(role: ApprovalRole): string {
 
 function artifactLabel(kind: string): string {
   return {
+    pinned_run: "Pinned run manifest",
+    data_validation_receipt: "Data validation receipt",
+    section_draft_candidate: "Section draft candidate",
+    section_draft: "Section draft",
     study_report_pdf: "Study report PDF",
     send_dataset_package: "Illustrative dataset archive",
     define_xml: "Illustrative define.xml",

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -148,18 +149,40 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("export-package")).toBeEnabled();
   await page.getByTestId("export-package").click();
   await expect(page.getByTestId("release-status")).toHaveText("exported");
-  await expect(page.getByText("4 synthetic artifacts checksummed", { exact: false })).toBeVisible();
-  const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: /Study report PDF/ }).click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("repeat-dose-study-report.pdf");
-  expect(await download.failure()).toBeNull();
+  await expect(page.getByText(/\d+ approved artifacts exported\. Status: exported\./)).toBeVisible();
+  await expect(page.getByText("FDA approved")).toHaveCount(0);
 
   const workspaceResponse = await request.get(`${apiRoot}/studies/STUDY-HLX-028/workspace`);
   expect(workspaceResponse.ok()).toBeTruthy();
   const workspace: unknown = await workspaceResponse.json();
   expect(isExportedWorkspace(workspace)).toBeTruthy();
   expect(hasSingleBodyWeightExecution(workspace)).toBeTruthy();
+  const exported = asExportedWorkspace(workspace);
+  const approval = exported.final_study_approval;
+  expect(approval).not.toBeNull();
+  const approved = new Map(
+    approval!.included_artifact_hashes.map((item) => [item.artifact_id, item.content_hash]),
+  );
+  expect(exported.export_artifacts.length).toBe(approved.size);
+  for (const artifact of exported.export_artifacts) {
+    expect(artifact.status).toBe("exported");
+    expect(artifact.checksum).toBe(approved.get(artifact.artifact_id));
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByTestId(`export-checksum-${artifact.artifact_id}`).click();
+    const download = await downloadPromise;
+    expect(await download.failure()).toBeNull();
+    const downloadPath = await download.path();
+    expect(downloadPath).toBeTruthy();
+    const bytes = await import("node:fs/promises").then((fs) => fs.readFile(downloadPath!));
+    const digest = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+    expect(digest).toBe(artifact.checksum);
+    const apiDownload = await request.get(
+      `${apiRoot}/studies/STUDY-HLX-028/exports/${encodeURIComponent(artifact.artifact_id)}`,
+    );
+    expect(apiDownload.ok()).toBeTruthy();
+    const apiBytes = Buffer.from(await apiDownload.body());
+    expect(apiBytes.equals(bytes)).toBeTruthy();
+  }
 
   await page.screenshot({ path: "../evidence/helix-workbench-exported.png", fullPage: true });
   expect(browserErrors).toEqual([]);
@@ -577,6 +600,29 @@ function hasSingleBodyWeightExecution(value: unknown): boolean {
   );
 }
 
+
+function asExportedWorkspace(value: unknown): {
+  export_artifacts: Array<{ artifact_id: string; checksum: string | null; status: string }>;
+  final_study_approval: {
+    included_artifact_hashes: Array<{ artifact_id: string; content_hash: string }>;
+  } | null;
+} {
+  if (!isExportedWorkspace(value) || !isObject(value)) {
+    throw new Error("workspace is not exported");
+  }
+  const approval = value.final_study_approval;
+  return {
+    export_artifacts: value.export_artifacts as Array<{
+      artifact_id: string;
+      checksum: string | null;
+      status: string;
+    }>,
+    final_study_approval: (approval ?? null) as {
+      included_artifact_hashes: Array<{ artifact_id: string; content_hash: string }>;
+    } | null,
+  };
+}
+
 function isExportedWorkspace(value: unknown): boolean {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -592,7 +638,7 @@ function isExportedWorkspace(value: unknown): boolean {
     "status" in gate &&
     gate.status === "exported" &&
     Array.isArray(artifacts) &&
-    artifacts.length === 4 &&
+    artifacts.length > 0 &&
     artifacts.every(
       (artifact) =>
         typeof artifact === "object" &&

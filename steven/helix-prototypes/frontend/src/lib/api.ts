@@ -372,7 +372,12 @@ function assertExportReceipt(value: unknown): asserts value is ExportReceipt {
     !isObject(value) ||
     value.status !== "exported" ||
     typeof value.exported_at !== "string" ||
-    !Array.isArray(value.artifacts)
+    typeof value.approval_id !== "string" ||
+    typeof value.manifest_hash !== "string" ||
+    !Array.isArray(value.artifacts) ||
+    !isObject(value.instrumentation) ||
+    value.instrumentation.agent_starts !== 0 ||
+    value.instrumentation.calculation_runs !== 0
   ) {
     throw new Error("The export response does not match the generated API contract.");
   }

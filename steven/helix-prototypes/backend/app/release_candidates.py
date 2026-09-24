@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from .approved_exports import receipt_content_hash
 from .contract_schema import draft202012_validator
 from .run_plans import canonical_hash
 from .schemas import (
@@ -50,7 +51,7 @@ def compile_release_candidate(
             IncludedArtifact(
                 artifact_id=execution.receipt.receipt_id,
                 kind="data_validation_receipt",
-                content_hash=execution.receipt.input_fingerprint,
+                content_hash=receipt_content_hash(execution.receipt.model_dump(mode="json")),
             )
         )
     latest_runs: dict[str, StoredSectionRun] = {}

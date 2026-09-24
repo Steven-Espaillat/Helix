@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
 from app.agents.codex_section_agent import AgentResult, CodexSectionAgent
+from app.approved_exports import note_agent_start
 from app.config import Settings
 from app.database import create_database_engine
 from app.main import create_app
@@ -57,6 +58,7 @@ class FakeSectionAgent:
         self.calls = 0
 
     def run(self, *, envelope_id: str, prompt: str, output_schema: dict[str, object]) -> AgentResult:
+        note_agent_start()
         self.calls += 1
         if self.mode == "failure":
             raise RuntimeError("SDK unavailable")

@@ -1,6 +1,4 @@
 import hashlib
-import io
-import zipfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -72,7 +70,7 @@ def test_hybrid_validation_review_approval_and_export_flow() -> None:
     client, engine = build_client()
     with client:
         unavailable = client.get(f"/api/v1/studies/{STUDY_ID}/exports/OUT-REPORT")
-        assert unavailable.status_code == 409
+        assert unavailable.status_code in {404, 409}
         unavailable_planner = client.post(
             f"/api/v1/studies/{STUDY_ID}/validation-runs",
             json={"planner": "openai_compatible"},
@@ -188,47 +186,37 @@ def test_hybrid_validation_review_approval_and_export_flow() -> None:
         second_export = client.post(f"/api/v1/studies/{STUDY_ID}/exports", json=command)
         final_workspace = client.get(f"/api/v1/studies/{STUDY_ID}/workspace")
 
-        assert first_export.status_code == 200
-        assert first_export.json()["idempotent_replay"] is False
+        assert first_export.status_code == 200, first_export.text
+        first_body = first_export.json()
+        assert first_body["idempotent_replay"] is False
+        assert first_body["status"] == "exported"
+        assert first_body["approval_id"] == approved["final_study_approval"]["approval_id"]
+        assert first_body["manifest_hash"] == approved["final_study_approval"]["manifest_hash"]
+        assert first_body["instrumentation"] == {"agent_starts": 0, "calculation_runs": 0}
+        approved_hashes = {
+            (item["artifact_id"], item["content_hash"])
+            for item in approved["final_study_approval"]["included_artifact_hashes"]
+        }
+        exported_hashes = {
+            (item["artifact_id"], item["checksum"]) for item in first_body["artifacts"]
+        }
+        assert exported_hashes == approved_hashes
         assert second_export.status_code == 200
         assert second_export.json()["idempotent_replay"] is True
-        assert all(
-            artifact["checksum"].startswith("sha256:") for artifact in first_export.json()["artifacts"]
-        )
-        for artifact in first_export.json()["artifacts"]:
+        assert second_export.json()["artifacts"] == first_body["artifacts"]
+        for artifact in first_body["artifacts"]:
             download = client.get(f"/api/v1/studies/{STUDY_ID}/exports/{artifact['artifact_id']}")
             assert download.status_code == 200
-            assert b"SYNTHETIC" in download.content
             digest = hashlib.sha256(download.content).hexdigest()
             assert artifact["checksum"] == f"sha256:{digest}"
             assert "attachment" in download.headers["content-disposition"]
-            if artifact["artifact_id"] == "OUT-REPORT":
-                assert b"Required field:" in download.content
-                assert b"Regulatory references" in download.content
-            if artifact["artifact_id"] == "OUT-SEND":
-                with zipfile.ZipFile(io.BytesIO(download.content)) as archive:
-                    assert b"not SEND XPT" in archive.read("README.json")
-                    assert b"explicit_export" in archive.read("workflow-audit.json")
-                    assert b"provenance_edges" in archive.read("lineage.json")
-                    assert b"SYNTHETIC / NOT FOR SUBMISSION" in archive.read("dm.csv")
-                    assert set(archive.namelist()) == {
-                        "README.json",
-                        "lineage.json",
-                        "workflow-audit.json",
-                        "dm.csv",
-                        "bw.csv",
-                        "cl.csv",
-                        "fw.csv",
-                        "om.csv",
-                        "mi.csv",
-                        "pc.csv",
-                    }
+            assert download.headers["content-type"].startswith("application/json")
         assert final_workspace.json()["release_gate"]["status"] == "exported"
         post_export_validation = client.post(
             f"/api/v1/studies/{STUDY_ID}/validation-runs", json={"planner": "fixture"}
         )
         assert post_export_validation.status_code == 409
-        assert client.get(f"/api/v1/studies/{STUDY_ID}/exports/OUT-REPORT").status_code == 200
+        assert client.get(f"/api/v1/studies/{STUDY_ID}/exports/OUT-REPORT").status_code in {404, 409}
 
         factory = client.app.state.session_factory
         with factory() as session:
@@ -241,8 +229,12 @@ def test_hybrid_validation_review_approval_and_export_flow() -> None:
                 select(AuditEventRow).where(AuditEventRow.event_type == "explicit_export")
             )
             export_files = session.scalar(select(func.count()).select_from(ExportFileRow))
+            rows = session.scalars(select(ExportFileRow)).all()
         assert export_events == 1
         assert export_event is not None and export_event.payload["outcome"] == "exported"
-        assert export_files == 4
+        assert export_files == len(first_body["artifacts"])
+        for row in rows:
+            assert row.checksum == f"sha256:{__import__('hashlib').sha256(row.content).hexdigest()}"
+            assert (row.artifact_id, row.checksum) in approved_hashes
 
     engine.dispose()

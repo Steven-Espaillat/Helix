@@ -1,19 +1,19 @@
 {
-  "predecessor_run_id": "RUN-EA5CAAC545398B61",
-  "successor_run_id": "RUN-55992B41EF7290B6",
-  "source_successor_run_id": "RUN-CAC34E0B6A4C46C6",
+  "predecessor_run_id": "RUN-F31359F303CBD4A3",
+  "successor_run_id": "RUN-5238F62627D26470",
+  "source_successor_run_id": "RUN-8BD54682B1A2BD2E",
   "supersession_reason": "Correct the locked body-weight source after authorized review",
   "parse_reused_on_discussion_only": true,
   "carried_artifact_ids": [
-    "SDC-D0A5D017E02D",
+    "SDC-35FB2421890F",
     "SD-REV000000001"
   ],
-  "carried_lineage_run_id": "RUN-EA5CAAC545398B61",
+  "carried_lineage_run_id": "RUN-F31359F303CBD4A3",
   "discussion_rerun_node_ids": [
     "section.5_3_discussion"
   ],
   "fresh_validation_receipt_ids": [
-    "RCP-DVP-4BB51E5AF57C4E79"
+    "RCP-DVP-EB71ACCC63722903"
   ],
   "fresh_gate_ids": [
     "GATE-RELEASE"
@@ -26,5 +26,5 @@
     "section.5_2_3_body_weight",
     "section.5_3_discussion"
   ],
-  "predecessor_snapshot_hash": "sha256:ac03b2b334e507e6a9f3122350c0f01ae888e93df357cfb5ea3f3525c27f40dd"
+  "predecessor_snapshot_hash": "sha256:e448476fbb3a1f08af17f396c88528b63a7e5eab9dfc6716fc20d76b75588809"
 }

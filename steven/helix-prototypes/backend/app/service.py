@@ -4,7 +4,16 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
-from .artifacts import GeneratedArtifact, generate_artifact
+from .approved_exports import (
+    ApprovedExportError,
+    ExportProbe,
+    exported_artifacts_from,
+    install_export_probe,
+    materialize_approved_artifacts,
+    pending_approved_export_artifacts,
+    reset_export_probe,
+)
+from .artifacts import GeneratedArtifact
 from .config import Settings
 from .data_validation import DataValidationService, as_validation_results, policy_for
 from .drafting_cycles import current_cycle, cycle_exhausted, load_recorded_attempts
@@ -35,6 +44,7 @@ from .schemas import (
     EvidenceChain,
     ExportArtifact,
     ExportCommand,
+    ExportInstrumentation,
     ExportReceipt,
     FinalStudyApproval,
     FinalStudyApprovalCommand,
@@ -720,6 +730,7 @@ class StudyService:
             update={
                 "release_candidate": live,
                 "final_study_approval": approval,
+                "export_artifacts": pending_approved_export_artifacts(live),
                 "events": [*package.events, event],
             }
         )
@@ -741,20 +752,28 @@ class StudyService:
         package = self.repository.get(study_id, for_update=True)
         storage_key = f"export:{command.idempotency_key}"
         prior_event = self.repository.get_event_by_idempotency_key(study_id, storage_key)
-        already_exported = all(artifact.status == "exported" for artifact in package.export_artifacts)
+        already_exported = bool(package.export_artifacts) and all(
+            artifact.status == "exported" for artifact in package.export_artifacts
+        )
+        approval = package.final_study_approval
         if prior_event is not None or already_exported:
+            if approval is None:
+                raise WorkflowConflictError("Exported package is missing Final Study Approval")
             return ExportReceipt(
                 study_id=study_id,
                 status="exported",
                 exported_at=self._exported_at(package),
+                approval_id=approval.approval_id,
+                manifest_hash=approval.manifest_hash,
                 artifacts=package.export_artifacts,
                 idempotent_replay=True,
+                instrumentation=ExportInstrumentation(agent_starts=0, calculation_runs=0),
             )
         gate = self._release_gate(package)
         if gate.status != GateStatus.READY_FOR_EXPORT:
             raise WorkflowConflictError("The release gate is not ready for export")
         live = self._live_release_candidate(package)
-        if not approval_is_current(package.final_study_approval, live):
+        if approval is None or live is None or not approval_is_current(approval, live):
             raise WorkflowConflictError("Final Study Approval is stale and blocks export")
         for revision in package.review_scaffold_revisions:
             try:
@@ -762,57 +781,82 @@ class StudyService:
             except ExportAdmissionError:
                 continue
             raise WorkflowConflictError("A Review Scaffold revision was admitted for export")
-        timestamp = self._now()
-        event = self._event(
-            "explicit_export",
-            command.actor,
-            "exported",
-            {"artifact_count": len(package.export_artifacts), "synthetic": True},
-            timestamp=timestamp,
-        )
-        artifact_source = package.model_copy(
-            update={
-                "workflow_state": "exported",
-                "events": [*package.events, event],
-            }
-        )
-        generated_files = [
-            (artifact, generate_artifact(artifact_source, artifact)) for artifact in package.export_artifacts
-        ]
-        artifacts = [
-            self._exported_artifact(artifact, generated.content) for artifact, generated in generated_files
-        ]
-        updated = artifact_source.model_copy(update={"export_artifacts": artifacts})
-        updated = self._with_derived_gate(updated, timestamp)
-        self.repository.save(updated)
-        for artifact, generated in generated_files:
-            exported = next(item for item in artifacts if item.artifact_id == artifact.artifact_id)
-            if exported.checksum is None:
-                raise RuntimeError(f"Export checksum was not created for {artifact.artifact_id}")
-            self.repository.save_export_file(
-                study_id=study_id,
-                artifact_id=artifact.artifact_id,
-                filename=generated.filename,
-                media_type=generated.media_type,
-                checksum=exported.checksum,
-                content=generated.content,
+        probe = ExportProbe()
+        token = install_export_probe(probe)
+        try:
+            section_runs = self.repository.list_section_runs(study_id)
+            section_drafts = self.repository.list_section_drafts(study_id)
+            try:
+                materialized = materialize_approved_artifacts(
+                    package,
+                    approval,
+                    live=live,
+                    section_runs=section_runs,
+                    section_drafts=section_drafts,
+                )
+            except ApprovedExportError as error:
+                raise WorkflowConflictError(str(error)) from error
+            if probe.agent_starts or probe.calculation_runs:
+                raise WorkflowConflictError(
+                    "Export started an agent or ran a deterministic calculation"
+                )
+            timestamp = self._now()
+            artifacts = exported_artifacts_from(materialized)
+            event = self._event(
+                "explicit_export",
+                command.actor,
+                "exported",
+                {
+                    "artifact_count": len(artifacts),
+                    "approval_id": approval.approval_id,
+                    "manifest_hash": approval.manifest_hash,
+                    "agent_starts": probe.agent_starts,
+                    "calculation_runs": probe.calculation_runs,
+                },
+                timestamp=timestamp,
             )
-        self.repository.append_event(
-            study_id=study_id,
-            event_type=event.event,
-            actor=event.actor,
-            payload={"outcome": event.outcome, **event.details},
-            idempotency_key=storage_key,
-            occurred_at=datetime.fromisoformat(timestamp.replace("Z", "+00:00")),
-        )
-        self.session.commit()
-        return ExportReceipt(
-            study_id=study_id,
-            status="exported",
-            exported_at=timestamp,
-            artifacts=artifacts,
-            idempotent_replay=False,
-        )
+            updated = package.model_copy(
+                update={
+                    "workflow_state": "exported",
+                    "export_artifacts": artifacts,
+                    "events": [*package.events, event],
+                }
+            )
+            updated = self._with_derived_gate(updated, timestamp)
+            self.repository.save(updated)
+            for item in materialized:
+                self.repository.save_export_file(
+                    study_id=study_id,
+                    artifact_id=item.artifact_id,
+                    filename=item.filename,
+                    media_type=item.media_type,
+                    checksum=item.content_hash,
+                    content=item.content,
+                )
+            self.repository.append_event(
+                study_id=study_id,
+                event_type=event.event,
+                actor=event.actor,
+                payload={"outcome": event.outcome, **event.details},
+                idempotency_key=storage_key,
+                occurred_at=datetime.fromisoformat(timestamp.replace("Z", "+00:00")),
+            )
+            self.session.commit()
+            return ExportReceipt(
+                study_id=study_id,
+                status="exported",
+                exported_at=timestamp,
+                approval_id=approval.approval_id,
+                manifest_hash=approval.manifest_hash,
+                artifacts=artifacts,
+                idempotent_replay=False,
+                instrumentation=ExportInstrumentation(
+                    agent_starts=probe.agent_starts,
+                    calculation_runs=probe.calculation_runs,
+                ),
+            )
+        finally:
+            reset_export_probe(token)
 
     def artifact(self, study_id: str, artifact_id: str) -> GeneratedArtifact:
         package = self.repository.get(study_id)
@@ -1307,8 +1351,8 @@ def build_stages(package: StudyEvidencePackage, gate: GateDecision) -> list[Stag
             "Approved release package",
             "Report and illustrative data support files",
             "Checksummed export",
-            f"{len(package.export_artifacts)} synthetic artifacts",
-            "Preparation never triggers export. Export does not mean FDA acceptance.",
+            f"{len(package.export_artifacts)} approved artifacts",
+            "Preparation never triggers export. Export packages approved hashes only; never FDA acceptance.",
             ["Release checked", "Package preflight checked", "Explicit action recorded"],
         ),
     ]

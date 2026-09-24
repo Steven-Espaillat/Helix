@@ -1082,12 +1082,20 @@ class WorkspaceResponse(StrictModel):
     approval_current: bool = False
 
 
+class ExportInstrumentation(StrictModel):
+    agent_starts: int = Field(ge=0)
+    calculation_runs: int = Field(ge=0)
+
+
 class ExportReceipt(StrictModel):
     study_id: str
     status: Literal["exported"]
     exported_at: str
+    approval_id: str
+    manifest_hash: Sha256
     artifacts: list[ExportArtifact]
     idempotent_replay: bool
+    instrumentation: ExportInstrumentation
 
 
 FrozenRunInputs.model_rebuild()

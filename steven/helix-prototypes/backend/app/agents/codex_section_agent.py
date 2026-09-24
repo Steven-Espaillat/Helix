@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+from app.approved_exports import note_agent_start
+
 
 @dataclass(frozen=True)
 class AgentResult:
@@ -18,6 +20,7 @@ class CodexSectionAgent:
         self.repository_root = repository_root
 
     def run(self, *, envelope_id: str, prompt: str, output_schema: dict[str, object]) -> AgentResult:
+        note_agent_start()
         from openai_codex import Codex, Sandbox
 
         cwd = str(self.repository_root)

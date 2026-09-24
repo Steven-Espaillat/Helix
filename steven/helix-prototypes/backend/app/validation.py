@@ -5,6 +5,7 @@ from typing import Annotated, Literal, Protocol
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
+from .approved_exports import note_calculation_run
 from .config import Settings
 from .reporting import assemble_report, claim_report_text, load_report_template
 from .schemas import (
@@ -135,6 +136,7 @@ class OpenAICompatiblePlanner:
 
 
 def deterministic_results(package: StudyEvidencePackage) -> list[ValidationResult]:
+    note_calculation_run()
     claim_by_id = {claim.claim_id: claim for claim in package.claims}
     bw_records = package.records.body_weights
     terminal_ids = {animal.animal_id for animal in package.records.animals if animal.group_id == "G4"}
