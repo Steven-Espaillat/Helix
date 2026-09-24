@@ -70,7 +70,8 @@ for (const colorScheme of ["light", "dark"] as const) {
       await expect(page.getByRole("button", { name })).toHaveCount(0);
       await expect(page.getByRole("tab", { name })).toHaveCount(0);
     }
-    await expect(page.getByRole("navigation")).toHaveCount(0);
+    // The only navigation allowed is the journey Progress Bar (#19).
+    await expect(page.getByRole("navigation", { name: /^(?!Journey progress$)/ })).toHaveCount(0);
     await expect(page.getByRole("tablist")).toHaveCount(0);
 
     // Tokens resolve per theme.
@@ -89,7 +90,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(colors.ink).toBe(themeTokens[colorScheme].ink);
     expect(colors.accent).toBe(themeTokens[colorScheme].accent);
 
-    // Typography: Plex Sans for UI, Plex Mono for identifiers, Georgia only in the report body.
+    // Typography: Plex Sans for UI (including the header study ID, as in the reference), Plex Mono for identifiers, Georgia only in the report body.
     const fonts = await page.evaluate(async () => {
       await document.fonts.ready;
       const georgiaOutsideReport = Array.from(document.querySelectorAll<HTMLElement>("body *"))
@@ -100,13 +101,17 @@ for (const colorScheme of ["light", "dark"] as const) {
         shell: getComputedStyle(document.getElementById("helix-e2e")!).fontFamily,
         studyId: getComputedStyle(document.querySelector('[data-testid="study-id"]')!).fontFamily,
         plexSansLoaded: document.fonts.check('600 14px "IBM Plex Sans"'),
-        plexMonoLoaded: document.fonts.check('500 14px "IBM Plex Mono"'),
+        // Identifiers such as the server workflow state render in Plex Mono 400.
+        workflowState: getComputedStyle(document.querySelector('[data-testid="workflow-state"]')!).fontFamily,
+        plexMonoLoaded: document.fonts.check('400 12px "IBM Plex Mono"'),
         georgiaOutsideReport,
       };
     });
     expect(fonts.shell.startsWith('"IBM Plex Sans"')).toBeTruthy();
-    expect(fonts.studyId.startsWith('"IBM Plex Mono"')).toBeTruthy();
+    // The reference renders the header study ID in Plex Sans (the HTML wins over HANDOFF).
+    expect(fonts.studyId.startsWith('"IBM Plex Sans"')).toBeTruthy();
     expect(fonts.plexSansLoaded).toBeTruthy();
+    expect(fonts.workflowState.startsWith('"IBM Plex Mono"')).toBeTruthy();
     expect(fonts.plexMonoLoaded).toBeTruthy();
     expect(fonts.georgiaOutsideReport).toEqual([]);
 

@@ -1,0 +1,550 @@
+/*
+ * HELIX v1 shared stylesheet: design tokens + shared components.
+ *
+ * OWNER: UI step 0 (see docs/ui-lanes-ownership.md). Lanes A-D must not edit
+ * this file. A lane that needs a new token or a change to a shared component
+ * stops and escalates to the step-0 owner.
+ *
+ * Source of truth: research/helix-e2e-workbench-v1.html (it wins over
+ * research/HANDOFF.md section 6 on conflict). Every value below is copied from
+ * the reference <style> block; the parity kit (tests/parity) compares the
+ * rendered result against the reference pixel by pixel.
+ *
+ * Contents
+ *   1. Tokens: color (light-dark pairs), type, spacing, radii, shadows/halos
+ *   2. Base (#helix-e2e scope)
+ *   3. Shell: header, main, footer, boundary states, notices
+ *   4. Shared components: tones, card, kicker, headings, chip, pill, button,
+ *      mono, list row, spinner, stage rail, banners, data table, layout grids
+ *   5. Responsive + reduced motion
+ *
+ * View-specific CSS (upload, agent, traceability, review) lives in
+ * src/styles/views/*.css, one file per lane.
+ */
+
+/* 1. Tokens ---------------------------------------------------------------- */
+:root {
+  color-scheme: light dark;
+
+  /* Color. Components must read these; no hex values outside this block. */
+  --hx-bg:          light-dark(#F5F7F8, #0D141B);
+  --hx-surface:     light-dark(#FFFFFF, #141E28);
+  --hx-surface-2:   light-dark(#F5F7F8, #1B2936);
+  --hx-line:        light-dark(#DCE3E8, #34485B);
+  --hx-line-soft:   light-dark(#EEF1F3, #24374A);
+  --hx-ink:         light-dark(#111C24, #E7EEF6);
+  --hx-ink-2:       light-dark(#33434F, #C4D1DC);
+  --hx-muted:       light-dark(#5A6B78, #9EB0C1);
+  --hx-faint:       light-dark(#8FA0AC, #6F8395);
+  --hx-accent:      light-dark(#0A5F66, #5CC3CB);
+  --hx-accent-soft: light-dark(#EEF5F5, #133538);
+  --hx-accent-ring: light-dark(#D6E8E9, #1E4A4E);
+  --hx-on-accent:   light-dark(#FFFFFF, #07181A);
+  --hx-pass:        light-dark(#17663F, #5DD5A7);
+  --hx-pass-soft:   light-dark(#E7F4EC, #12382D);
+  --hx-pass-line:   light-dark(#CFE6D8, #1F5140);
+  --hx-warn:        light-dark(#8A4B00, #F5BD67);
+  --hx-gate:        light-dark(#B26A00, #F5BD67);
+  --hx-warn-soft:   light-dark(#FDF1DE, #3F2C12);
+  --hx-warn-line:   light-dark(#F1DDB8, #5C4318);
+  --hx-gate-ring:   light-dark(#FBE7C6, #4A3413);
+  --hx-block:       light-dark(#A61B1B, #FF8D89);
+  --hx-block-soft:  light-dark(#FCEBEA, #421E20);
+  --hx-info:        light-dark(#1D4F7A, #69B6F4);
+  --hx-info-soft:   light-dark(#E6EEF6, #16354C);
+  /* The reference paints white on solid fills (done node, spinner on fill,
+     solid block chip, logo mark) in both themes. */
+  --hx-on-solid:    #FFFFFF;
+  --hx-on-solid-35: rgb(255 255 255 / 0.35);
+
+  /* Type */
+  --hx-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --hx-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --hx-serif: Georgia, 'Times New Roman', serif;
+  --hx-fs-h1: 22px;      /* page h1, draft h2 */
+  --hx-fs-h2: 18px;      /* card h2 */
+  --hx-fs-h3: 16px;      /* h3, brand, draft body */
+  --hx-fs-lead: 15px;    /* banner titles, lead text, flow values */
+  --hx-fs-body: 14px;
+  --hx-fs-row: 13px;     /* table rows, list rows, banner hints */
+  --hx-fs-meta: 12px;    /* kickers, chips, pills, meta */
+  --hx-fs-step: 11px;    /* step status, small kickers */
+  --hx-lh: 1.45;
+  --hx-lh-doc: 1.65;
+  --hx-fw-medium: 500;
+  --hx-fw-semibold: 600;
+  --hx-fw-bold: 700;
+  --hx-tracking-kicker: 0.06em;
+  --hx-tracking-brand: 0.08em;
+
+  /* Spacing (the reference uses these exact steps) */
+  --hx-sp-4: 4px;
+  --hx-sp-6: 6px;
+  --hx-sp-8: 8px;
+  --hx-sp-10: 10px;
+  --hx-sp-12: 12px;
+  --hx-sp-14: 14px;
+  --hx-sp-16: 16px;
+  --hx-sp-18: 18px;
+  --hx-sp-20: 20px;
+  --hx-sp-24: 24px;
+  --hx-sp-28: 28px;
+  --hx-sp-32: 32px;
+  --hx-sp-40: 40px;
+  --hx-gutter: 40px;     /* page gutter; 16px under 1100px */
+  --hx-gap: 20px;        /* gap between blocks */
+  --hx-stack-gap: 18px;  /* gap inside a stacked card */
+  --hx-card-pad: 24px;
+  --hx-header-h: 60px;
+  --hx-control-h: 44px;  /* touch target */
+  --hx-control-h-sm: 40px; /* compact buttons in banners only */
+
+  /* Radii */
+  --hx-radius: 12px;         /* cards, banners, stepper, drop zone */
+  --hx-radius-inner: 10px;   /* tables, io boxes, flow steps, step buttons */
+  --hx-radius-control: 8px;  /* buttons, gate nodes, consent, notices */
+  --hx-radius-chev: 6px;
+  --hx-radius-pill: 999px;   /* chips, pills, badge */
+
+  /* Shadows. The reference uses no drop shadows; only halos and rings. */
+  --hx-shadow: none;
+  --hx-halo-accent: 0 0 0 4px var(--hx-accent-ring);
+  --hx-halo-gate: 0 0 0 4px var(--hx-gate-ring);
+  --hx-ring-pass: 0 0 0 1px var(--hx-pass);
+  --hx-ring-block: 0 0 0 1px var(--hx-block);
+  --hx-ring-gate: 0 0 0 1px var(--hx-gate);
+  --hx-focus-outline: 2px solid var(--hx-accent);
+}
+
+/* 2. Base ------------------------------------------------------------------ */
+#helix-e2e {
+  color-scheme: light dark;
+  font-family: var(--hx-sans);
+  font-size: var(--hx-fs-body);
+  line-height: var(--hx-lh);
+  color: var(--hx-ink);
+}
+
+#helix-e2e * { box-sizing: border-box; }
+#helix-e2e button { font: inherit; }
+
+#helix-e2e.hx-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--hx-bg);
+}
+
+#helix-e2e :focus-visible {
+  outline: var(--hx-focus-outline);
+  outline-offset: 2px;
+}
+
+/* 3. Shell ----------------------------------------------------------------- */
+#helix-e2e .hx-top {
+  height: var(--hx-header-h);
+  flex-shrink: 0;
+  padding: 0 var(--hx-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-sp-16);
+  background: var(--hx-surface);
+  border-bottom: 1px solid var(--hx-line);
+}
+
+#helix-e2e .hx-brand { display: flex; align-items: center; gap: var(--hx-sp-20); min-width: 0; }
+
+#helix-e2e .hx-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--hx-sp-10);
+  font-weight: var(--hx-fw-bold);
+  font-size: var(--hx-fs-h3);
+  letter-spacing: var(--hx-tracking-brand);
+}
+
+#helix-e2e .hx-vr { width: 1px; height: 24px; flex-shrink: 0; background: var(--hx-line); }
+/* As in the reference, the descriptor is an inline span under a block
+   <strong>; the container ellipsizes it (a block span would change the
+   header's vertical rhythm by ~2px). */
+#helix-e2e .hx-study { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#helix-e2e .hx-study strong { display: block; font-size: var(--hx-fs-body); overflow: hidden; text-overflow: ellipsis; }
+#helix-e2e .hx-study span { font-size: var(--hx-fs-meta); color: var(--hx-muted); }
+
+#helix-e2e .hx-top-meta { display: flex; align-items: center; gap: var(--hx-sp-12); flex-shrink: 0; }
+
+#helix-e2e .hx-synthetic {
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-medium);
+  padding: 4px 10px;
+  border-radius: var(--hx-radius-pill);
+  background: var(--hx-surface-2);
+  color: var(--hx-ink-2);
+  border: 1px dashed var(--hx-faint);
+  white-space: nowrap;
+}
+
+/* Documented deviation (#27): a synthetic-identity icon with a dashed border
+   instead of initials. The parity kit masks this element. */
+#helix-e2e .hx-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px dashed var(--hx-faint);
+  background: var(--hx-surface-2);
+  color: var(--hx-ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+}
+
+#helix-e2e .hx-main {
+  flex-grow: 1;
+  padding: var(--hx-sp-20) var(--hx-gutter) var(--hx-sp-28);
+  display: flex;
+  flex-direction: column;
+  gap: var(--hx-gap);
+  min-width: 0;
+}
+
+#helix-e2e .hx-boundary-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--hx-sp-10);
+  max-width: 640px;
+}
+#helix-e2e .hx-boundary-state .hx-sub { margin: 0; }
+
+#helix-e2e .hx-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-sp-16);
+  padding: 10px 14px;
+  border-radius: var(--hx-radius-control);
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .hx-notice .hx-btn { background: var(--hx-surface); color: var(--hx-ink); }
+
+/* Stage view: the pre-v1 API-backed panels still render as one page until the
+   lanes replace them with the stage-gated views. */
+#helix-e2e .hx-stage-view { display: flex; flex-direction: column; gap: var(--hx-sp-28); min-width: 0; }
+#helix-e2e .hx-stage-block { scroll-margin-top: var(--hx-sp-16); }
+
+#helix-e2e .hx-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 24px;
+  padding-top: var(--hx-sp-12);
+  border-top: 1px solid var(--hx-line);
+  color: var(--hx-muted);
+  font-size: var(--hx-fs-meta);
+}
+
+/* 4. Shared components ----------------------------------------------------- */
+
+/* Tone helpers */
+#helix-e2e .t-pass   { background: var(--hx-pass-soft);   color: var(--hx-pass); }
+#helix-e2e .t-warn   { background: var(--hx-warn-soft);   color: var(--hx-warn); }
+#helix-e2e .t-block  { background: var(--hx-block-soft);  color: var(--hx-block); }
+#helix-e2e .t-block-solid { background: var(--hx-block);  color: var(--hx-on-solid); }
+#helix-e2e .t-info   { background: var(--hx-info-soft);   color: var(--hx-info); }
+#helix-e2e .t-muted  { background: var(--hx-surface-2);   color: var(--hx-ink-2); }
+#helix-e2e .t-accent { background: var(--hx-accent-soft); color: var(--hx-accent); }
+
+/* Card and type */
+#helix-e2e .hx-card {
+  background: var(--hx-surface);
+  border: 1px solid var(--hx-line);
+  border-radius: var(--hx-radius);
+  padding: var(--hx-card-pad);
+}
+
+#helix-e2e .hx-kicker {
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+  letter-spacing: var(--hx-tracking-kicker);
+  text-transform: uppercase;
+  color: var(--hx-muted);
+}
+#helix-e2e .hx-kicker.sm { font-size: var(--hx-fs-step); }
+
+/* Headings are reset inside v1 components only, so the legacy panels keep
+   their own heading styles until the lanes replace them. */
+#helix-e2e .hx-card :is(h1, h2, h3),
+#helix-e2e .hx-v1 :is(h1, h2, h3) { margin: 0; font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-card h1, #helix-e2e .hx-v1 h1 { font-size: var(--hx-fs-h1); }
+#helix-e2e .hx-card h2, #helix-e2e .hx-v1 h2 { font-size: var(--hx-fs-h2); }
+#helix-e2e .hx-card h3, #helix-e2e .hx-v1 h3 { font-size: var(--hx-fs-h3); }
+
+#helix-e2e .hx-sub { margin: 4px 0 0; color: var(--hx-muted); }
+#helix-e2e .hx-lead { margin: 0; font-size: var(--hx-fs-lead); color: var(--hx-ink-2); }
+
+#helix-e2e .hx-mono {
+  font-family: var(--hx-mono);
+  font-size: var(--hx-fs-meta);
+  color: var(--hx-muted);
+  overflow-wrap: anywhere;
+}
+
+#helix-e2e .hx-sr,
+.hx-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+#helix-e2e .hx-icon { flex-shrink: 0; vertical-align: middle; }
+#helix-e2e .hx-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Chip (badge) and pill */
+#helix-e2e .hx-chip {
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+  padding: 3px 10px;
+  border-radius: var(--hx-radius-pill);
+  white-space: nowrap;
+}
+#helix-e2e .hx-chip.lg { padding: 5px 12px; }
+#helix-e2e .hx-chip.xs { font-size: var(--hx-fs-step); padding: 2px 8px; }
+
+#helix-e2e .hx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hx-sp-6);
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+  padding: 5px 12px;
+  border-radius: var(--hx-radius-pill);
+  white-space: nowrap;
+}
+#helix-e2e .hx-pill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Button */
+#helix-e2e .hx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hx-sp-8);
+  min-height: var(--hx-control-h);
+  padding: 0 18px;
+  border-radius: var(--hx-radius-control);
+  font-size: var(--hx-fs-body);
+  font-weight: var(--hx-fw-semibold);
+  cursor: pointer;
+  border: 1px solid var(--hx-line);
+  background: var(--hx-surface);
+  color: var(--hx-ink);
+}
+#helix-e2e .hx-btn.primary { border: 0; background: var(--hx-accent); color: var(--hx-on-accent); }
+#helix-e2e .hx-btn.sm { min-height: var(--hx-control-h-sm); padding: 0 14px; }
+#helix-e2e .hx-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* List row (checklists, sign-offs) */
+#helix-e2e .hx-list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--hx-sp-10);
+  min-height: 40px;
+  border-bottom: 1px solid var(--hx-line-soft);
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .hx-list-row .grow { flex-grow: 1; }
+/* Reference icons in list rows sit on the text baseline, not middle. */
+#helix-e2e .hx-list-row > span > .hx-icon { vertical-align: baseline; }
+#helix-e2e .hx-list-row .meta { font-size: var(--hx-fs-meta); }
+
+/* Spinner and status dot */
+@keyframes hx-spin { to { transform: rotate(360deg); } }
+#helix-e2e .hx-spin {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid var(--hx-accent-ring);
+  border-top-color: var(--hx-accent);
+  animation: hx-spin 0.8s linear infinite;
+}
+#helix-e2e .hx-spin.on-fill {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  border-color: var(--hx-on-solid-35);
+  border-top-color: var(--hx-on-solid);
+}
+#helix-e2e .hx-spin.lg { width: 18px; height: 18px; }
+#helix-e2e .hx-dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+
+/* Stage rail (Progress Bar visuals; Lane A owns the data wiring) */
+#helix-e2e .hx-stepper {
+  background: var(--hx-surface);
+  border: 1px solid var(--hx-line);
+  border-radius: var(--hx-radius);
+  padding: 14px 16px 10px;
+}
+#helix-e2e .hx-stepper-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--hx-sp-16);
+  margin-bottom: var(--hx-sp-10);
+  flex-wrap: wrap;
+}
+#helix-e2e .hx-stepper-head .hx-progress { display: flex; align-items: baseline; gap: var(--hx-sp-10); flex-wrap: wrap; }
+#helix-e2e .hx-stepper-head .hx-progress .hx-sub { margin: 0; }
+#helix-e2e .hx-stepper.is-reserved .hx-stepper-head { margin-bottom: 0; }
+#helix-e2e .hx-stepper.is-reserved .hx-stepper-head .hx-sub { font-size: var(--hx-fs-meta); }
+#helix-e2e .hx-legend { display: flex; align-items: center; gap: var(--hx-sp-16); font-size: var(--hx-fs-meta); color: var(--hx-muted); }
+#helix-e2e .hx-legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid;
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+#helix-e2e .hx-legend i.gate { border-color: var(--hx-gate); border-radius: 3px; }
+#helix-e2e .hx-legend i.agent { border-color: var(--hx-faint); border-radius: 50%; }
+#helix-e2e .hx-steps { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+#helix-e2e .hx-step {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--hx-sp-6);
+  min-height: 80px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: var(--hx-radius-inner);
+  background: transparent;
+  cursor: pointer;
+  color: var(--hx-muted);
+}
+#helix-e2e .hx-step:not(:disabled):hover { background: var(--hx-accent-soft); }
+#helix-e2e .hx-step:disabled { cursor: default; opacity: 1; }
+#helix-e2e .hx-step.is-selected { background: var(--hx-accent-soft); }
+#helix-e2e .hx-step-track { width: 100%; display: flex; align-items: center; }
+#helix-e2e .hx-step-line { flex-grow: 1; height: 3px; background: var(--hx-line); }
+#helix-e2e .hx-step-line.done { background: var(--hx-pass); }
+#helix-e2e .hx-step-line.none { background: transparent; }
+#helix-e2e .hx-node {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--hx-line);
+  background: var(--hx-surface);
+  color: var(--hx-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+}
+#helix-e2e .hx-node.gate { border-radius: var(--hx-radius-control); border-color: var(--hx-gate); color: var(--hx-gate); }
+#helix-e2e .hx-node.done { background: var(--hx-pass); border-color: var(--hx-pass); color: var(--hx-on-solid); }
+#helix-e2e .hx-node.current { background: var(--hx-accent); border-color: var(--hx-accent); color: var(--hx-on-accent); box-shadow: var(--hx-halo-accent); }
+#helix-e2e .hx-node.gate.current { background: var(--hx-warn-soft); border-color: var(--hx-gate); color: var(--hx-warn); box-shadow: var(--hx-halo-gate); }
+#helix-e2e .hx-step-label { max-width: 100%; padding: 0 4px; font-size: var(--hx-fs-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#helix-e2e .hx-step.is-selected .hx-step-label,
+#helix-e2e .hx-step.is-current .hx-step-label { color: var(--hx-ink); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-step-status { font-size: var(--hx-fs-step); font-weight: var(--hx-fw-medium); }
+#helix-e2e .hx-step-status.s-done { color: var(--hx-pass); }
+#helix-e2e .hx-step-status.s-gate { color: var(--hx-warn); }
+#helix-e2e .hx-step-status.s-current { color: var(--hx-accent); }
+#helix-e2e .hx-step-status.s-pending { color: var(--hx-muted); }
+
+/* Banners (gate + run) */
+#helix-e2e .hx-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-sp-16);
+  padding: 14px 18px;
+  border-radius: var(--hx-radius);
+  border: 1px solid;
+  flex-wrap: wrap;
+}
+#helix-e2e .hx-banner.awaiting { background: var(--hx-warn-soft); border-color: var(--hx-warn-line); }
+#helix-e2e .hx-banner.awaiting .hx-kicker, #helix-e2e .hx-banner.awaiting svg { color: var(--hx-warn); }
+#helix-e2e .hx-banner.passed { background: var(--hx-pass-soft); border-color: var(--hx-pass-line); }
+#helix-e2e .hx-banner.passed .hx-kicker, #helix-e2e .hx-banner.passed svg { color: var(--hx-pass); }
+#helix-e2e .hx-banner.running { background: var(--hx-accent-soft); border-color: var(--hx-accent-ring); }
+#helix-e2e .hx-banner.running .hx-kicker { color: var(--hx-accent); }
+#helix-e2e .hx-banner.paused { background: var(--hx-surface); border-color: var(--hx-line); }
+#helix-e2e .hx-banner-title { font-size: var(--hx-fs-lead); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-banner-left { display: flex; align-items: center; gap: var(--hx-sp-12); }
+#helix-e2e .hx-banner-right { display: flex; align-items: center; gap: var(--hx-sp-12); font-size: var(--hx-fs-row); color: var(--hx-ink-2); }
+
+/* Data table (grid rows; columns come from a --hx-cols custom property) */
+#helix-e2e .hx-table { border: 1px solid var(--hx-line-soft); border-radius: var(--hx-radius-inner); overflow: hidden; }
+#helix-e2e .hx-trow {
+  display: grid;
+  grid-template-columns: var(--hx-cols, minmax(0, 1fr) 90px 170px 110px);
+  gap: var(--hx-sp-12);
+  align-items: center;
+  min-height: 40px;
+  padding: 4px 16px;
+  border-top: 1px solid var(--hx-line-soft);
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .hx-trow.head {
+  border-top: 0;
+  background: var(--hx-surface-2);
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+  color: var(--hx-muted);
+}
+#helix-e2e .hx-trow > [role="cell"] { min-width: 0; }
+#helix-e2e .hx-cell-file { display: flex; align-items: center; gap: var(--hx-sp-10); min-width: 0; color: var(--hx-muted); }
+#helix-e2e .hx-cell-file .hx-ellipsis { color: var(--hx-ink); }
+#helix-e2e .hx-cell-ink2 { color: var(--hx-ink-2); }
+
+/* Layout grids shared by the stage views */
+#helix-e2e .stack { display: flex; flex-direction: column; gap: var(--hx-stack-gap); }
+#helix-e2e .g-upload { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--hx-gap); align-items: start; }
+#helix-e2e .g-agent  { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--hx-gap); align-items: start; }
+#helix-e2e .g-review { display: grid; grid-template-columns: 260px minmax(0, 1fr) 320px; gap: var(--hx-gap); align-items: start; }
+
+/* 5. Responsive + reduced motion ------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  #helix-e2e .hx-spin { animation-duration: 2.4s; }
+}
+
+@media (max-width: 1100px) {
+  :root { --hx-gutter: 16px; }
+
+  #helix-e2e .g-upload, #helix-e2e .g-agent, #helix-e2e .g-review { grid-template-columns: 1fr; }
+  #helix-e2e .hx-steps { grid-template-columns: repeat(9, minmax(64px, 1fr)); overflow-x: auto; }
+
+  /*
+   * Deviation from the reference: the reference hides the synthetic badge
+   * under 1100px. Issue #18 and spec #17 require the badge on every screen,
+   * so the header wraps instead of hiding it.
+   */
+  #helix-e2e .hx-top {
+    height: auto;
+    min-height: var(--hx-header-h);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  #helix-e2e .hx-study span { display: none; }
+  #helix-e2e .hx-top-meta { flex-wrap: wrap; flex-shrink: 1; }
+}

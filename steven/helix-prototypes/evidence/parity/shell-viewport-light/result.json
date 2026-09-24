@@ -1,0 +1,30 @@
+{
+  "id": "shell-viewport-light",
+  "title": "Whole first viewport, shell vs reference ?stage=0",
+  "lane": "step0",
+  "issue": null,
+  "status": "report-only",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=0",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0.424781,
+  "diffPixels": 546823,
+  "comparedPixels": 1287306,
+  "maskedPixels": 8694,
+  "oursSize": {
+    "width": 1440,
+    "height": 900
+  },
+  "referenceSize": {
+    "width": 1440,
+    "height": 900
+  },
+  "sizeMismatch": false,
+  "pass": false
+}

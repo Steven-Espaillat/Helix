@@ -2,6 +2,8 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
+  // The visual parity kit has its own config (playwright.parity.config.ts).
+  testIgnore: ["parity/**"],
   timeout: 90_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,

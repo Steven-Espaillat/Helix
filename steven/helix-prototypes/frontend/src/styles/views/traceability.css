@@ -1,0 +1,81 @@
+/*
+ * Human Gate 2 Traceability Review styles.
+ * OWNER: Lane C (#22). Seeded by UI step 0 from research/helix-e2e-workbench-v1.html
+ * ("Traceability accordion" block). Read tokens from src/styles/helix-v1.css.
+ */
+#helix-e2e .hx-acc { background: var(--hx-surface); border: 1px solid var(--hx-line); border-radius: var(--hx-radius); overflow: hidden; }
+#helix-e2e .hx-acc-cols { display: grid; grid-template-columns: 36px 260px minmax(0, 1fr) 150px; gap: var(--hx-sp-12); align-items: center; }
+#helix-e2e .hx-acc-head {
+  padding: 12px 20px;
+  background: var(--hx-surface-2);
+  border-bottom: 1px solid var(--hx-line);
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+  color: var(--hx-muted);
+}
+#helix-e2e .hx-acc-item { border-bottom: 1px solid var(--hx-line-soft); }
+#helix-e2e .hx-acc-item:last-child { border-bottom: 0; }
+#helix-e2e .hx-acc-item.is-open { background: var(--hx-surface-2); }
+#helix-e2e .hx-acc-btn {
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 20px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--hx-ink);
+  cursor: pointer;
+}
+#helix-e2e .hx-acc-btn:hover { background: var(--hx-accent-soft); }
+#helix-e2e .hx-chev {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--hx-radius-chev);
+  border: 1px solid var(--hx-line);
+  background: var(--hx-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#helix-e2e .hx-chev svg { transition: transform 0.15s; }
+#helix-e2e .is-open .hx-chev svg { transform: rotate(90deg); }
+#helix-e2e .hx-acc-panel { padding: 4px 20px 20px 68px; display: flex; flex-direction: column; gap: var(--hx-sp-14); }
+#helix-e2e .hx-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--hx-sp-24); list-style: none; margin: 0; padding: 0; }
+#helix-e2e .hx-flow li {
+  position: relative;
+  padding: var(--hx-sp-14);
+  border-radius: var(--hx-radius-inner);
+  border: 1px solid var(--hx-line);
+  background: var(--hx-surface);
+}
+#helix-e2e .hx-flow li:not(:last-child)::after {
+  content: "\2192";
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--hx-faint);
+  font-weight: var(--hx-fw-bold);
+}
+#helix-e2e .hx-flow li.f-pass  { border-color: var(--hx-pass);  background: var(--hx-pass-soft);  box-shadow: var(--hx-ring-pass); }
+#helix-e2e .hx-flow li.f-block { border-color: var(--hx-block); background: var(--hx-block-soft); box-shadow: var(--hx-ring-block); }
+#helix-e2e .hx-flow li.f-warn  { border-color: var(--hx-gate);  background: var(--hx-warn-soft);  box-shadow: var(--hx-ring-gate); }
+#helix-e2e .hx-flow .val { font-size: var(--hx-fs-lead); font-weight: var(--hx-fw-semibold); margin: 4px 0; }
+#helix-e2e .hx-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-sp-10);
+  padding: 10px 14px;
+  border-radius: var(--hx-radius-control);
+  font-size: var(--hx-fs-row);
+  color: var(--hx-ink-2);
+}
+
+@media (max-width: 1100px) {
+  #helix-e2e .hx-flow { grid-template-columns: 1fr; }
+  #helix-e2e .hx-flow li:not(:last-child)::after { content: "\2193"; right: 50%; top: auto; bottom: -20px; transform: none; }
+  #helix-e2e .hx-acc-cols { grid-template-columns: 36px minmax(0, 1fr) 120px; }
+  #helix-e2e .hx-acc-cols .ev { display: none; }
+  #helix-e2e .hx-acc-panel { padding-left: 20px; }
+}

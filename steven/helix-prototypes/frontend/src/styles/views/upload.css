@@ -1,0 +1,29 @@
+/*
+ * Human Gate 1 upload/authorization view styles.
+ * OWNER: Lane A (#20). Seeded by UI step 0 from research/helix-e2e-workbench-v1.html
+ * ("Upload" block). Read tokens from src/styles/helix-v1.css; never hex values.
+ * Shared pieces (card, table, list row, button, banner, grids) are NOT here.
+ */
+#helix-e2e .hx-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--hx-sp-10);
+  padding: var(--hx-sp-28);
+  border-radius: var(--hx-radius);
+  border: 2px dashed var(--hx-faint);
+  background: var(--hx-surface-2);
+  text-align: center;
+}
+#helix-e2e .hx-drop.is-over { border-color: var(--hx-accent); background: var(--hx-accent-soft); }
+#helix-e2e .hx-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--hx-sp-10);
+  padding: var(--hx-sp-12);
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-surface-2);
+  font-size: var(--hx-fs-row);
+  cursor: pointer;
+}
+#helix-e2e .hx-consent input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--hx-accent); }

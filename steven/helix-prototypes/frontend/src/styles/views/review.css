@@ -1,0 +1,26 @@
+/*
+ * Human Gate 3 Review and export styles.
+ * OWNER: Lane D (#23). Seeded by UI step 0 from research/helix-e2e-workbench-v1.html
+ * ("Review" block). Read tokens from src/styles/helix-v1.css; never hex values.
+ * Georgia (--hx-serif) is allowed only for draft report body text.
+ */
+#helix-e2e .hx-sec {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 10px;
+  font-size: var(--hx-fs-row);
+  border-radius: var(--hx-radius-control);
+}
+#helix-e2e .hx-sec.is-active { background: var(--hx-accent-soft); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-doc p { font-family: var(--hx-serif); font-size: var(--hx-fs-h3); line-height: var(--hx-lh-doc); margin: 0 0 14px; }
+#helix-e2e .hx-flag {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-warn-soft);
+  border: 1px solid var(--hx-warn-line);
+  font-size: var(--hx-fs-body);
+}
+#helix-e2e .hx-flag strong { color: var(--hx-warn); }

@@ -1,0 +1,38 @@
+/*
+ * Agent Step view styles (stages 2-7).
+ * OWNER: Lane B (#21). Seeded by UI step 0 from research/helix-e2e-workbench-v1.html
+ * ("Agent" block). Read tokens from src/styles/helix-v1.css; never hex values.
+ */
+#helix-e2e .hx-io { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: var(--hx-sp-8); }
+#helix-e2e .hx-io > div {
+  padding: 14px 16px;
+  border-radius: var(--hx-radius-inner);
+  background: var(--hx-surface-2);
+  border: 1px solid var(--hx-line-soft);
+}
+#helix-e2e .hx-io > div.out { background: var(--hx-accent-soft); border-color: var(--hx-accent-ring); }
+#helix-e2e .hx-io .arrow { display: flex; align-items: center; justify-content: center; padding: 0; background: none; border: 0; color: var(--hx-muted); }
+#helix-e2e .hx-boundary {
+  display: flex;
+  gap: var(--hx-sp-12);
+  padding: 12px 16px;
+  border-radius: var(--hx-radius-inner);
+  background: var(--hx-warn-soft);
+  border: 1px solid var(--hx-warn-line);
+  color: var(--hx-ink-2);
+}
+#helix-e2e .hx-boundary strong { color: var(--hx-warn); }
+#helix-e2e .hx-act {
+  display: flex;
+  align-items: center;
+  gap: var(--hx-sp-12);
+  min-height: var(--hx-control-h);
+  border-bottom: 1px solid var(--hx-line-soft);
+  font-size: var(--hx-fs-body);
+}
+#helix-e2e .hx-act .ic { width: 22px; display: flex; justify-content: center; }
+#helix-e2e .hx-act .txt { flex-grow: 1; }
+#helix-e2e .hx-act.queued { color: var(--hx-faint); }
+#helix-e2e .hx-act.active .txt { font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-act .tag { font-size: var(--hx-fs-meta); }
+#helix-e2e .hx-hollow { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--hx-faint); }

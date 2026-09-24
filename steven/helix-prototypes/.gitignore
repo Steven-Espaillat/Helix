@@ -20,3 +20,5 @@ promptfoo-output/
 # Built at runtime from the approved-report corpus.
 .knowledge-base.json
 knowledge_base.json
+frontend/.next-parity/
+frontend/parity-out/

@@ -1,0 +1,30 @@
+{
+  "id": "component-stage-rail-s7-light",
+  "title": "Shared StageRail at reference ?stage=7 (light)",
+  "lane": "step0",
+  "issue": null,
+  "status": "enforced",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity?fixture=upload&stage=7",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=7",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0,
+  "diffPixels": 0,
+  "comparedPixels": 195840,
+  "maskedPixels": 0,
+  "oursSize": {
+    "width": 1360,
+    "height": 144
+  },
+  "referenceSize": {
+    "width": 1360,
+    "height": 144
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

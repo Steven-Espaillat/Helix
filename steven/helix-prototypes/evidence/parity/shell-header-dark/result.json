@@ -1,0 +1,30 @@
+{
+  "id": "shell-header-dark",
+  "title": "Shell header (dark)",
+  "lane": "step0",
+  "issue": "#18",
+  "status": "enforced",
+  "colorScheme": "dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=0",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.001,
+  "ratio": 0,
+  "diffPixels": 0,
+  "comparedPixels": 77706,
+  "maskedPixels": 8694,
+  "oursSize": {
+    "width": 1440,
+    "height": 60
+  },
+  "referenceSize": {
+    "width": 1440,
+    "height": 60
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

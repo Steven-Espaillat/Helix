@@ -106,15 +106,42 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
-// Brand mark from the reference header. Fill and stroke read tokens so the
-// mark follows light and dark themes without copying reference hex values.
+export function ChevronIcon(props: IconProps) {
+  return (
+    <StrokeIcon size={14} strokeWidth={2.5} {...props}>
+      <polyline points="9 6 15 12 9 18" />
+    </StrokeIcon>
+  );
+}
+
+export function FileIcon(props: IconProps) {
+  return (
+    <StrokeIcon size={16} strokeWidth={1.8} {...props}>
+      <path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z" />
+      <polyline points="14 3 14 8 19 8" />
+    </StrokeIcon>
+  );
+}
+
+export function UploadIcon(props: IconProps) {
+  return (
+    <StrokeIcon size={32} strokeWidth={1.8} {...props}>
+      <path d="M12 16V4" />
+      <polyline points="7 9 12 4 17 9" />
+      <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+    </StrokeIcon>
+  );
+}
+
+// Brand mark from the reference header. The fill reads the accent token and
+// the stroke reads --hx-on-solid (white in both themes, as in the reference).
 export function HelixLogo({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" aria-hidden="true" focusable="false">
       <rect x="1" y="1" width="26" height="26" rx="7" fill="var(--hx-accent)" />
       <path
         d="M9 7v14M19 7v14M9 14h10"
-        stroke="var(--hx-on-accent)"
+        stroke="var(--hx-on-solid)"
         strokeWidth="2.2"
         strokeLinecap="round"
         fill="none"

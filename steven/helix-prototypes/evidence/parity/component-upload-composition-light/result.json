@@ -1,0 +1,30 @@
+{
+  "id": "component-upload-composition-light",
+  "title": "Shared components composed as the reference ?stage=0 viewport (fixture copy)",
+  "lane": "step0",
+  "issue": null,
+  "status": "enforced",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity?fixture=upload&stage=0",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=0",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0,
+  "diffPixels": 0,
+  "comparedPixels": 1294810,
+  "maskedPixels": 1190,
+  "oursSize": {
+    "width": 1440,
+    "height": 900
+  },
+  "referenceSize": {
+    "width": 1440,
+    "height": 900
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

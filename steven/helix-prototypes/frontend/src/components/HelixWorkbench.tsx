@@ -20,9 +20,11 @@ import {
 import type { ApprovalRole, PlannerMode, Workspace } from "@/lib/types";
 
 import { EvidenceChain } from "./EvidenceChain";
-import { CloseIcon, HelixLogo, PersonIcon, RetryIcon } from "./icons";
+import { CloseIcon, RetryIcon } from "./icons";
 import { ReportAssembly } from "./ReportAssembly";
+import { ShellHeader } from "./shell/ShellHeader";
 import { StudyJourney } from "./StudyJourney";
+import { Button, Card, Kicker, Pill, Spinner, type Tone } from "./ui";
 
 type Props = {
   studyId: string;
@@ -32,15 +34,13 @@ type ReleaseStatus = Workspace["release_gate"]["status"];
 
 // Presentation only: label and tone for the server-reported release gate
 // status. The shell never derives or recalculates release readiness.
-const releasePresentation: Record<ReleaseStatus, { label: string; tone: string }> = {
-  blocked: { label: "Release blocked", tone: "t-block" },
-  ready_for_review: { label: "Ready for review", tone: "t-warn" },
-  ready_for_signature: { label: "Ready for signature", tone: "t-warn" },
-  ready_for_export: { label: "Ready for export", tone: "t-pass" },
-  exported: { label: "Package exported", tone: "t-info" },
+const releasePresentation: Record<ReleaseStatus, { label: string; tone: Tone }> = {
+  blocked: { label: "Release blocked", tone: "block" },
+  ready_for_review: { label: "Ready for review", tone: "warn" },
+  ready_for_signature: { label: "Ready for signature", tone: "warn" },
+  ready_for_export: { label: "Ready for export", tone: "pass" },
+  exported: { label: "Package exported", tone: "info" },
 };
-
-const SYNTHETIC_BADGE = "Synthetic data \u00b7 Not for submission";
 
 export function HelixWorkbench({ studyId }: Props) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -303,78 +303,52 @@ export function HelixWorkbench({ studyId }: Props) {
 
   return (
     <div id="helix-e2e" className="hx-app" data-testid="helix-shell">
-      <header className="hx-top" data-testid="shell-header">
-        <div className="hx-brand">
-          <div className="hx-logo">
-            <HelixLogo />
-            <span>HELIX</span>
-          </div>
-          <div className="hx-vr" aria-hidden="true" />
-          {workspace ? (
-            <div className="hx-study" data-testid="study-identity" title={workspace.study.study_type_id}>
-              <strong className="hx-study-id" data-testid="study-id">
-                {workspace.study.study_id}
-              </strong>
-              <span data-testid="study-descriptor">{studyDescriptor(workspace)}</span>
-            </div>
-          ) : (
-            <div className="hx-study">
-              <strong className="hx-study-id">{studyId}</strong>
-              <span>{error ? "Workspace unavailable" : "Loading workspace"}</span>
-            </div>
-          )}
-        </div>
-        <div className="hx-top-meta">
-          <span className="hx-synthetic" data-testid="synthetic-badge">
-            {SYNTHETIC_BADGE}
-          </span>
-          {workspace && <ReleasePill workspace={workspace} />}
-          <span
-            className="hx-avatar"
-            role="img"
-            aria-label="Synthetic demo identity. Not an authenticated user or signer."
-            title="Synthetic demo identity (not authenticated)"
-            data-testid="demo-avatar"
-          >
-            <PersonIcon size={16} />
-          </span>
-        </div>
-      </header>
+      <ShellHeader
+        studyId={workspace ? workspace.study.study_id : studyId}
+        descriptor={
+          workspace ? studyDescriptor(workspace) : error ? "Workspace unavailable" : "Loading workspace"
+        }
+        loaded={Boolean(workspace)}
+        title={workspace?.study.study_type_id}
+        releasePill={workspace ? <ReleasePill workspace={workspace} /> : undefined}
+      />
 
       {!workspace && error ? (
         <main className="hx-main">
-          <section className="hx-card hx-boundary-state" role="alert" aria-labelledby="hx-load-error">
-            <div className="hx-kicker">HELIX could not load</div>
+          <Card className="hx-boundary-state" role="alert" aria-labelledby="hx-load-error">
+            <Kicker>HELIX could not load</Kicker>
             <h1 id="hx-load-error">The workbench API is unavailable.</h1>
             <p className="hx-sub">{error}</p>
-            <button className="hx-btn primary" type="button" onClick={() => void refresh()}>
+            <Button variant="primary" onClick={() => void refresh()}>
               <RetryIcon size={16} />
               Retry connection
-            </button>
-          </section>
+            </Button>
+          </Card>
         </main>
       ) : !workspace ? (
         <main className="hx-main">
-          <section className="hx-card hx-boundary-state" role="status" aria-live="polite">
-            <span className="hx-spin" aria-hidden="true" />
-            <div className="hx-kicker">Loading synthetic study</div>
+          <Card className="hx-boundary-state" role="status" aria-live="polite">
+            <Spinner />
+            <Kicker>Loading synthetic study</Kicker>
             <h1>Building the evidence workspace.</h1>
             <p className="hx-sub">Requesting the workspace from the HELIX API.</p>
-          </section>
+          </Card>
         </main>
       ) : (
         <main className="hx-main" data-testid="helix-workbench">
           <h1 className="hx-sr">HELIX report workspace for {workspace.study.study_id}</h1>
+          {/* Reserved for Lane A (#19): replace this section with <StageRail> fed by
+              workspace.journey. Keep data-testid="progress-region". */}
           <section
-            className="hx-stepper hx-reserved"
+            className="hx-stepper is-reserved"
             aria-labelledby="hx-progress-heading"
             data-testid="progress-region"
           >
             <div className="hx-stepper-head">
               <div className="hx-progress">
-                <span className="hx-kicker" id="hx-progress-heading">
+                <Kicker id="hx-progress-heading">
                   Journey progress
-                </span>
+                </Kicker>
                 <span className="hx-sub">
                   Server workflow state{" "}
                   <span className="hx-mono" data-testid="workflow-state">
@@ -391,9 +365,8 @@ export function HelixWorkbench({ studyId }: Props) {
           {(notice || error) && (
             <div className={error ? "hx-notice t-block" : "hx-notice t-info"} role="status">
               <span>{error ?? notice}</span>
-              <button
-                className="hx-btn sm"
-                type="button"
+              <Button
+                size="sm"
                 aria-label="Dismiss message"
                 onClick={() => {
                   setError(null);
@@ -402,7 +375,7 @@ export function HelixWorkbench({ studyId }: Props) {
               >
                 <CloseIcon size={14} />
                 Close
-              </button>
+              </Button>
             </div>
           )}
 
@@ -461,18 +434,18 @@ function ReleasePill({ workspace }: { workspace: Workspace }) {
   const status = workspace.release_gate.status;
   const presentation = releasePresentation[status] ?? {
     label: formatStatus(status),
-    tone: "t-muted",
+    tone: "muted" as Tone,
   };
   return (
-    <span
-      className={`hx-pill ${presentation.tone}`}
+    <Pill
+      tone={presentation.tone}
       data-testid="release-status"
       data-status={status}
       data-workflow-state={workspace.workflow_state}
       title={`Release gate ${formatStatus(status)}. Workflow state ${formatStatus(workspace.workflow_state)}.`}
     >
       {presentation.label}
-    </span>
+    </Pill>
   );
 }
 
