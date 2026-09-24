@@ -1,7 +1,13 @@
 import hashlib
+import logging
+from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, datetime
+from typing import Any, cast
 from uuid import uuid4
 
+from sqlalchemy import event
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .approved_exports import (
@@ -15,8 +21,15 @@ from .approved_exports import (
 )
 from .artifacts import GeneratedArtifact
 from .config import Settings
-from .data_validation import DataValidationService, as_validation_results, policy_for
+from .data_validation import (
+    DataValidationConflictError,
+    DataValidationService,
+    UnknownValidationPackageError,
+    as_validation_results,
+    policy_for,
+)
 from .drafting_cycles import current_cycle, cycle_exhausted, load_recorded_attempts
+from .journey import JourneyFacts, project_journey
 from .release_candidates import (
     MissingReleaseCandidateError,
     approval_is_current,
@@ -27,9 +40,10 @@ from .release_candidates import (
     validate_final_study_approval,
 )
 from .reporting import assemble_report, claim_report_text
-from .repository import StudyPackageRepository
+from .repository import StudyNotFoundError, StudyPackageRepository
 from .review_scaffolds import ExportAdmissionError, admit_export_document
-from .run_plans import PinnedRunService
+from .run_events import RUN_EVENT_ADAPTER, RunEventStore
+from .run_plans import PinnedRunService, RunConflictError
 from .schemas import (
     RESOLVED_DISPOSITIONS,
     Approval,
@@ -67,6 +81,7 @@ from .schemas import (
     ValidationResult,
     ValidationRun,
     ValidationStatus,
+    WorkbenchJourney,
     WorkflowEvent,
     WorkspaceResponse,
     WorkspaceSummary,
@@ -104,6 +119,10 @@ ALLOWED_DISPOSITIONS = {
 }
 
 
+_UNSET = object()
+LOGGER = logging.getLogger(__name__)
+
+
 class WorkflowConflictError(RuntimeError):
     pass
 
@@ -126,6 +145,7 @@ class StudyService:
         self.section_runs = section_runs
         self.pinned_runs = pinned_runs
         self.data_validation = DataValidationService(session, pinned_runs, settings.codex_repository_root)
+        self.run_events = RunEventStore(session, retention=settings.run_event_retention)
 
     def workspace(self, study_id: str) -> WorkspaceResponse:
         package = self.repository.get(study_id)
@@ -144,7 +164,210 @@ class StudyService:
             for package in self.repository.list_packages()
         ]
 
+    # --- Journey-projected commands (Steven-Espaillat/Helix#25) ---
+    # Each public command runs its original implementation, then appends run events derived
+    # from the persisted state. Failed run-scoped commands record a persisted command_failed.
+
     def freeze_run(self, study_id: str, command: FreezeRunCommand) -> PinnedRun:
+        return self._journey_command(
+            study_id, "freeze_run", "upload", lambda: self._freeze_run_command(study_id, command)
+        )
+
+    def run_data_validation(self, study_id: str, command: DataValidationCommand) -> DataValidationExecution:
+        return self._journey_command(
+            study_id,
+            "run_data_validation",
+            "extract",
+            lambda: self._run_data_validation_command(study_id, command),
+        )
+
+    def run_validation(self, study_id: str, request: ValidationRequest) -> ValidationRun:
+        return self._journey_command(
+            study_id, "run_validation", "validate", lambda: self._run_validation_command(study_id, request)
+        )
+
+    def disposition(self, study_id: str, result_id: str, command: DispositionCommand) -> WorkspaceResponse:
+        return self._journey_command(
+            study_id,
+            "record_disposition",
+            "traceability",
+            lambda: self._disposition_command(study_id, result_id, command),
+        )
+
+    def approve(self, study_id: str, command: ApprovalCommand) -> WorkspaceResponse:
+        return self._journey_command(
+            study_id, "record_approval", "review-export", lambda: self._approve_command(study_id, command)
+        )
+
+    def record_final_study_approval(
+        self,
+        study_id: str,
+        command: FinalStudyApprovalCommand,
+    ) -> WorkspaceResponse:
+        return self._journey_command(
+            study_id,
+            "record_final_study_approval",
+            "review-export",
+            lambda: self._record_final_study_approval_command(study_id, command),
+        )
+
+    def export(self, study_id: str, command: ExportCommand) -> ExportReceipt:
+        return self._journey_command(
+            study_id, "export", "review-export", lambda: self._export_command(study_id, command)
+        )
+
+    def _journey_command[ResultT](
+        self,
+        study_id: str,
+        command_name: str,
+        stage_id: str,
+        operation: Callable[[], ResultT],
+    ) -> ResultT:
+        """Run a command so every commit it makes also appends its run events atomically.
+
+        A ``before_commit`` hook syncs run events inside each transaction the command
+        commits, so events and the state change they describe commit (or roll back)
+        together. Failed run-scoped commands record ``command_failed`` afterwards.
+        """
+
+        def sync_before_commit(_session: Session) -> None:
+            self._sync_run_events_in_transaction(study_id)
+
+        event.listen(self.session, "before_commit", sync_before_commit)
+        try:
+            return operation()
+        except (
+            WorkflowConflictError,
+            InvalidCommandError,
+            DataValidationConflictError,
+            UnknownValidationPackageError,
+            RunConflictError,
+        ) as error:
+            event.remove(self.session, "before_commit", sync_before_commit)
+            self.session.rollback()
+            try:
+                self._record_command_failure(study_id, command_name, stage_id, str(error))
+            except SQLAlchemyError:
+                self.session.rollback()
+                LOGGER.exception("Could not record command_failed for %s on %s", command_name, study_id)
+            raise
+        finally:
+            if event.contains(self.session, "before_commit", sync_before_commit):
+                event.remove(self.session, "before_commit", sync_before_commit)
+
+    def _sync_run_events_in_transaction(self, study_id: str) -> None:
+        """Append run events for persisted transitions, inside the caller's open transaction.
+
+        The run-state row lock is taken before the package facts are read, so a concurrent
+        sync can never diff stale facts against newer recorded state. The caller commits.
+        """
+        self.session.flush()
+        current = self.repository.get(study_id).pinned_run
+        if current is None:
+            return
+        self.run_events.lock_state(current.run_id, study_id)
+        package = self.repository.get(study_id)
+        if package.pinned_run is None or package.pinned_run.run_id != current.run_id:
+            return
+        self.run_events.sync(project_journey(self._journey_facts(package)))
+
+    def _record_command_failure(self, study_id: str, command_name: str, stage_id: str, detail: str) -> None:
+        try:
+            package = self.repository.get(study_id)
+        except StudyNotFoundError:
+            return
+        if package.pinned_run is None:
+            return
+        self.run_events.record_failure(
+            run_id=package.pinned_run.run_id,
+            study_id=study_id,
+            label=package.label,
+            stage_id=stage_id,
+            command=command_name,
+            detail=detail,
+        )
+        self.session.commit()
+
+    def replay_run_events(self, study_id: str, run_id: str, cursor: str | None) -> list[dict[str, Any]]:
+        package = self.repository.get(study_id)
+        known = {item.run_id for item in package.superseded_pinned_runs}
+        if package.pinned_run is not None:
+            known.add(package.pinned_run.run_id)
+        if run_id not in known:
+            raise InvalidCommandError(f"Unknown Pinned Run {run_id}")
+        return self.run_events.replay(run_id, cursor)
+
+    def run_event_context(self, study_id: str, run_id: str) -> tuple[str, str]:
+        """Return (label, run_version) for typed stream errors."""
+        package = self.repository.get(study_id)
+        runs = [*package.superseded_pinned_runs]
+        if package.pinned_run is not None:
+            runs.append(package.pinned_run)
+        run = next((item for item in runs if item.run_id == run_id), None)
+        return package.label, run.run_plan.fingerprint if run is not None else ""
+
+    def _journey(
+        self,
+        package: StudyEvidencePackage,
+        gate: GateDecision | None = None,
+        live: ReleaseCandidate | None | object = _UNSET,
+    ) -> WorkbenchJourney:
+        return project_journey(self._journey_facts(package, gate, live))
+
+    def _with_event_state(self, facts: JourneyFacts, run_id: str) -> JourneyFacts:
+        latest = self.run_events.latest(run_id)
+        return replace(
+            facts,
+            paused=self.run_events.is_paused(run_id),
+            marks=self.run_events.marks(run_id),
+            latest_event=RUN_EVENT_ADAPTER.validate_python(latest) if latest is not None else None,
+            latest_sequence=int(latest["sequence"]) if latest is not None else 0,
+        )
+
+    def _journey_facts(
+        self,
+        package: StudyEvidencePackage,
+        gate: GateDecision | None = None,
+        live: ReleaseCandidate | None | object = _UNSET,
+    ) -> JourneyFacts:
+        if live is _UNSET:
+            live = self._live_release_candidate(package)
+        live_candidate = cast(ReleaseCandidate | None, live)
+        gate = gate or self._release_gate(package, live=live_candidate)
+        run = package.pinned_run
+        validation_ran = False
+        if run is not None:
+            created = _parse_timestamp(run.created_at)
+            validation_ran = any(
+                event.event == "validation_run" and _parse_timestamp(event.timestamp) >= created
+                for event in package.events
+            )
+        exported = (
+            package.workflow_state == "exported"
+            and bool(package.export_artifacts)
+            and all(artifact.status == "exported" for artifact in package.export_artifacts)
+        )
+        facts = JourneyFacts(
+            label=package.label,
+            study_id=package.study.study_id,
+            manifest=package.manifest,
+            record_count=sum(len(records) for records in package.records.model_dump().values()),
+            pinned_run=run,
+            dvp_executions=package.data_validation_executions,
+            validation_ran=validation_ran,
+            validation_results=package.validation_results,
+            report_sections=package.report_sections,
+            provenance_edge_count=len(package.provenance_edges),
+            gate=gate,
+            dispositions=package.review_dispositions,
+            approvals=package.approvals,
+            final_study_approval_current=approval_is_current(package.final_study_approval, live_candidate),
+            exported=exported,
+            export_artifact_count=len(package.export_artifacts) if exported else 0,
+        )
+        return self._with_event_state(facts, run.run_id) if run is not None else facts
+
+    def _freeze_run_command(self, study_id: str, command: FreezeRunCommand) -> PinnedRun:
         pinned_run = self.pinned_runs.freeze(study_id, command, commit=False)
         execution = None
         if pinned_run.status == "planned":
@@ -184,10 +407,12 @@ class StudyService:
         self.session.commit()
         return pinned_run
 
-    def run_data_validation(self, study_id: str, command: DataValidationCommand) -> DataValidationExecution:
+    def _run_data_validation_command(
+        self, study_id: str, command: DataValidationCommand
+    ) -> DataValidationExecution:
         return self.data_validation.execute(study_id, command)
 
-    def run_validation(self, study_id: str, request: ValidationRequest) -> ValidationRun:
+    def _run_validation_command(self, study_id: str, request: ValidationRequest) -> ValidationRun:
         package = self.repository.get(study_id)
         if package.pinned_run is None:
             pinned_run = self.pinned_runs.freeze(
@@ -327,7 +552,9 @@ class StudyService:
             lineage=edges,
         )
 
-    def disposition(self, study_id: str, result_id: str, command: DispositionCommand) -> WorkspaceResponse:
+    def _disposition_command(
+        self, study_id: str, result_id: str, command: DispositionCommand
+    ) -> WorkspaceResponse:
         if result_id.startswith(("TCR-", "PRV-", "TCF-")):
             raise WorkflowConflictError(
                 "Template and provenance failures are non-waivable. "
@@ -586,7 +813,7 @@ class StudyService:
         self.session.commit()
         return self._workspace(updated)
 
-    def approve(self, study_id: str, command: ApprovalCommand) -> WorkspaceResponse:
+    def _approve_command(self, study_id: str, command: ApprovalCommand) -> WorkspaceResponse:
         package = self.repository.get(study_id, for_update=True)
         self._ensure_mutable(package)
         gate = self._release_gate(package)
@@ -671,7 +898,7 @@ class StudyService:
         self.session.commit()
         return self._workspace(updated)
 
-    def record_final_study_approval(
+    def _record_final_study_approval_command(
         self,
         study_id: str,
         command: FinalStudyApprovalCommand,
@@ -748,7 +975,7 @@ class StudyService:
         self.session.commit()
         return self._workspace(updated)
 
-    def export(self, study_id: str, command: ExportCommand) -> ExportReceipt:
+    def _export_command(self, study_id: str, command: ExportCommand) -> ExportReceipt:
         package = self.repository.get(study_id, for_update=True)
         storage_key = f"export:{command.idempotency_key}"
         prior_event = self.repository.get_event_by_idempotency_key(study_id, storage_key)
@@ -878,7 +1105,8 @@ class StudyService:
         )
 
     def _workspace(self, package: StudyEvidencePackage) -> WorkspaceResponse:
-        gate = self._release_gate(package)
+        live = self._live_release_candidate(package)
+        gate = self._release_gate(package, live=live)
         unresolved = set(gate.blocking_result_ids)
         validation_blockers = {result.result_id for result in blocking_failures(package.validation_results)}
         resolved = len(validation_blockers - unresolved)
@@ -904,6 +1132,7 @@ class StudyService:
             export_artifacts=package.export_artifacts,
             report=assemble_report(package),
             events=package.events[-20:],
+            journey=self._journey(package, gate, live),
             planner_capabilities=[
                 PlannerCapability(
                     mode=PlannerMode.FIXTURE,
@@ -934,12 +1163,9 @@ class StudyService:
             can_open_revision=self._can_open_revision(package.study.study_id),
             predecessor_snapshots=package.predecessor_snapshots,
             superseding_run_receipt=package.superseding_run_receipt,
-            release_candidate=self._live_release_candidate(package),
+            release_candidate=live,
             final_study_approval=package.final_study_approval,
-            approval_current=approval_is_current(
-                package.final_study_approval,
-                self._live_release_candidate(package),
-            ),
+            approval_current=approval_is_current(package.final_study_approval, live),
         )
 
     def _can_open_revision(self, study_id: str) -> bool:
@@ -978,6 +1204,8 @@ class StudyService:
         self,
         package: StudyEvidencePackage,
         decided_at: str | None = None,
+        *,
+        live: ReleaseCandidate | None | object = _UNSET,
     ) -> GateDecision:
         blockers = sorted(
             {
@@ -990,7 +1218,11 @@ class StudyService:
             package,
             candidate_blocker_ids=blockers,
             decided_at=decided_at,
-            live_release_candidate=self._live_release_candidate(package),
+            live_release_candidate=(
+                self._live_release_candidate(package)
+                if live is _UNSET
+                else cast(ReleaseCandidate | None, live)
+            ),
         )
 
     def _live_release_candidate(self, package: StudyEvidencePackage) -> ReleaseCandidate | None:
@@ -1185,6 +1417,11 @@ def _unresolved_dvp_result_ids(
                     continue
             unresolved.append(result.result_id)
     return unresolved
+
+
+def _parse_timestamp(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
 
 
 def derive_release_gate(

@@ -14,7 +14,19 @@ export interface paths {
         /** List Studies */
         get: operations["list_studies_api_v1_studies_get"];
         put?: never;
-        post?: never;
+        /**
+         * Create Study From Upload
+         * @description Create a study from uploaded source files.
+         *
+         *     Route and protocol version are required because no column carries them
+         *     and a governed fact is never inferred from data; the caller is recorded
+         *     as their source.
+         *
+         *     The package is stored with no claims. Computing those is the section
+         *     executor's job, so the release gate starts blocked and stays blocked
+         *     until real validation runs.
+         */
+        post: operations["create_study_from_upload_api_v1_studies_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -134,6 +146,26 @@ export interface paths {
         put?: never;
         /** Freeze Run */
         post: operations["freeze_run_api_v1_studies__study_id__pinned_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/studies/{study_id}/pinned-runs/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stream projected run events (Server-Sent Events)
+         * @description Live stream of persisted, projected run events for one Pinned Run. Each SSE frame carries `id` (the stable event_id), `event` (the event type), and `data` (a RunEvent JSON object). `Last-Event-ID` (header, or the `last_event_id` query parameter) replays only events after that cursor. If missed events are outside the retained window the server returns HTTP 409 `event_cursor_expired` before opening the stream; refresh GET /workspace and reconnect from `journey.run.latest_event_id`. This stream is not the audit history: `WorkspaceResponse.events` remains the append-only audit record.
+         */
+        get: operations["stream_run_events_api_v1_studies__study_id__pinned_runs__run_id__events_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -297,6 +329,68 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActionFinishedEvent */
+        ActionFinishedEvent: {
+            /** Action Id */
+            action_id: string;
+            /** Action Label */
+            action_label: string;
+            /** Event Id */
+            event_id: string;
+            /** Flag */
+            flag?: ("blocker" | "warning") | null;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Outcome */
+            outcome?: ("passed" | "warning" | "blocker" | "dispositioned") | null;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "action_finished";
+        };
+        /** ActionStartedEvent */
+        ActionStartedEvent: {
+            /** Action Id */
+            action_id: string;
+            /** Action Label */
+            action_label: string;
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "action_started";
+        };
         /** Animal */
         Animal: {
             /** Animal Id */
@@ -373,6 +467,29 @@ export interface components {
             status: components["schemas"]["SectionStatus"];
             /** Title */
             title: string;
+        };
+        /** Body_create_study_from_upload_api_v1_studies_post */
+        Body_create_study_from_upload_api_v1_studies_post: {
+            /** Authorized By */
+            authorized_by: string;
+            /** Files */
+            files: string[];
+            /** Protocol Version */
+            protocol_version: string;
+            /** Route */
+            route: string;
+            /** Study Id */
+            study_id: string;
+            /**
+             * Study Start
+             * @default
+             */
+            study_start: string;
+            /**
+             * Study Type Id
+             * @default REPEAT_DOSE_28D_RODENT
+             */
+            study_type_id: string;
         };
         /** BoundDisposition */
         BoundDisposition: {
@@ -515,6 +632,35 @@ export interface components {
             skill_references_hash: string;
             /** Thread Id */
             thread_id: string;
+        };
+        /** CommandFailedEvent */
+        CommandFailedEvent: {
+            /** Command */
+            command: string;
+            /** Detail */
+            detail: string;
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "command_failed";
         };
         /** ConditionDecision */
         ConditionDecision: {
@@ -748,6 +894,24 @@ export interface components {
             /** Section Package Id */
             section_package_id: string;
         };
+        /** EventCursorExpired */
+        EventCursorExpired: {
+            /**
+             * Code
+             * @constant
+             */
+            code: "event_cursor_expired";
+            /** Detail */
+            detail: string;
+            /** Label */
+            label: string;
+            /** Latest Event Id */
+            latest_event_id: string | null;
+            /** Run Id */
+            run_id: string;
+            /** Run Version */
+            run_version: string;
+        };
         /** EvidenceChain */
         EvidenceChain: {
             claim: components["schemas"]["Claim"];
@@ -796,6 +960,33 @@ export interface components {
             actor: string;
             /** Idempotency Key */
             idempotency_key: string;
+        };
+        /** ExportFinishedEvent */
+        ExportFinishedEvent: {
+            /** Artifact Count */
+            artifact_count: number;
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "export_finished";
         };
         /** ExportInstrumentation */
         ExportInstrumentation: {
@@ -907,6 +1098,36 @@ export interface components {
             gate_type: "section" | "release";
             status: components["schemas"]["GateStatus"];
         };
+        /** GateReachedEvent */
+        GateReachedEvent: {
+            /** Event Id */
+            event_id: string;
+            /**
+             * Gate Number
+             * @enum {integer}
+             */
+            gate_number: 1 | 2 | 3;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "gate_reached";
+        };
         /**
          * GateStatus
          * @enum {string}
@@ -965,6 +1186,126 @@ export interface components {
              * @enum {string}
              */
             kind: "pinned_run" | "section_draft_candidate" | "section_draft" | "data_validation_receipt";
+        };
+        /** InvalidEventCursor */
+        InvalidEventCursor: {
+            /**
+             * Code
+             * @constant
+             */
+            code: "invalid_event_cursor";
+            /** Detail */
+            detail: string;
+            /** Label */
+            label: string;
+        };
+        /** JourneyAction */
+        JourneyAction: {
+            /** Action Id */
+            action_id: string;
+            /**
+             * Command
+             * @description The separate backend command that performs this action, when a human command owns it.
+             */
+            command?: string | null;
+            /** Detail */
+            detail?: string | null;
+            /** Label */
+            label: string;
+            /**
+             * Outcome
+             * @description Result of a finished action. 'dispositioned' marks a blocker resolved by a recorded human disposition; it is never reported as 'passed'.
+             */
+            outcome?: ("passed" | "warning" | "blocker" | "dispositioned") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "done" | "blocked";
+        };
+        /** JourneyBoundaryItem */
+        JourneyBoundaryItem: {
+            /** Detail */
+            detail: string;
+            /** Title */
+            title: string;
+        };
+        /** JourneyRunIdentity */
+        JourneyRunIdentity: {
+            /** Created At */
+            created_at: string;
+            /** Events Url */
+            events_url: string;
+            /** Latest Event Id */
+            latest_event_id?: string | null;
+            /** Latest Sequence */
+            latest_sequence: number;
+            /** Manifest Hash */
+            manifest_hash: string;
+            /** Predecessor Run Id */
+            predecessor_run_id?: string | null;
+            /** Run Id */
+            run_id: string;
+            /** Run Plan Fingerprint */
+            run_plan_fingerprint: string;
+            /**
+             * Run Status
+             * @enum {string}
+             */
+            run_status: "planned" | "needs_review";
+            /** Run Version */
+            run_version: string;
+            /** Study Id */
+            study_id: string;
+        };
+        /** JourneyStage */
+        JourneyStage: {
+            /** Actions */
+            actions: components["schemas"]["JourneyAction"][];
+            /** Control Boundary */
+            control_boundary: string;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Finished Sequence */
+            finished_sequence?: number | null;
+            /** Gate Number */
+            gate_number: (1 | 2 | 3) | null;
+            /** @description Release-gate status carried on the Review and export stage only. */
+            gate_status?: components["schemas"]["GateStatus"] | null;
+            input: components["schemas"]["JourneyBoundaryItem"];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "human_gate" | "agent_step";
+            /** Name */
+            name: string;
+            output: components["schemas"]["JourneyBoundaryItem"];
+            /**
+             * Selectable
+             * @description True when the stage has been reached and may be inspected.
+             */
+            selectable: boolean;
+            /** Sequence */
+            sequence: number;
+            /** Short Label */
+            short_label: string;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Started At */
+            started_at?: string | null;
+            /** Started Sequence */
+            started_sequence?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "complete" | "current" | "blocked" | "paused" | "pending";
+            /** Summary */
+            summary: string;
         };
         /** ManifestEntry */
         ManifestEntry: {
@@ -1406,6 +1747,33 @@ export interface components {
             /** Timestamp */
             timestamp: string | null;
         };
+        /** RunPausedEvent */
+        RunPausedEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Reason */
+            reason?: string | null;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "run_paused";
+        };
         /** RunPlan */
         RunPlan: {
             /** Created At */
@@ -1471,6 +1839,31 @@ export interface components {
             run_id: string;
             /** Run Plan Fingerprint */
             run_plan_fingerprint: string;
+        };
+        /** RunResumedEvent */
+        RunResumedEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "run_resumed";
         };
         /** SectionClaimReference */
         SectionClaimReference: {
@@ -1677,6 +2070,56 @@ export interface components {
             status: "complete" | "current" | "blocked" | "pending";
             /** Summary */
             summary: string;
+        };
+        /** StageFinishedEvent */
+        StageFinishedEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "stage_finished";
+        };
+        /** StageStartedEvent */
+        StageStartedEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Label */
+            label: string;
+            /** Occurred At */
+            occurred_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stage Id
+             * @enum {string}
+             */
+            stage_id: "upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export";
+            /** Study Id */
+            study_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "stage_started";
         };
         /** StoredSectionRun */
         StoredSectionRun: {
@@ -2028,6 +2471,22 @@ export interface components {
          * @enum {string}
          */
         ValidationStatus: "pass" | "warn" | "fail" | "skipped";
+        /** WorkbenchJourney */
+        WorkbenchJourney: {
+            /**
+             * Current Stage Id
+             * @description The single current stage; null only after the final stage completes.
+             */
+            current_stage_id: ("upload" | "parse" | "resolve" | "extract" | "validate" | "draft" | "provenance" | "traceability" | "review-export") | null;
+            /** Label */
+            label: string;
+            /** Latest Event */
+            latest_event?: (components["schemas"]["StageStartedEvent"] | components["schemas"]["StageFinishedEvent"] | components["schemas"]["ActionStartedEvent"] | components["schemas"]["ActionFinishedEvent"] | components["schemas"]["RunPausedEvent"] | components["schemas"]["RunResumedEvent"] | components["schemas"]["GateReachedEvent"] | components["schemas"]["CommandFailedEvent"] | components["schemas"]["ExportFinishedEvent"]) | null;
+            /** @description Identity of the current Pinned Run; null until the manifest is frozen. */
+            run: components["schemas"]["JourneyRunIdentity"] | null;
+            /** Stages */
+            stages: components["schemas"]["JourneyStage"][];
+        };
         /** WorkflowEvent */
         WorkflowEvent: {
             /** Actor */
@@ -2071,11 +2530,16 @@ export interface components {
             dispositions: components["schemas"]["ReviewDisposition"][];
             /** Drafting Cycles */
             drafting_cycles?: components["schemas"]["DraftingCycle"][];
-            /** Events */
+            /**
+             * Events
+             * @description Append-only audit history (the latest 20 workflow events). This is not the live run-event stream; subscribe to GET /api/v1/studies/{study_id}/pinned-runs/{run_id}/events for projected run events.
+             */
             events: components["schemas"]["WorkflowEvent"][];
             /** Export Artifacts */
             export_artifacts: components["schemas"]["ExportArtifact"][];
             final_study_approval?: components["schemas"]["FinalStudyApproval"] | null;
+            /** @description Backend-owned nine-stage journey projection and current run identity. */
+            journey: components["schemas"]["WorkbenchJourney"];
             /** Label */
             label: string;
             /** Manifest */
@@ -2150,6 +2614,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudyListItem"][];
+                };
+            };
+        };
+    };
+    create_study_from_upload_api_v1_studies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_create_study_from_upload_api_v1_studies_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2378,6 +2877,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PinnedRun"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_run_events_api_v1_studies__study_id__pinned_runs__run_id__events_get: {
+        parameters: {
+            query?: {
+                last_event_id?: string | null;
+            };
+            header?: {
+                "Last-Event-ID"?: string | null;
+            };
+            path: {
+                study_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description text/event-stream of RunEvent frames */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Malformed or foreign Last-Event-ID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvalidEventCursor"];
+                };
+            };
+            /** @description Unknown study or Pinned Run */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Last-Event-ID is outside retention */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCursorExpired"];
                 };
             };
             /** @description Validation Error */

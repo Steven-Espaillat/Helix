@@ -13,7 +13,7 @@ import type {
   Workspace,
 } from "./types";
 
-const API_ROOT = (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1").replace(
+export const API_ROOT = (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1").replace(
   /\/$/,
   "",
 );
@@ -254,7 +254,8 @@ function assertWorkspace(value: unknown): asserts value is Workspace {
     !Array.isArray(value.section_runs) ||
     !isObject(value.release_gate) ||
     typeof value.release_gate.status !== "string" ||
-    !isObject(value.report)
+    !isObject(value.report) ||
+    !isJourney(value.journey)
   ) {
     throw new Error("The workspace response does not match the generated API contract.");
   }
@@ -383,6 +384,17 @@ function assertExportReceipt(value: unknown): asserts value is ExportReceipt {
   ) {
     throw new Error("The export response does not match the generated API contract.");
   }
+}
+
+function isJourney(value: unknown): boolean {
+  return (
+    isObject(value) &&
+    value.label === "SYNTHETIC / NOT FOR SUBMISSION" &&
+    Array.isArray(value.stages) &&
+    value.stages.length === 9 &&
+    (value.current_stage_id === null || typeof value.current_stage_id === "string") &&
+    (value.run === null || isObject(value.run))
+  );
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

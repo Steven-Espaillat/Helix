@@ -1,6 +1,182 @@
 {
   "components": {
     "schemas": {
+      "ActionFinishedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "action_id": {
+            "title": "Action Id",
+            "type": "string"
+          },
+          "action_label": {
+            "title": "Action Label",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "flag": {
+            "anyOf": [
+              {
+                "enum": [
+                  "blocker",
+                  "warning"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "enum": [
+                  "passed",
+                  "warning",
+                  "blocker",
+                  "dispositioned"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "action_finished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type",
+          "action_id",
+          "action_label"
+        ],
+        "title": "ActionFinishedEvent",
+        "type": "object"
+      },
+      "ActionStartedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "action_id": {
+            "title": "Action Id",
+            "type": "string"
+          },
+          "action_label": {
+            "title": "Action Label",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "action_started",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type",
+          "action_id",
+          "action_label"
+        ],
+        "title": "ActionStartedEvent",
+        "type": "object"
+      },
       "Animal": {
         "additionalProperties": false,
         "properties": {
@@ -230,6 +406,63 @@
           "blocks"
         ],
         "title": "AssembledSection",
+        "type": "object"
+      },
+      "Body_create_study_from_upload_api_v1_studies_post": {
+        "properties": {
+          "authorized_by": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Authorized By",
+            "type": "string"
+          },
+          "files": {
+            "items": {
+              "contentMediaType": "application/octet-stream",
+              "type": "string"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "protocol_version": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Protocol Version",
+            "type": "string"
+          },
+          "route": {
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Route",
+            "type": "string"
+          },
+          "study_id": {
+            "maxLength": 64,
+            "minLength": 7,
+            "title": "Study Id",
+            "type": "string"
+          },
+          "study_start": {
+            "default": "",
+            "maxLength": 32,
+            "title": "Study Start",
+            "type": "string"
+          },
+          "study_type_id": {
+            "default": "REPEAT_DOSE_28D_RODENT",
+            "maxLength": 80,
+            "title": "Study Type Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "files",
+          "study_id",
+          "route",
+          "protocol_version",
+          "authorized_by"
+        ],
+        "title": "Body_create_study_from_upload_api_v1_studies_post",
         "type": "object"
       },
       "BoundDisposition": {
@@ -657,6 +890,78 @@
           "skill_references_hash"
         ],
         "title": "CodexAgentReceipt",
+        "type": "object"
+      },
+      "CommandFailedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "title": "Command",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "command_failed",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type",
+          "command",
+          "detail"
+        ],
+        "title": "CommandFailedEvent",
         "type": "object"
       },
       "ConditionDecision": {
@@ -1303,6 +1608,53 @@
         "title": "DraftingCycleRef",
         "type": "object"
       },
+      "EventCursorExpired": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "event_cursor_expired",
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "latest_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Event Id"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "run_version": {
+            "title": "Run Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "code",
+          "detail",
+          "run_id",
+          "run_version",
+          "latest_event_id"
+        ],
+        "title": "EventCursorExpired",
+        "type": "object"
+      },
       "EvidenceChain": {
         "additionalProperties": false,
         "properties": {
@@ -1471,6 +1823,74 @@
           "idempotency_key"
         ],
         "title": "ExportCommand",
+        "type": "object"
+      },
+      "ExportFinishedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_count": {
+            "minimum": 0.0,
+            "title": "Artifact Count",
+            "type": "integer"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "export_finished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type",
+          "artifact_count"
+        ],
+        "title": "ExportFinishedEvent",
         "type": "object"
       },
       "ExportInstrumentation": {
@@ -1776,6 +2196,78 @@
         "title": "GateDecision",
         "type": "object"
       },
+      "GateReachedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "gate_number": {
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "title": "Gate Number",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "gate_reached",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type",
+          "gate_number"
+        ],
+        "title": "GateReachedEvent",
+        "type": "object"
+      },
       "GateStatus": {
         "enum": [
           "blocked",
@@ -1934,6 +2426,368 @@
           "content_hash"
         ],
         "title": "IncludedArtifact",
+        "type": "object"
+      },
+      "InvalidEventCursor": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "invalid_event_cursor",
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "code",
+          "detail"
+        ],
+        "title": "InvalidEventCursor",
+        "type": "object"
+      },
+      "JourneyAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action_id": {
+            "title": "Action Id",
+            "type": "string"
+          },
+          "command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The separate backend command that performs this action, when a human command owns it.",
+            "title": "Command"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "enum": [
+                  "passed",
+                  "warning",
+                  "blocker",
+                  "dispositioned"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Result of a finished action. 'dispositioned' marks a blocker resolved by a recorded human disposition; it is never reported as 'passed'.",
+            "title": "Outcome"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "done",
+              "blocked"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action_id",
+          "label",
+          "status"
+        ],
+        "title": "JourneyAction",
+        "type": "object"
+      },
+      "JourneyBoundaryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "detail"
+        ],
+        "title": "JourneyBoundaryItem",
+        "type": "object"
+      },
+      "JourneyRunIdentity": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "events_url": {
+            "title": "Events Url",
+            "type": "string"
+          },
+          "latest_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Event Id"
+          },
+          "latest_sequence": {
+            "minimum": 0.0,
+            "title": "Latest Sequence",
+            "type": "integer"
+          },
+          "manifest_hash": {
+            "title": "Manifest Hash",
+            "type": "string"
+          },
+          "predecessor_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predecessor Run Id"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "run_plan_fingerprint": {
+            "title": "Run Plan Fingerprint",
+            "type": "string"
+          },
+          "run_status": {
+            "enum": [
+              "planned",
+              "needs_review"
+            ],
+            "title": "Run Status",
+            "type": "string"
+          },
+          "run_version": {
+            "title": "Run Version",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "study_id",
+          "run_status",
+          "run_version",
+          "created_at",
+          "manifest_hash",
+          "run_plan_fingerprint",
+          "latest_sequence",
+          "events_url"
+        ],
+        "title": "JourneyRunIdentity",
+        "type": "object"
+      },
+      "JourneyStage": {
+        "additionalProperties": false,
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyAction"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "control_boundary": {
+            "title": "Control Boundary",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "finished_sequence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished Sequence"
+          },
+          "gate_number": {
+            "anyOf": [
+              {
+                "enum": [
+                  1,
+                  2,
+                  3
+                ],
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate Number"
+          },
+          "gate_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GateStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Release-gate status carried on the Review and export stage only."
+          },
+          "input": {
+            "$ref": "#/components/schemas/JourneyBoundaryItem"
+          },
+          "kind": {
+            "enum": [
+              "human_gate",
+              "agent_step"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "output": {
+            "$ref": "#/components/schemas/JourneyBoundaryItem"
+          },
+          "selectable": {
+            "description": "True when the stage has been reached and may be inspected.",
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "sequence": {
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "short_label": {
+            "title": "Short Label",
+            "type": "string"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "started_sequence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started Sequence"
+          },
+          "status": {
+            "enum": [
+              "complete",
+              "current",
+              "blocked",
+              "paused",
+              "pending"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage_id",
+          "sequence",
+          "kind",
+          "gate_number",
+          "short_label",
+          "name",
+          "status",
+          "selectable",
+          "summary",
+          "input",
+          "output",
+          "control_boundary",
+          "actions"
+        ],
+        "title": "JourneyStage",
         "type": "object"
       },
       "ManifestEntry": {
@@ -3263,6 +4117,79 @@
         "title": "ReviewDisposition",
         "type": "object"
       },
+      "RunPausedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "run_paused",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type"
+        ],
+        "title": "RunPausedEvent",
+        "type": "object"
+      },
       "RunPlan": {
         "additionalProperties": false,
         "properties": {
@@ -3451,6 +4378,68 @@
           "event_id"
         ],
         "title": "RunReceipt",
+        "type": "object"
+      },
+      "RunResumedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "run_resumed",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type"
+        ],
+        "title": "RunResumedEvent",
         "type": "object"
       },
       "SectionClaimReference": {
@@ -3992,6 +4981,130 @@
           "checks"
         ],
         "title": "Stage",
+        "type": "object"
+      },
+      "StageFinishedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "stage_finished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type"
+        ],
+        "title": "StageFinishedEvent",
+        "type": "object"
+      },
+      "StageStartedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "stage_id": {
+            "enum": [
+              "upload",
+              "parse",
+              "resolve",
+              "extract",
+              "validate",
+              "draft",
+              "provenance",
+              "traceability",
+              "review-export"
+            ],
+            "title": "Stage Id",
+            "type": "string"
+          },
+          "study_id": {
+            "title": "Study Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "stage_started",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "event_id",
+          "run_id",
+          "study_id",
+          "sequence",
+          "stage_id",
+          "occurred_at",
+          "type"
+        ],
+        "title": "StageStartedEvent",
         "type": "object"
       },
       "StoredSectionRun": {
@@ -4951,6 +6064,119 @@
         "title": "ValidationStatus",
         "type": "string"
       },
+      "WorkbenchJourney": {
+        "additionalProperties": false,
+        "properties": {
+          "current_stage_id": {
+            "anyOf": [
+              {
+                "enum": [
+                  "upload",
+                  "parse",
+                  "resolve",
+                  "extract",
+                  "validate",
+                  "draft",
+                  "provenance",
+                  "traceability",
+                  "review-export"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The single current stage; null only after the final stage completes.",
+            "title": "Current Stage Id"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "latest_event": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "action_finished": "#/components/schemas/ActionFinishedEvent",
+                    "action_started": "#/components/schemas/ActionStartedEvent",
+                    "command_failed": "#/components/schemas/CommandFailedEvent",
+                    "export_finished": "#/components/schemas/ExportFinishedEvent",
+                    "gate_reached": "#/components/schemas/GateReachedEvent",
+                    "run_paused": "#/components/schemas/RunPausedEvent",
+                    "run_resumed": "#/components/schemas/RunResumedEvent",
+                    "stage_finished": "#/components/schemas/StageFinishedEvent",
+                    "stage_started": "#/components/schemas/StageStartedEvent"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/StageStartedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StageFinishedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ActionStartedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ActionFinishedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RunPausedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RunResumedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GateReachedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CommandFailedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ExportFinishedEvent"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Event"
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JourneyRunIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Identity of the current Pinned Run; null until the manifest is frozen."
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyStage"
+            },
+            "maxItems": 9,
+            "minItems": 9,
+            "title": "Stages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "label",
+          "current_stage_id",
+          "run",
+          "stages"
+        ],
+        "title": "WorkbenchJourney",
+        "type": "object"
+      },
       "WorkflowEvent": {
         "additionalProperties": false,
         "properties": {
@@ -5071,6 +6297,7 @@
             "type": "array"
           },
           "events": {
+            "description": "Append-only audit history (the latest 20 workflow events). This is not the live run-event stream; subscribe to GET /api/v1/studies/{study_id}/pinned-runs/{run_id}/events for projected run events.",
             "items": {
               "$ref": "#/components/schemas/WorkflowEvent"
             },
@@ -5093,6 +6320,10 @@
                 "type": "null"
               }
             ]
+          },
+          "journey": {
+            "$ref": "#/components/schemas/WorkbenchJourney",
+            "description": "Backend-owned nine-stage journey projection and current run identity."
           },
           "label": {
             "title": "Label",
@@ -5231,6 +6462,7 @@
           "export_artifacts",
           "report",
           "events",
+          "journey",
           "planner_capabilities",
           "pinned_run",
           "data_validation_executions",
@@ -5308,6 +6540,48 @@
           }
         },
         "summary": "List Studies",
+        "tags": [
+          "studies"
+        ]
+      },
+      "post": {
+        "description": "Create a study from uploaded source files.\n\nRoute and protocol version are required because no column carries them\nand a governed fact is never inferred from data; the caller is recorded\nas their source.\n\nThe package is stored with no claims. Computing those is the section\nexecutor's job, so the release gate starts blocked and stays blocked\nuntil real validation runs.",
+        "operationId": "create_study_from_upload_api_v1_studies_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_study_from_upload_api_v1_studies_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Study From Upload Api V1 Studies Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Study From Upload",
         "tags": [
           "studies"
         ]
@@ -5663,6 +6937,114 @@
           }
         },
         "summary": "Freeze Run",
+        "tags": [
+          "run-plans"
+        ]
+      }
+    },
+    "/api/v1/studies/{study_id}/pinned-runs/{run_id}/events": {
+      "get": {
+        "description": "Live stream of persisted, projected run events for one Pinned Run. Each SSE frame carries `id` (the stable event_id), `event` (the event type), and `data` (a RunEvent JSON object). `Last-Event-ID` (header, or the `last_event_id` query parameter) replays only events after that cursor. If missed events are outside the retained window the server returns HTTP 409 `event_cursor_expired` before opening the stream; refresh GET /workspace and reconnect from `journey.run.latest_event_id`. This stream is not the audit history: `WorkspaceResponse.events` remains the append-only audit record.",
+        "operationId": "stream_run_events_api_v1_studies__study_id__pinned_runs__run_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "study_id",
+            "required": true,
+            "schema": {
+              "title": "Study Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "last_event_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last Event Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Last-Event-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "description": "SSE frames whose data is a RunEvent",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "text/event-stream of RunEvent frames"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidEventCursor"
+                }
+              }
+            },
+            "description": "Malformed or foreign Last-Event-ID"
+          },
+          "404": {
+            "description": "Unknown study or Pinned Run"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventCursorExpired"
+                }
+              }
+            },
+            "description": "Last-Event-ID is outside retention"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stream projected run events (Server-Sent Events)",
         "tags": [
           "run-plans"
         ]

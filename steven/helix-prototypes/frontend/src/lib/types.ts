@@ -18,3 +18,12 @@ export type SectionDraft = components["schemas"]["SectionDraft"];
 export type PromotionDecision = components["schemas"]["PromotionDecision"];
 export type HumanDirectedRevisionReceipt = components["schemas"]["HumanDirectedRevisionReceipt"];
 export type DraftingCycle = components["schemas"]["DraftingCycle"];
+
+// Backend-owned nine-stage journey and run events (Steven-Espaillat/Helix#25).
+export type WorkbenchJourney = components["schemas"]["WorkbenchJourney"];
+export type JourneyStage = components["schemas"]["JourneyStage"];
+export type JourneyStageId = JourneyStage["stage_id"];
+export type JourneyAction = components["schemas"]["JourneyAction"];
+export type JourneyRunIdentity = components["schemas"]["JourneyRunIdentity"];
+export type RunEvent = NonNullable<WorkbenchJourney["latest_event"]>;
+export type EventCursorExpired = components["schemas"]["EventCursorExpired"];

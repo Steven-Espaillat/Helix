@@ -1048,6 +1048,184 @@ class SectionDraft(StrictModel):
     bound_dispositions: list[BoundDisposition]
 
 
+# --- Nine-stage journey projection and run events (Steven-Espaillat/Helix#25) ---
+
+JourneyStageId = Literal[
+    "upload",
+    "parse",
+    "resolve",
+    "extract",
+    "validate",
+    "draft",
+    "provenance",
+    "traceability",
+    "review-export",
+]
+JourneyStageStatus = Literal["complete", "current", "blocked", "paused", "pending"]
+JourneyActionStatus = Literal["pending", "done", "blocked"]
+JourneyActionOutcome = Literal["passed", "warning", "blocker", "dispositioned"]
+RunEventFlag = Literal["blocker", "warning"]
+
+
+class JourneyBoundaryItem(StrictModel):
+    title: str
+    detail: str
+
+
+class JourneyAction(StrictModel):
+    action_id: str
+    label: str
+    detail: str | None = None
+    status: JourneyActionStatus
+    outcome: JourneyActionOutcome | None = Field(
+        default=None,
+        description=(
+            "Result of a finished action. 'dispositioned' marks a blocker resolved by a recorded "
+            "human disposition; it is never reported as 'passed'."
+        ),
+    )
+    command: str | None = Field(
+        default=None,
+        description="The separate backend command that performs this action, when a human command owns it.",
+    )
+
+
+class JourneyStage(StrictModel):
+    stage_id: JourneyStageId
+    sequence: int = Field(ge=1, le=9)
+    kind: Literal["human_gate", "agent_step"]
+    gate_number: Literal[1, 2, 3] | None
+    short_label: str
+    name: str
+    status: JourneyStageStatus
+    selectable: bool = Field(description="True when the stage has been reached and may be inspected.")
+    summary: str
+    input: JourneyBoundaryItem
+    output: JourneyBoundaryItem
+    control_boundary: str
+    actions: list[JourneyAction]
+    gate_status: GateStatus | None = Field(
+        default=None,
+        description="Release-gate status carried on the Review and export stage only.",
+    )
+    started_sequence: int | None = None
+    started_at: str | None = None
+    finished_sequence: int | None = None
+    finished_at: str | None = None
+
+
+class JourneyRunIdentity(StrictModel):
+    run_id: str
+    study_id: str
+    run_status: Literal["planned", "needs_review"]
+    run_version: str
+    created_at: str
+    manifest_hash: str
+    run_plan_fingerprint: str
+    predecessor_run_id: str | None = None
+    latest_event_id: str | None = None
+    latest_sequence: int = Field(ge=0)
+    events_url: str
+
+
+class RunEventBase(StrictModel):
+    label: str
+    event_id: str
+    run_id: str
+    study_id: str
+    sequence: int = Field(ge=1)
+    stage_id: JourneyStageId
+    occurred_at: str
+
+
+class StageStartedEvent(RunEventBase):
+    type: Literal["stage_started"]
+
+
+class StageFinishedEvent(RunEventBase):
+    type: Literal["stage_finished"]
+
+
+class ActionStartedEvent(RunEventBase):
+    type: Literal["action_started"]
+    action_id: str
+    action_label: str
+
+
+class ActionFinishedEvent(RunEventBase):
+    type: Literal["action_finished"]
+    action_id: str
+    action_label: str
+    outcome: JourneyActionOutcome | None = None
+    flag: RunEventFlag | None = None
+
+
+class RunPausedEvent(RunEventBase):
+    type: Literal["run_paused"]
+    reason: str | None = None
+
+
+class RunResumedEvent(RunEventBase):
+    type: Literal["run_resumed"]
+
+
+class GateReachedEvent(RunEventBase):
+    type: Literal["gate_reached"]
+    gate_number: Literal[1, 2, 3]
+
+
+class CommandFailedEvent(RunEventBase):
+    type: Literal["command_failed"]
+    command: str
+    detail: str
+
+
+class ExportFinishedEvent(RunEventBase):
+    type: Literal["export_finished"]
+    artifact_count: int = Field(ge=0)
+
+
+RunEvent = Annotated[
+    StageStartedEvent
+    | StageFinishedEvent
+    | ActionStartedEvent
+    | ActionFinishedEvent
+    | RunPausedEvent
+    | RunResumedEvent
+    | GateReachedEvent
+    | CommandFailedEvent
+    | ExportFinishedEvent,
+    Field(discriminator="type"),
+]
+
+
+class WorkbenchJourney(StrictModel):
+    label: str
+    current_stage_id: JourneyStageId | None = Field(
+        description="The single current stage; null only after the final stage completes."
+    )
+    run: JourneyRunIdentity | None = Field(
+        description="Identity of the current Pinned Run; null until the manifest is frozen."
+    )
+    stages: list[JourneyStage] = Field(min_length=9, max_length=9)
+    latest_event: RunEvent | None = None
+
+
+class EventCursorExpired(StrictModel):
+    label: str
+    code: Literal["event_cursor_expired"]
+    detail: str
+    run_id: str
+    run_version: str
+    latest_event_id: str | None
+
+
+class InvalidEventCursor(StrictModel):
+    label: str
+    code: Literal["invalid_event_cursor"]
+    detail: str
+
+
 class WorkspaceResponse(StrictModel):
     label: str
     study: Study
@@ -1062,7 +1240,16 @@ class WorkspaceResponse(StrictModel):
     release_gate: GateDecision
     export_artifacts: list[ExportArtifact]
     report: ReportAssembly
-    events: list[WorkflowEvent]
+    events: list[WorkflowEvent] = Field(
+        description=(
+            "Append-only audit history (the latest 20 workflow events). This is not the live "
+            "run-event stream; subscribe to GET /api/v1/studies/{study_id}/pinned-runs/{run_id}/events "
+            "for projected run events."
+        )
+    )
+    journey: WorkbenchJourney = Field(
+        description="Backend-owned nine-stage journey projection and current run identity."
+    )
     planner_capabilities: list[PlannerCapability]
     pinned_run: PinnedRun | None
     data_validation_executions: list[DataValidationExecution]

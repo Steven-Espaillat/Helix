@@ -1,11 +1,24 @@
+import json
 import re
+import time
 from collections.abc import Callable, Iterator
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import (Depends, FastAPI, File, Form, HTTPException, Response,
-                     UploadFile, status)
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session
 
@@ -20,6 +33,7 @@ from .data_validation import DataValidationConflictError, UnknownValidationPacka
 from .database import create_database_engine, create_schema, create_session_factory
 from .intake import IntakeRejected, build_package
 from .repository import StudyNotFoundError, StudyPackageRepository
+from .run_events import EventCursorExpiredError, InvalidEventCursorError, RunEventStore, parse_cursor
 from .run_plans import PinnedRunService, RunConflictError, RunPlanRejectedError
 from .schemas import (
     ApprovalCommand,
@@ -30,6 +44,7 @@ from .schemas import (
     DataValidationCommand,
     DataValidationExecution,
     DispositionCommand,
+    EventCursorExpired,
     EvidenceChain,
     ExportCommand,
     ExportReceipt,
@@ -37,6 +52,7 @@ from .schemas import (
     FreezeRunCommand,
     HumanDirectedRevisionCommand,
     HumanDirectedRevisionReceipt,
+    InvalidEventCursor,
     PinnedRun,
     PromotionCommand,
     SectionDraft,
@@ -105,7 +121,7 @@ def create_app(
         allow_origins=active_settings.cors_origins,
         allow_credentials=True,
         allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["Content-Type", "Idempotency-Key"],
+        allow_headers=["Content-Type", "Idempotency-Key", "Last-Event-ID"],
     )
 
     def get_session() -> Iterator[Session]:
@@ -237,6 +253,104 @@ def create_app(
         study_service: ServiceDependency,
     ) -> PinnedRun:
         return _call(lambda: study_service.freeze_run(study_id, command))
+
+    @app.get(
+        "/api/v1/studies/{study_id}/pinned-runs/{run_id}/events",
+        tags=["run-plans"],
+        response_class=StreamingResponse,
+        summary="Stream projected run events (Server-Sent Events)",
+        description=(
+            "Live stream of persisted, projected run events for one Pinned Run. Each SSE frame "
+            "carries `id` (the stable event_id), `event` (the event type), and `data` (a RunEvent "
+            "JSON object). `Last-Event-ID` (header, or the `last_event_id` query parameter) replays "
+            "only events after that cursor. If missed events are outside the retained window the "
+            "server returns HTTP 409 `event_cursor_expired` before opening the stream; refresh "
+            "GET /workspace and reconnect from `journey.run.latest_event_id`. This stream is not the "
+            "audit history: `WorkspaceResponse.events` remains the append-only audit record."
+        ),
+        responses={
+            200: {
+                "description": "text/event-stream of RunEvent frames",
+                "content": {
+                    "text/event-stream": {
+                        "schema": {"type": "string", "description": "SSE frames whose data is a RunEvent"}
+                    }
+                },
+            },
+            400: {"model": InvalidEventCursor, "description": "Malformed or foreign Last-Event-ID"},
+            404: {"description": "Unknown study or Pinned Run"},
+            409: {"model": EventCursorExpired, "description": "Last-Event-ID is outside retention"},
+        },
+    )
+    def stream_run_events(
+        study_id: str,
+        run_id: str,
+        study_service: ServiceDependency,
+        last_event_id_header: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
+        last_event_id_query: Annotated[str | None, Query(alias="last_event_id")] = None,
+    ) -> Response:
+        cursor = last_event_id_header or last_event_id_query
+        try:
+            replay = _call(lambda: study_service.replay_run_events(study_id, run_id, cursor))
+        except EventCursorExpiredError as error:
+            label, run_version = study_service.run_event_context(study_id, run_id)
+            body = EventCursorExpired(
+                label=label,
+                code="event_cursor_expired",
+                detail=str(error),
+                run_id=run_id,
+                run_version=run_version,
+                latest_event_id=error.latest_event_id,
+            )
+            return JSONResponse(status_code=409, content=body.model_dump(mode="json"))
+        except InvalidEventCursorError as error:
+            label, _ = study_service.run_event_context(study_id, run_id)
+            invalid = InvalidEventCursor(label=label, code="invalid_event_cursor", detail=str(error))
+            return JSONResponse(status_code=400, content=invalid.model_dump(mode="json"))
+
+        # Start polling from the validated cursor, not zero, so an empty replay (the client is
+        # already current) never re-emits retained events on the first poll.
+        initial_sequence = parse_cursor(run_id, cursor) if cursor else 0
+        stream_label, stream_run_version = study_service.run_event_context(study_id, run_id)
+
+        def frames() -> Iterator[str]:
+            last_sequence = initial_sequence
+            for event in replay:
+                last_sequence = int(event["sequence"])
+                yield _sse_frame(event)
+            deadline = time.monotonic() + active_settings.run_event_stream_seconds
+            while time.monotonic() < deadline:
+                time.sleep(min(active_settings.run_event_poll_seconds, max(deadline - time.monotonic(), 0)))
+                with session_factory() as poll_session:
+                    store = RunEventStore(poll_session, retention=active_settings.run_event_retention)
+                    try:
+                        cursor_id = f"{run_id}.E{last_sequence:06d}" if last_sequence else None
+                        fresh = store.replay(run_id, cursor_id)
+                    except EventCursorExpiredError as error:
+                        # Terminal frame: the client must refresh the workspace and reconnect
+                        # from journey.run.latest_event_id. No `id:` line, so the browser's
+                        # Last-Event-ID stays at the last delivered event.
+                        expired = EventCursorExpired(
+                            label=stream_label,
+                            code="event_cursor_expired",
+                            detail=str(error),
+                            run_id=run_id,
+                            run_version=stream_run_version,
+                            latest_event_id=error.latest_event_id,
+                        )
+                        yield f"event: cursor_expired\ndata: {expired.model_dump_json()}\n\n"
+                        return
+                for event in fresh:
+                    last_sequence = int(event["sequence"])
+                    yield _sse_frame(event)
+                yield ": keep-alive\n\n"
+            yield "retry: 3000\n\n"
+
+        return StreamingResponse(
+            frames(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     @app.post(
         "/api/v1/studies/{study_id}/data-validation-packages",
@@ -423,6 +537,10 @@ def create_app(
         return _call(lambda: study_service.export(study_id, command))
 
     return app
+
+
+def _sse_frame(event: dict[str, object]) -> str:
+    return f"id: {event['event_id']}\nevent: {event['type']}\ndata: {json.dumps(event, sort_keys=True)}\n\n"
 
 
 def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:

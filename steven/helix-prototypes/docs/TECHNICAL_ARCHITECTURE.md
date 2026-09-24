@@ -294,8 +294,38 @@ Base path: `/api/v1`
 | `POST` | `/studies/{study_id}/approvals` | Record a synthetic review/approval role |
 | `POST` | `/studies/{study_id}/exports` | Generate and freeze release artifacts |
 | `GET` | `/studies/{study_id}/exports/{artifact_id}` | Verify and download frozen bytes |
+| `GET` | `/studies/{study_id}/pinned-runs/{run_id}/events` | Server-Sent Events stream of projected run events |
 
 Domain failures map to HTTP `404`, `409`, `422`, or `503`. The generated contract is `backend/openapi.json`.
+
+### Nine-stage journey and run events
+
+`WorkspaceResponse.journey` is the backend-owned nine-stage projection (`upload`, `parse`,
+`resolve`, `extract`, `validate`, `draft`, `provenance`, `traceability`, `review-export`) plus
+the current Pinned Run identity (`journey.run`). It is derived only from persisted facts, so a
+reload restores the same stages and actions. The legacy ten-entry `stages` array is unchanged
+and is not the journey. Governance rules: Upload stays current until a Pinned Run is frozen;
+agent steps never complete Traceability review or Review and export; dispositioned blockers
+report outcome `dispositioned`, never `passed`; approvals can make export ready but only
+`POST /exports` completes the final stage. With zero blockers, Traceability review stays
+current because no explicit traceability-approval command exists yet.
+
+Two event records exist and must not be confused:
+
+- `WorkspaceResponse.events` is the append-only **audit history** (latest 20 workflow events).
+- `GET /studies/{study_id}/pinned-runs/{run_id}/events` is the **live run-event stream**
+  (`stage_started`, `action_started`, `action_finished`, `stage_finished`, `run_paused`,
+  `run_resumed`, `gate_reached`, `command_failed`, `export_finished`). Each event has a stable
+  `event_id` (`{run_id}.E{sequence}`), `run_id`, projected `stage_id`, timestamp, and sequence.
+  Events are appended after a command commits, by diffing the projection against the last
+  recorded state, so they report only persisted transitions. `Last-Event-ID` (header or
+  `last_event_id` query) replays only missed events; a cursor outside the retained window
+  returns HTTP `409` `event_cursor_expired` with the run version and latest event ID, and the
+  client refreshes `GET /workspace` and reconnects (`frontend/src/lib/runEvents.ts`).
+  `run_paused` and `run_resumed` are part of the contract; the commands that emit them are owned
+  by a later slice.
+
+All journey and event payloads carry the `SYNTHETIC / NOT FOR SUBMISSION` label.
 
 ## 8. Core runtime flows
 

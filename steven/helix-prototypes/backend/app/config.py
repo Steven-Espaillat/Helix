@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     llm_api_key: str | None = None
     llm_model: str = "gpt-5-mini"
     codex_repository_root: Path = Path(__file__).resolve().parents[2]
+    run_event_retention: int = Field(default=1000, ge=1)
+    run_event_stream_seconds: float = Field(default=15.0, ge=0)
+    run_event_poll_seconds: float = Field(default=1.0, gt=0)
 
 
 @lru_cache

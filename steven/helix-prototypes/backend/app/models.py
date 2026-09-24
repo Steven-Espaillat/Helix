@@ -198,3 +198,33 @@ class SectionDraftRow(Base):
     request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
     draft: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+
+class RunEventRow(Base):
+    """Persisted, projected run event (Steven-Espaillat/Helix#25). Distinct from audit_events."""
+
+    __tablename__ = "run_events"
+    __table_args__ = (UniqueConstraint("run_id", "sequence", name="uq_run_event_sequence"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    event_id: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    run_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    stage_id: Mapped[str] = mapped_column(String(40), nullable=False)
+    occurred_at: Mapped[str] = mapped_column(String(40), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False, default=dict)
+
+
+class RunJourneyStateRow(Base):
+    """Last projected journey state per run; drives event diffs, sequence, and retention."""
+
+    __tablename__ = "run_journey_states"
+
+    run_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    last_sequence: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    oldest_retained_sequence: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    stages: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False, default=dict)
+    actions: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False, default=dict)
