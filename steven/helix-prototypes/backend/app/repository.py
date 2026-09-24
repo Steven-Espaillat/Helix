@@ -11,6 +11,8 @@ from .models import (
     DataValidationRunRow,
     ExportFileRow,
     PinnedRunRow,
+    PromotionDecisionRow,
+    SectionDraftRow,
     SectionRunRow,
     StudyPackageRow,
     ValidationRunRow,
@@ -19,6 +21,8 @@ from .schemas import (
     CandidateEvaluation,
     CrossSectionQueryReceipt,
     DataValidationExecution,
+    PromotionDecision,
+    SectionDraft,
     StoredSectionRun,
     StudyEvidencePackage,
     ValidationRun,
@@ -318,6 +322,85 @@ class StudyPackageRepository:
             idempotency_key=idempotency_key,
             request_hash=request_hash,
             receipt=receipt.model_dump(mode="json"),
+        )
+        self.session.add(row)
+        self.session.flush()
+        return row
+
+    def get_promotion_decision(self, study_id: str, idempotency_key: str) -> PromotionDecisionRow | None:
+        return self.session.scalar(
+            select(PromotionDecisionRow).where(
+                PromotionDecisionRow.study_id == study_id,
+                PromotionDecisionRow.idempotency_key == idempotency_key,
+            )
+        )
+
+    def list_promotion_decisions(self, study_id: str) -> list[PromotionDecision]:
+        rows = self.session.scalars(
+            select(PromotionDecisionRow)
+            .where(PromotionDecisionRow.study_id == study_id)
+            .order_by(PromotionDecisionRow.created_at, PromotionDecisionRow.id)
+        ).all()
+        return [PromotionDecision.model_validate(row.decision) for row in rows]
+
+    def add_promotion_decision(
+        self,
+        *,
+        study_id: str,
+        run_id: str,
+        candidate_id: str,
+        idempotency_key: str,
+        request_hash: str,
+        decision: PromotionDecision,
+    ) -> PromotionDecisionRow:
+        prior = self.get_promotion_decision(study_id, idempotency_key)
+        if prior is not None:
+            return prior
+        row = PromotionDecisionRow(
+            study_id=study_id,
+            run_id=run_id,
+            candidate_id=candidate_id,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash,
+            decision=decision.model_dump(mode="json"),
+        )
+        self.session.add(row)
+        self.session.flush()
+        return row
+
+    def get_section_draft(self, study_id: str, idempotency_key: str) -> SectionDraftRow | None:
+        return self.session.scalar(
+            select(SectionDraftRow).where(
+                SectionDraftRow.study_id == study_id,
+                SectionDraftRow.idempotency_key == idempotency_key,
+            )
+        )
+
+    def list_section_drafts(self, study_id: str) -> list[SectionDraft]:
+        rows = self.session.scalars(
+            select(SectionDraftRow)
+            .where(SectionDraftRow.study_id == study_id)
+            .order_by(SectionDraftRow.created_at, SectionDraftRow.id)
+        ).all()
+        return [SectionDraft.model_validate(row.draft) for row in rows]
+
+    def add_section_draft(
+        self,
+        *,
+        study_id: str,
+        run_id: str,
+        candidate_id: str,
+        idempotency_key: str,
+        request_hash: str,
+        draft: SectionDraft,
+    ) -> SectionDraftRow:
+        row = SectionDraftRow(
+            study_id=study_id,
+            run_id=run_id,
+            candidate_id=candidate_id,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash,
+            draft=draft.model_dump(mode="json"),
         )
         self.session.add(row)
         self.session.flush()

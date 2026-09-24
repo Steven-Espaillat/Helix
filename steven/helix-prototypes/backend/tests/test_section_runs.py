@@ -116,6 +116,11 @@ class FakeSectionAgent:
             ),
             "agent_receipt": receipt,
         }
+        if self.mode == "agent_promoted":
+            candidate["status"] = "section_draft"
+            candidate["promoted"] = True
+        if self.mode == "codex_promoted":
+            candidate["promotion_status"] = "promoted"
         return AgentResult(thread_id="thread-test-001", final_response=json.dumps(candidate))
 
 

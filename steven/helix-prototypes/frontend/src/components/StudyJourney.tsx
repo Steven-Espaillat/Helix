@@ -12,6 +12,7 @@ type Props = {
   sectionRunBusy: boolean;
   evaluationBusy: boolean;
   queryBusy: boolean;
+  promotionBusy: boolean;
   onPlannerChange: (planner: PlannerMode) => void;
   onValidate: () => void;
   onExecuteBodyWeight: () => void;
@@ -19,6 +20,7 @@ type Props = {
   onRetryBodyWeight: () => void;
   onEvaluateCandidate: () => void;
   onQueryCrossSection: () => void;
+  onPromoteSectionDraft: () => void;
 };
 
 export function StudyJourney({
@@ -29,6 +31,7 @@ export function StudyJourney({
   sectionRunBusy,
   evaluationBusy,
   queryBusy,
+  promotionBusy,
   onPlannerChange,
   onValidate,
   onExecuteBodyWeight,
@@ -36,6 +39,7 @@ export function StudyJourney({
   onRetryBodyWeight,
   onEvaluateCandidate,
   onQueryCrossSection,
+  onPromoteSectionDraft,
 }: Props) {
   const defaultStage = useMemo(
     () =>
@@ -72,10 +76,21 @@ export function StudyJourney({
   const bodyWeightQuery = (workspace.cross_section_queries ?? []).find(
     (item) => item.run_id === bodyWeightRun?.receipt.run_id,
   );
+  const bodyWeightPromotion = [...(workspace.promotion_decisions ?? [])]
+    .reverse()
+    .find((item) => item.run_id === bodyWeightRun?.receipt.run_id);
+  const bodyWeightDraft = [...(workspace.section_drafts ?? [])]
+    .reverse()
+    .find((item) => item.run_id === bodyWeightRun?.receipt.run_id);
   const dataValidation = workspace.data_validation_executions.at(-1);
   const terminalClaim = dataValidation?.claims.find((claim) => claim.claim_id === "C-BW-HIGH");
   const commandBusy =
-    validationBusy || dataValidationBusy || sectionRunBusy || evaluationBusy || queryBusy;
+    validationBusy ||
+    dataValidationBusy ||
+    sectionRunBusy ||
+    evaluationBusy ||
+    queryBusy ||
+    promotionBusy;
   const latestScaffold = workspace.review_scaffold_revisions?.at(-1);
 
   if (!stage) {
@@ -369,6 +384,59 @@ export function StudyJourney({
               {bodyWeightQuery.returned.map((item) => (
                 <code key={item.artifact_id} data-testid={`query-hash-${item.artifact_id}`}>
                   {item.artifact_id} {item.hash}
+                </code>
+              ))}
+            </div>
+          )}
+          <button
+            className="button secondary wide"
+            type="button"
+            onClick={onPromoteSectionDraft}
+            disabled={!bodyWeightEvaluation || commandBusy}
+            data-testid="promote-section-draft"
+          >
+            {promotionBusy ? "Promoting…" : "Promote section draft"}
+          </button>
+          {bodyWeightPromotion && (
+            <div className="section-run-receipt" data-testid="section-promotion">
+              <strong>Section promotion</strong>
+              <span data-testid="promotion-status">
+                {bodyWeightPromotion.eligible ? "eligible" : "rejected"}
+              </span>
+              <code data-testid="promotion-candidate-hash">{bodyWeightPromotion.candidate_hash}</code>
+              <span data-testid="promotion-failed">
+                {bodyWeightPromotion.failed_condition_ids.join(", ") || "none"}
+              </span>
+              {bodyWeightPromotion.conditions.map((item) => (
+                <span key={item.condition_id} data-testid={`promotion-condition-${item.condition_id}`}>
+                  {item.condition_id} {item.passed ? "passed" : "failed"}
+                  {item.reason ? ` ${item.reason}` : ""}
+                </span>
+              ))}
+              {bodyWeightPromotion.warnings.map((warning) => (
+                <span key={warning} data-testid="promotion-warning">
+                  {warning}
+                </span>
+              ))}
+              <span data-testid="promotion-dispositions">
+                {bodyWeightPromotion.current_disposition_ids.join(", ") || "none"}
+              </span>
+              <span data-testid="promotion-gates">{bodyWeightPromotion.gate_decision_ids.join(", ")}</span>
+            </div>
+          )}
+          {bodyWeightDraft && (
+            <div className="section-run-receipt" data-testid="section-draft">
+              <strong>Section draft</strong>
+              <span data-testid="draft-id">{bodyWeightDraft.draft_id}</span>
+              <span data-testid="draft-status">{bodyWeightDraft.status}</span>
+              <code data-testid="draft-candidate-hash">{bodyWeightDraft.candidate_hash}</code>
+              <span data-testid="draft-gates">{bodyWeightDraft.gate_decision_ids.join(", ")}</span>
+              {bodyWeightDraft.bound_dispositions.map((item) => (
+                <code
+                  key={item.disposition_id}
+                  data-testid={`draft-disposition-${item.disposition_id}`}
+                >
+                  {item.disposition_id} {item.result_id} {item.artifact_hash} {item.dependency_fingerprint}
                 </code>
               ))}
             </div>

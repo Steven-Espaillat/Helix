@@ -1,0 +1,74 @@
+{
+  "candidate_hash": "sha256:39630e00189a411a53cdcae8b7932d33f18cce19a389211a598e95e6ea9c7f57",
+  "evaluation_id": "CEV-D72B54FC72B8",
+  "client_authored_status": 422,
+  "promotion_status": 409,
+  "replay_status": 409,
+  "decision": {
+    "schema_version": "helix.section-promotion-decision/v1",
+    "eligible": false,
+    "candidate_id": "SDC-3BCBD4BBEF07",
+    "candidate_hash": "sha256:39630e00189a411a53cdcae8b7932d33f18cce19a389211a598e95e6ea9c7f57",
+    "run_id": "SRUN-ECB1396B64DB",
+    "conditions": [
+      {
+        "condition_id": "package_permission",
+        "passed": false,
+        "reason": "vertical_slice packages cannot be promoted",
+        "evidence_ids": []
+      },
+      {
+        "condition_id": "no_hard_blocker",
+        "passed": true,
+        "reason": null,
+        "evidence_ids": []
+      },
+      {
+        "condition_id": "provenance_passed",
+        "passed": true,
+        "reason": null,
+        "evidence_ids": []
+      },
+      {
+        "condition_id": "conformance_passed",
+        "passed": true,
+        "reason": null,
+        "evidence_ids": []
+      },
+      {
+        "condition_id": "review_required_current",
+        "passed": true,
+        "reason": null,
+        "evidence_ids": []
+      }
+    ],
+    "failed_condition_ids": [
+      "package_permission"
+    ],
+    "warnings": [],
+    "current_disposition_ids": [],
+    "gate_decision_ids": [
+      "PRV-453039E2AC8B",
+      "TCF-C0BD8F58871B"
+    ]
+  },
+  "section_drafts": [],
+  "advisory_soe_status": "failed",
+  "disposition_artifact_hash": "sha256:8fc4de8cfe11ccbe2f37147bebafc2e4e9fb84a35438edcf41c8fb6f08c2501e",
+  "review_required_before": {
+    "condition_id": "review_required_current",
+    "passed": false,
+    "reason": "A review_required result lacks a current artifact-bound disposition",
+    "evidence_ids": [
+      "SOE-F91B718BAB8C"
+    ]
+  },
+  "review_required_after": {
+    "condition_id": "review_required_current",
+    "passed": true,
+    "reason": null,
+    "evidence_ids": [
+      "RD-56067DB93D85"
+    ]
+  }
+}

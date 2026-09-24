@@ -32,12 +32,20 @@ from .schemas import (
     ExportReceipt,
     FreezeRunCommand,
     PinnedRun,
+    PromotionCommand,
+    SectionDraft,
     SectionRunCommand,
     SectionRunReceipt,
     StudyListItem,
     ValidationRequest,
     ValidationRun,
     WorkspaceResponse,
+)
+from .section_promotion import (
+    PromotionConflictError,
+    PromotionRejectedError,
+    SectionPromotionService,
+    UnknownPromotionTargetError,
 )
 from .section_runs import (
     CandidateValidationError,
@@ -220,6 +228,25 @@ def create_app(
     ) -> CrossSectionQueryReceipt:
         return _call(lambda: evaluation_service.query(study_id, run_id, command))
 
+    def promotion_service(session: SessionDependency) -> SectionPromotionService:
+        return SectionPromotionService(session, active_settings.codex_repository_root)
+
+    PromotionServiceDependency = Annotated[SectionPromotionService, Depends(promotion_service)]
+
+    @app.post(
+        "/api/v1/studies/{study_id}/section-runs/{run_id}/promotions",
+        response_model=SectionDraft,
+        status_code=status.HTTP_201_CREATED,
+        tags=["section-promotion"],
+    )
+    def promote_section_draft(
+        study_id: str,
+        run_id: str,
+        command: PromotionCommand,
+        promotions: PromotionServiceDependency,
+    ) -> SectionDraft:
+        return _call(lambda: promotions.promote(study_id, run_id, command))
+
     @app.get(
         "/api/v1/studies/{study_id}/claims/{claim_id}/evidence",
         response_model=EvidenceChain,
@@ -299,6 +326,7 @@ def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:
         UnknownSectionPackageError,
         UnknownValidationPackageError,
         UnknownSectionRunError,
+        UnknownPromotionTargetError,
     ) as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except (
@@ -307,6 +335,8 @@ def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:
         RunConflictError,
         CandidateEvaluationConflictError,
         DataValidationConflictError,
+        PromotionConflictError,
+        PromotionRejectedError,
     ) as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     except RunPlanRejectedError as error:

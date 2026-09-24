@@ -27,6 +27,7 @@ from .schemas import (
     TemplateConformanceReceipt,
     WorkflowEvent,
 )
+from .section_promotion import SectionPromotionService
 from .section_runs import SectionRunService
 from .study_output_evaluation import evaluate_study_output
 from .template_conformance import evaluate_template_conformance
@@ -113,6 +114,12 @@ class CandidateEvaluationService:
             raise CandidateEvaluationConflictError(
                 "A Candidate Attempt evaluation is already recorded"
             ) from error
+        SectionPromotionService(self.session, self.repository_root).record_decision_for_evaluation(
+            study_id,
+            evaluation,
+            run,
+            updated,
+        )
         self.repository.append_event(
             study_id=study_id,
             event_type=event.event,

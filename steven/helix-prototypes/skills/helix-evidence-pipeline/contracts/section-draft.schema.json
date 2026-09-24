@@ -14,7 +14,8 @@
     "candidate_hash",
     "content_hash",
     "promoted_at",
-    "gate_decision_ids"
+    "gate_decision_ids",
+    "bound_dispositions"
   ],
   "properties": {
     "schema_version": {
@@ -56,6 +57,40 @@
       "items": {
         "type": "string",
         "minLength": 1
+      }
+    },
+    "bound_dispositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "disposition_id",
+          "result_id",
+          "decision",
+          "artifact_hash",
+          "dependency_fingerprint"
+        ],
+        "properties": {
+          "disposition_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_hash": {
+            "$ref": "#/$defs/sha256"
+          },
+          "dependency_fingerprint": {
+            "$ref": "#/$defs/sha256"
+          }
+        }
       }
     }
   },

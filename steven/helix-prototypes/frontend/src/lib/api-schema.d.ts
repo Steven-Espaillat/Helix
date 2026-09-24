@@ -174,6 +174,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/studies/{study_id}/section-runs/{run_id}/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Promote Section Draft */
+        post: operations["promote_section_draft_api_v1_studies__study_id__section_runs__run_id__promotions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/studies/{study_id}/validation-results/{result_id}/dispositions": {
         parameters: {
             query?: never;
@@ -285,6 +302,19 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** BoundDisposition */
+        BoundDisposition: {
+            /** Artifact Hash */
+            artifact_hash: string;
+            /** Decision */
+            decision: string;
+            /** Dependency Fingerprint */
+            dependency_fingerprint: string;
+            /** Disposition Id */
+            disposition_id: string;
+            /** Result Id */
+            result_id: string;
+        };
         /** CandidateEvaluation */
         CandidateEvaluation: {
             /** Candidate Hash */
@@ -376,6 +406,20 @@ export interface components {
          * @enum {string}
          */
         ClaimStatus: "pending" | "validated" | "needs_review" | "approved";
+        /** ConditionDecision */
+        ConditionDecision: {
+            /**
+             * Condition Id
+             * @enum {string}
+             */
+            condition_id: "package_permission" | "no_hard_blocker" | "provenance_passed" | "conformance_passed" | "review_required_current";
+            /** Evidence Ids */
+            evidence_ids: string[];
+            /** Passed */
+            passed: boolean;
+            /** Reason */
+            reason?: string | null;
+        };
         /** CrossSectionQueryCommand */
         CrossSectionQueryCommand: {
             /** Artifact Ids */
@@ -759,6 +803,37 @@ export interface components {
             /** Subject */
             subject: string;
         };
+        /** PromotionCommand */
+        PromotionCommand: {
+            /** Idempotency Key */
+            idempotency_key: string;
+        };
+        /** PromotionDecision */
+        PromotionDecision: {
+            /** Candidate Hash */
+            candidate_hash: string;
+            /** Candidate Id */
+            candidate_id: string;
+            /** Conditions */
+            conditions: components["schemas"]["ConditionDecision"][];
+            /** Current Disposition Ids */
+            current_disposition_ids: string[];
+            /** Eligible */
+            eligible: boolean;
+            /** Failed Condition Ids */
+            failed_condition_ids: ("package_permission" | "no_hard_blocker" | "provenance_passed" | "conformance_passed" | "review_required_current")[];
+            /** Gate Decision Ids */
+            gate_decision_ids: string[];
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.section-promotion-decision/v1";
+            /** Warnings */
+            warnings: string[];
+        };
         /** ProvenanceBinding */
         ProvenanceBinding: {
             /** Artifact Hash */
@@ -933,9 +1008,13 @@ export interface components {
         };
         /** ReviewDisposition */
         ReviewDisposition: {
+            /** Artifact Hash */
+            artifact_hash?: string | null;
             /** Artifact Id */
             artifact_id?: string | null;
             decision: components["schemas"]["DispositionDecision"];
+            /** Dependency Fingerprint */
+            dependency_fingerprint?: string | null;
             /** Disposition Id */
             disposition_id: string;
             /** Reason */
@@ -1025,6 +1104,37 @@ export interface components {
             section_package_id: string;
             /** Title */
             title: string;
+        };
+        /** SectionDraft */
+        SectionDraft: {
+            /** Bound Dispositions */
+            bound_dispositions: components["schemas"]["BoundDisposition"][];
+            /** Candidate Hash */
+            candidate_hash: string;
+            /** Candidate Id */
+            candidate_id: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Draft Id */
+            draft_id: string;
+            /** Gate Decision Ids */
+            gate_decision_ids: string[];
+            /** Promoted At */
+            promoted_at: string;
+            /** Run Id */
+            run_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "helix.section-draft/v1";
+            /** Section Id */
+            section_id: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "section_draft";
         };
         /** SectionDraftCandidate */
         SectionDraftCandidate: {
@@ -1535,12 +1645,16 @@ export interface components {
             pinned_run: components["schemas"]["PinnedRun"] | null;
             /** Planner Capabilities */
             planner_capabilities: components["schemas"]["PlannerCapability"][];
+            /** Promotion Decisions */
+            promotion_decisions?: components["schemas"]["PromotionDecision"][];
             release_gate: components["schemas"]["GateDecision"];
             report: components["schemas"]["ReportAssembly"];
             /** Review Scaffold Revisions */
             review_scaffold_revisions?: {
                 [key: string]: unknown;
             }[];
+            /** Section Drafts */
+            section_drafts?: components["schemas"]["SectionDraft"][];
             /** Section Run Eligibility */
             section_run_eligibility: components["schemas"]["SectionRunEligibility"][];
             /** Section Runs */
@@ -1894,6 +2008,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CandidateEvaluation"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    promote_section_draft_api_v1_studies__study_id__section_runs__run_id__promotions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectionDraft"];
                 };
             };
             /** @description Validation Error */

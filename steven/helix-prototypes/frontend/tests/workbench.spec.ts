@@ -20,6 +20,7 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("draft-body-weight")).toBeDisabled();
   await expect(page.getByTestId("evaluate-candidate")).toBeDisabled();
   await expect(page.getByTestId("query-cross-section")).toBeDisabled();
+  await expect(page.getByTestId("promote-section-draft")).toBeDisabled();
   await expect(page.getByTestId("section-run-ineligible")).toContainText("Run hybrid validation first");
   await expect(page.getByTestId("template-contract-gates")).toBeVisible();
   await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("blocked");
@@ -37,6 +38,7 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
   await expect(page.getByTestId("evaluate-candidate")).toBeDisabled();
   await expect(page.getByTestId("query-cross-section")).toBeDisabled();
+  await expect(page.getByTestId("promote-section-draft")).toBeDisabled();
   await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("ready");
   await expect(page.getByTestId("eligibility-section.5_3_discussion")).toHaveText("ready");
   const workspaceBeforeDraft = await request.get(`${apiRoot}/studies/STUDY-HLX-028/workspace`);
@@ -219,8 +221,10 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
 }) => {
   const evaluation = injectedEvaluation();
   const query = injectedQuery();
+  const promotion = injectedPromotion();
   let evaluationPosts = 0;
   let queryPosts = 0;
+  let promotionPosts = 0;
   await page.route("**/api/v1/studies/*/section-runs", async (route) => {
     if (route.request().method() === "POST") {
       await route.fulfill({
@@ -248,6 +252,14 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
       body: JSON.stringify(query),
     });
   });
+  await page.route("**/api/v1/studies/*/section-runs/*/promotions", async (route) => {
+    promotionPosts += 1;
+    await route.fulfill({
+      status: 409,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "Section promotion rejected: package_permission" }),
+    });
+  });
   await page.route("**/api/v1/studies/*/workspace", async (route) => {
     const response = await route.fetch();
     const workspace: unknown = await response.json();
@@ -258,8 +270,10 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
         withRecordedCandidate(workspace, {
           includeEvaluation: evaluationPosts > 0,
           includeQuery: queryPosts > 0,
+          includePromotion: evaluationPosts > 0,
           evaluation,
           query,
+          promotion,
         }),
       ),
     });
@@ -268,8 +282,10 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   await page.goto("/");
   await expect(page.getByTestId("evaluate-candidate")).toBeEnabled();
   await expect(page.getByTestId("query-cross-section")).toBeEnabled();
+  await expect(page.getByTestId("promote-section-draft")).toBeDisabled();
   await expect(page.getByTestId("section-run-receipt")).toContainText("SDC-EVAL000001");
   await expect(page.getByTestId("candidate-evaluation")).toHaveCount(0);
+  await expect(page.getByTestId("section-promotion")).toHaveCount(0);
 
   await page.getByTestId("evaluate-candidate").click();
   await expect(page.getByTestId("candidate-evaluation")).toBeVisible();
@@ -292,6 +308,16 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   await expect(page.getByTestId("evaluation-hash")).toHaveText(INJECTED_EVALUATION_HASH);
   await expect(page.getByTestId("retry-body-weight")).toHaveCount(0);
   expect(evaluationPosts).toBe(1);
+  await expect(page.getByTestId("promote-section-draft")).toBeEnabled();
+  await expect(page.getByTestId("section-promotion")).toBeVisible();
+  await expect(page.getByTestId("promotion-status")).toHaveText("rejected");
+  await expect(page.getByTestId("promotion-candidate-hash")).toHaveText(INJECTED_HASH);
+  await expect(page.getByTestId("promotion-failed")).toHaveText("package_permission");
+  await expect(page.getByTestId("promotion-condition-package_permission")).toContainText(
+    "vertical_slice packages cannot be promoted",
+  );
+  await expect(page.getByTestId("promotion-warning")).toHaveText("Rounding display difference");
+  await expect(page.getByTestId("promotion-gates")).toHaveText("PRV-EVAL000001, TCF-EVAL000001");
 
   await page.getByTestId("query-cross-section").click();
   await expect(page.getByTestId("cross-section-query")).toBeVisible();
@@ -300,6 +326,64 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   await expect(page.getByTestId("query-hash-claim:C-BW-HIGH")).toContainText(INJECTED_CLAIM_HASH);
   await expect(page.getByTestId("query-hash-validation.body_weight")).toContainText(INJECTED_ARTIFACT_HASH);
   expect(queryPosts).toBe(1);
+
+  await page.getByTestId("promote-section-draft").click();
+  await expect(page.getByRole("status")).toContainText("package_permission");
+  expect(promotionPosts).toBe(1);
+  await expect(page.getByTestId("section-draft")).toHaveCount(0);
+});
+
+test("renders backend promotion status and draft evidence without recalculating eligibility", async ({
+  page,
+}) => {
+  const evaluation = injectedEvaluation();
+  const query = injectedQuery();
+  const promotion = injectedEligiblePromotion();
+  const draft = injectedSectionDraft();
+  await page.route("**/api/v1/studies/*/section-runs", async (route) => {
+    if (route.request().method() === "POST") {
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "The test must not start a Codex thread." }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    const response = await route.fetch();
+    const workspace: unknown = await response.json();
+    await route.fulfill({
+      status: response.status(),
+      contentType: "application/json",
+      body: JSON.stringify(
+        withRecordedCandidate(workspace, {
+          includeEvaluation: true,
+          includeQuery: false,
+          includePromotion: true,
+          includeDraft: true,
+          evaluation,
+          query,
+          promotion,
+          draft,
+        }),
+      ),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("promotion-status")).toHaveText("eligible");
+  await expect(page.getByTestId("promotion-failed")).toHaveText("package_permission");
+  await expect(page.getByTestId("promotion-condition-package_permission")).toContainText("failed");
+  await expect(page.getByTestId("section-draft")).toBeVisible();
+  await expect(page.getByTestId("draft-id")).toHaveText("SD-EVAL000001");
+  await expect(page.getByTestId("draft-status")).toHaveText("section_draft");
+  await expect(page.getByTestId("draft-candidate-hash")).toHaveText(INJECTED_HASH);
+  await expect(page.getByTestId("draft-gates")).toHaveText("PRV-EVAL000001, TCF-EVAL000001");
+  await expect(page.getByTestId("draft-disposition-RD-EVAL000001")).toContainText(
+    `RD-EVAL000001 SOE-EVAL000001 ${INJECTED_HASH} ${INJECTED_ARTIFACT_HASH}`,
+  );
 });
 
 test("shows every immutable attempt and offers no fourth attempt after stop_for_review", async ({
@@ -519,13 +603,86 @@ function injectedQuery(): Record<string, unknown> {
   };
 }
 
+function promotionConditions(packagePassed: boolean): Record<string, unknown>[] {
+  return [
+    {
+      condition_id: "package_permission",
+      passed: packagePassed,
+      reason: packagePassed ? null : "vertical_slice packages cannot be promoted",
+      evidence_ids: [],
+    },
+    { condition_id: "no_hard_blocker", passed: true, reason: null, evidence_ids: [] },
+    { condition_id: "provenance_passed", passed: true, reason: null, evidence_ids: [] },
+    { condition_id: "conformance_passed", passed: true, reason: null, evidence_ids: [] },
+    { condition_id: "review_required_current", passed: true, reason: null, evidence_ids: [] },
+  ];
+}
+
+function injectedPromotion(): Record<string, unknown> {
+  return {
+    schema_version: "helix.section-promotion-decision/v1",
+    eligible: false,
+    candidate_id: "SDC-EVAL000001",
+    candidate_hash: INJECTED_HASH,
+    run_id: "SRUN-EVAL000001",
+    conditions: promotionConditions(false),
+    failed_condition_ids: ["package_permission"],
+    warnings: ["Rounding display difference"],
+    current_disposition_ids: [],
+    gate_decision_ids: ["PRV-EVAL000001", "TCF-EVAL000001"],
+  };
+}
+
+function injectedEligiblePromotion(): Record<string, unknown> {
+  return {
+    schema_version: "helix.section-promotion-decision/v1",
+    eligible: true,
+    candidate_id: "SDC-EVAL000001",
+    candidate_hash: INJECTED_HASH,
+    run_id: "SRUN-EVAL000001",
+    conditions: promotionConditions(false),
+    failed_condition_ids: ["package_permission"],
+    warnings: [],
+    current_disposition_ids: ["RD-EVAL000001"],
+    gate_decision_ids: ["PRV-EVAL000001", "TCF-EVAL000001"],
+  };
+}
+
+function injectedSectionDraft(): Record<string, unknown> {
+  return {
+    schema_version: "helix.section-draft/v1",
+    status: "section_draft",
+    draft_id: "SD-EVAL000001",
+    run_id: "SRUN-EVAL000001",
+    section_id: "5_2_3_body_weight",
+    candidate_id: "SDC-EVAL000001",
+    candidate_hash: INJECTED_HASH,
+    content_hash: INJECTED_CLAIM_HASH,
+    promoted_at: "2026-09-24T12:00:00Z",
+    gate_decision_ids: ["PRV-EVAL000001", "TCF-EVAL000001"],
+    bound_dispositions: [
+      {
+        disposition_id: "RD-EVAL000001",
+        result_id: "SOE-EVAL000001",
+        decision: "approved_exception",
+        artifact_hash: INJECTED_HASH,
+        dependency_fingerprint: INJECTED_ARTIFACT_HASH,
+      },
+    ],
+  };
+}
+
 function withRecordedCandidate(
   workspace: unknown,
   options: {
     includeEvaluation: boolean;
     includeQuery: boolean;
+    includePromotion?: boolean;
+    includeDraft?: boolean;
     evaluation: Record<string, unknown>;
     query: Record<string, unknown>;
+    promotion?: Record<string, unknown>;
+    draft?: Record<string, unknown>;
   },
 ): unknown {
   if (!isObject(workspace)) {
@@ -585,6 +742,8 @@ function withRecordedCandidate(
     ],
     candidate_evaluations: options.includeEvaluation ? [options.evaluation] : [],
     cross_section_queries: options.includeQuery ? [options.query] : [],
+    promotion_decisions: options.includePromotion && options.promotion ? [options.promotion] : [],
+    section_drafts: options.includeDraft && options.draft ? [options.draft] : [],
   };
 }
 

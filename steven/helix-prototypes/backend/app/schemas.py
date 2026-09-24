@@ -193,6 +193,8 @@ class ReviewDisposition(StrictModel):
     reviewer: str | None
     timestamp: str | None
     artifact_id: str | None = None
+    artifact_hash: Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")] | None = None
+    dependency_fingerprint: Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")] | None = None
 
 
 class ApprovalRole(StrEnum):
@@ -818,6 +820,66 @@ class CandidateEvaluation(StrictModel):
     idempotent_replay: bool = False
 
 
+class PromotionCommand(StrictModel):
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
+class BoundDisposition(StrictModel):
+    disposition_id: str = Field(min_length=1)
+    result_id: str = Field(min_length=1)
+    decision: str = Field(min_length=1)
+    artifact_hash: Sha256
+    dependency_fingerprint: Sha256
+
+
+class ConditionDecision(StrictModel):
+    condition_id: Literal[
+        "package_permission",
+        "no_hard_blocker",
+        "provenance_passed",
+        "conformance_passed",
+        "review_required_current",
+    ]
+    passed: bool
+    reason: str | None = None
+    evidence_ids: list[str]
+
+
+class PromotionDecision(StrictModel):
+    schema_version: Literal["helix.section-promotion-decision/v1"]
+    eligible: bool
+    candidate_id: Annotated[str, Field(pattern=r"^SDC-[A-Z0-9-]+$")]
+    candidate_hash: Sha256
+    run_id: str = Field(min_length=1)
+    conditions: list[ConditionDecision] = Field(min_length=5, max_length=5)
+    failed_condition_ids: list[
+        Literal[
+            "package_permission",
+            "no_hard_blocker",
+            "provenance_passed",
+            "conformance_passed",
+            "review_required_current",
+        ]
+    ]
+    warnings: list[str]
+    current_disposition_ids: list[str]
+    gate_decision_ids: list[str]
+
+
+class SectionDraft(StrictModel):
+    schema_version: Literal["helix.section-draft/v1"]
+    status: Literal["section_draft"]
+    draft_id: Annotated[str, Field(pattern=r"^SD-[A-Z0-9-]+$")]
+    run_id: str = Field(min_length=1)
+    section_id: str = Field(min_length=1)
+    candidate_id: Annotated[str, Field(pattern=r"^SDC-[A-Z0-9-]+$")]
+    candidate_hash: Sha256
+    content_hash: Sha256
+    promoted_at: str
+    gate_decision_ids: list[str] = Field(min_length=1)
+    bound_dispositions: list[BoundDisposition]
+
+
 class WorkspaceResponse(StrictModel):
     label: str
     study: Study
@@ -839,6 +901,8 @@ class WorkspaceResponse(StrictModel):
     section_run_eligibility: list[SectionRunEligibility]
     section_runs: list[StoredSectionRun]
     candidate_evaluations: list[CandidateEvaluation] = Field(default_factory=list)
+    promotion_decisions: list[PromotionDecision] = Field(default_factory=list)
+    section_drafts: list[SectionDraft] = Field(default_factory=list)
     cross_section_queries: list[CrossSectionQueryReceipt] = Field(default_factory=list)
     review_scaffold_revisions: list[dict[str, object]] = Field(default_factory=list)
 

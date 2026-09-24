@@ -140,3 +140,34 @@ class CrossSectionQueryRow(Base):
     request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
     receipt: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+
+class PromotionDecisionRow(Base):
+    __tablename__ = "promotion_decisions"
+    __table_args__ = (UniqueConstraint("study_id", "idempotency_key", name="uq_promotion_decision_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    run_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    candidate_id: Mapped[str] = mapped_column(String(80), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
+    decision: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+
+class SectionDraftRow(Base):
+    __tablename__ = "section_drafts"
+    __table_args__ = (
+        UniqueConstraint("study_id", "idempotency_key", name="uq_section_draft_key"),
+        UniqueConstraint("study_id", "candidate_id", name="uq_section_draft_candidate"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    study_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    run_id: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    candidate_id: Mapped[str] = mapped_column(String(80), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(80), nullable=False)
+    draft: Mapped[dict[str, Any]] = mapped_column(JsonDocument, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)

@@ -7,6 +7,7 @@ import {
   evaluateCandidate,
   exportPackage,
   getWorkspace,
+  promoteSectionDraft,
   queryCrossSection,
   recordApproval,
   recordDisposition,
@@ -181,6 +182,26 @@ export function HelixWorkbench({ studyId }: Props) {
     }
   }
 
+  async function promoteBodyWeight() {
+    const runId = workspace?.section_runs.at(-1)?.receipt.run_id;
+    if (!runId) {
+      return;
+    }
+    setBusy("section-promotion");
+    setNotice(null);
+    setError(null);
+    try {
+      const draft = await promoteSectionDraft(studyId, runId);
+      await refresh();
+      setNotice(`${draft.draft_id} promoted from ${draft.candidate_id}.`);
+    } catch (cause) {
+      await refresh();
+      setError(messageFrom(cause));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function resolve(resultId: string, message: string) {
     setBusy(resultId);
     setNotice(null);
@@ -334,6 +355,7 @@ export function HelixWorkbench({ studyId }: Props) {
             sectionRunBusy={busy === "section-run"}
             evaluationBusy={busy === "candidate-evaluation"}
             queryBusy={busy === "cross-section-query"}
+            promotionBusy={busy === "section-promotion"}
             onPlannerChange={setPlanner}
             onValidate={() => void validate()}
             onExecuteBodyWeight={() => void executeBodyWeight()}
@@ -341,6 +363,7 @@ export function HelixWorkbench({ studyId }: Props) {
             onRetryBodyWeight={() => void retryBodyWeight()}
             onEvaluateCandidate={() => void evaluateBodyWeight()}
             onQueryCrossSection={() => void queryBodyWeightFacts()}
+            onPromoteSectionDraft={() => void promoteBodyWeight()}
           />
         )}
         {activeView === "evidence" && (

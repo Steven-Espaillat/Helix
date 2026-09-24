@@ -6,6 +6,7 @@ import type {
   EvidenceChainData,
   ExportReceipt,
   PlannerMode,
+  SectionDraft,
   SectionRunReceipt,
   ValidationRun,
   Workspace,
@@ -85,6 +86,23 @@ export async function evaluateCandidate(
     },
   );
   assertCandidateEvaluation(value);
+  return value;
+}
+
+export async function promoteSectionDraft(
+  studyId: string,
+  runId: string,
+): Promise<SectionDraft> {
+  const value = await request(
+    `/studies/${encodeURIComponent(studyId)}/section-runs/${encodeURIComponent(runId)}/promotions`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        idempotency_key: `workbench-${studyId}-promote-${runId}-v1`,
+      }),
+    },
+  );
+  assertSectionDraft(value);
   return value;
 }
 
@@ -261,6 +279,20 @@ function assertCandidateEvaluation(value: unknown): asserts value is CandidateEv
     !isObject(value.hashes)
   ) {
     throw new Error("The candidate evaluation response does not match the generated API contract.");
+  }
+}
+
+function assertSectionDraft(value: unknown): asserts value is SectionDraft {
+  if (
+    !isObject(value) ||
+    value.schema_version !== "helix.section-draft/v1" ||
+    value.status !== "section_draft" ||
+    typeof value.draft_id !== "string" ||
+    typeof value.candidate_hash !== "string" ||
+    !Array.isArray(value.gate_decision_ids) ||
+    !Array.isArray(value.bound_dispositions)
+  ) {
+    throw new Error("The section draft response does not match the generated API contract.");
   }
 }
 

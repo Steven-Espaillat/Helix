@@ -36,6 +36,7 @@ from .schemas import (
     SectionStatus,
     SourceRecord,
     Stage,
+    StoredSectionRun,
     StudyEvidencePackage,
     StudyListItem,
     ValidationRequest,
@@ -45,6 +46,11 @@ from .schemas import (
     WorkflowEvent,
     WorkspaceResponse,
     WorkspaceSummary,
+)
+from .section_promotion import (
+    SectionPromotionService,
+    dependency_fingerprint_for,
+    section_package_definition,
 )
 from .section_runs import (
     SectionRunService,
@@ -270,6 +276,8 @@ class StudyService:
                 "Template and provenance failures are non-waivable. "
                 "Correct governed input through a superseding run or a new candidate."
             )
+        if result_id.startswith("SOE-"):
+            return self._record_soe_disposition(study_id, result_id, command)
         package = self.repository.get(study_id, for_update=True)
         self._ensure_mutable(package)
         dvp_match = next(
@@ -418,6 +426,103 @@ class StudyService:
             idempotency_key=f"disposition:{disposition.disposition_id}",
             occurred_at=datetime.fromisoformat(timestamp.replace("Z", "+00:00")),
         )
+        self.session.commit()
+        return self._workspace(updated)
+
+    def _record_soe_disposition(
+        self,
+        study_id: str,
+        result_id: str,
+        command: DispositionCommand,
+    ) -> WorkspaceResponse:
+        package = self.repository.get(study_id, for_update=True)
+        self._ensure_mutable(package)
+        evaluation = next(
+            (
+                item
+                for item in reversed(self.repository.list_candidate_evaluations(study_id))
+                if item.study_output_evaluation_receipt.receipt_id == result_id
+            ),
+            None,
+        )
+        if evaluation is None:
+            raise InvalidCommandError(f"Unknown validation result {result_id}")
+        if evaluation.study_output_evaluation_receipt.status != "failed":
+            raise WorkflowConflictError("Only blocking failures can receive a review disposition")
+        definition = section_package_definition(
+            self.settings.codex_repository_root,
+            evaluation.section_package_id,
+        )
+        fingerprint = dependency_fingerprint_for(
+            package, [str(item) for item in definition.get("depends_on", [])]
+        )
+        prior = [item for item in package.review_dispositions if item.result_id == result_id]
+        if prior and (
+            prior[-1].decision == command.decision
+            and prior[-1].reason == command.reason
+            and prior[-1].reviewer == command.reviewer
+            and prior[-1].artifact_hash == evaluation.candidate_hash
+            and prior[-1].dependency_fingerprint == fingerprint
+        ):
+            return self._workspace(package)
+        timestamp = self._now()
+        disposition = ReviewDisposition(
+            disposition_id=f"RD-{uuid4().hex[:12].upper()}",
+            result_id=result_id,
+            decision=command.decision,
+            reason=command.reason,
+            reviewer=command.reviewer,
+            timestamp=timestamp,
+            artifact_id=evaluation.candidate_id,
+            artifact_hash=evaluation.candidate_hash,
+            dependency_fingerprint=fingerprint,
+        )
+        event = self._event(
+            "validation_disposition",
+            command.reviewer,
+            command.decision.value,
+            {
+                "result_id": result_id,
+                "reason": command.reason,
+                "artifact_id": evaluation.candidate_id,
+                "artifact_hash": evaluation.candidate_hash,
+            },
+            timestamp=timestamp,
+        )
+        updated = package.model_copy(
+            update={
+                "review_dispositions": [*package.review_dispositions, disposition],
+                "events": [*package.events, event],
+            }
+        )
+        updated = self._with_derived_gate(updated, timestamp)
+        self.repository.save(updated)
+        self.repository.append_event(
+            study_id=study_id,
+            event_type=event.event,
+            actor=event.actor,
+            payload={"outcome": event.outcome, **event.details},
+            idempotency_key=f"disposition:{disposition.disposition_id}",
+            occurred_at=datetime.fromisoformat(timestamp.replace("Z", "+00:00")),
+        )
+        run_row = self.repository.get_section_run_by_id(study_id, evaluation.run_id)
+        if run_row is not None and run_row.candidate is not None:
+            run = StoredSectionRun.model_validate(
+                {
+                    "receipt": run_row.receipt,
+                    "candidate": run_row.candidate,
+                    "envelope": run_row.envelope,
+                    "review_scaffold": run_row.review_scaffold,
+                }
+            )
+            promotions = SectionPromotionService(self.session, self.settings.codex_repository_root)
+            promotions.record_decision_for_evaluation(
+                study_id,
+                evaluation,
+                run,
+                updated,
+                idempotency_key=f"disposition-decision:{disposition.disposition_id}",
+            )
         self.session.commit()
         return self._workspace(updated)
 
@@ -620,6 +725,8 @@ class StudyService:
             section_run_eligibility=self.section_runs.eligibilities(package),
             section_runs=self.repository.list_section_runs(package.study.study_id),
             candidate_evaluations=self.repository.list_candidate_evaluations(package.study.study_id),
+            promotion_decisions=self.repository.list_promotion_decisions(package.study.study_id),
+            section_drafts=self.repository.list_section_drafts(package.study.study_id),
             cross_section_queries=self.repository.list_cross_section_queries(package.study.study_id),
             review_scaffold_revisions=package.review_scaffold_revisions,
         )

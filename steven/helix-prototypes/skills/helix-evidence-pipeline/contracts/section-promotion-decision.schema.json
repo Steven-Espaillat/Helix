@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "helix://contracts/section-promotion-decision/v1",
+  "title": "HELIX Section Promotion Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "eligible",
+    "candidate_id",
+    "candidate_hash",
+    "run_id",
+    "conditions",
+    "failed_condition_ids",
+    "warnings",
+    "current_disposition_ids",
+    "gate_decision_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "helix.section-promotion-decision/v1"
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^SDC-[A-Z0-9-]+$"
+    },
+    "candidate_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conditions": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["condition_id", "passed", "evidence_ids"],
+        "properties": {
+          "condition_id": {
+            "enum": [
+              "package_permission",
+              "no_hard_blocker",
+              "provenance_passed",
+              "conformance_passed",
+              "review_required_current"
+            ]
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": ["string", "null"]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "failed_condition_ids": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "package_permission",
+          "no_hard_blocker",
+          "provenance_passed",
+          "conformance_passed",
+          "review_required_current"
+        ]
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "current_disposition_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "gate_decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

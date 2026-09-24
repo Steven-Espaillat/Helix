@@ -14,3 +14,5 @@ export type SectionRunReceipt = components["schemas"]["SectionRunReceipt"];
 export type DataValidationExecution = components["schemas"]["DataValidationExecution"];
 export type CandidateEvaluation = components["schemas"]["CandidateEvaluation"];
 export type CrossSectionQueryReceipt = components["schemas"]["CrossSectionQueryReceipt"];
+export type SectionDraft = components["schemas"]["SectionDraft"];
+export type PromotionDecision = components["schemas"]["PromotionDecision"];
