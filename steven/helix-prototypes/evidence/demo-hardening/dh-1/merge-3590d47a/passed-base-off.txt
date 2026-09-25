@@ -1,0 +1,90 @@
+tests/agent-steps.spec.ts › an unknown result reuses the key; a definite rejection gets a new attempt key
+tests/agent-steps.spec.ts › completed stages are read-only review of recorded actions and never send commands
+tests/agent-steps.spec.ts › current stage shows server boundary, evidence, and a disabled pause with its reason
+tests/agent-steps.spec.ts › extract executes the missing package once, with the freeze's run-scoped key
+tests/agent-steps.spec.ts › extract replays the freeze-created execution with the freeze's key and never runs a second one
+tests/agent-steps.spec.ts › legacy commands wait while an agent command is in flight; no duplicate POST /validation-runs
+tests/agent-steps.spec.ts › next agent step after candidate evaluation › Traceability is reported only once a Section Draft is promoted for the run
+tests/agent-steps.spec.ts › next agent step after candidate evaluation › a capped candidate (stop_for_review) is a human stop, never the Traceability gate
+tests/agent-steps.spec.ts › next agent step after candidate evaluation › hold with an eligible decision and no Section Draft runs promotion on that run
+tests/agent-steps.spec.ts › next agent step after candidate evaluation › hold with an ineligible decision stops for a person with the failed conditions
+tests/agent-steps.spec.ts › next agent step after candidate evaluation › retry is a human decision
+tests/agent-steps.spec.ts › the sequence replays Extract, waits for refreshed state, stops on the first failure, and runs nothing after it
+tests/dh1-auto-run.spec.ts › Human gate 2 reported by the server stops the run; the agent never passes it
+tests/dh1-auto-run.spec.ts › Stop ends the run after the command in flight; nothing later is sent
+tests/dh1-auto-run.spec.ts › a refused freeze starts nothing, and the agent never freezes on its own
+tests/dh1-auto-run.spec.ts › a reload of a frozen run never auto-starts the agent
+tests/dh1-auto-run.spec.ts › the human freeze starts the agent once at the server's current stage; it follows the server and stops on error
+tests/dh1-auto-run.spec.ts › when idle, a manual pick holds and sends nothing
+tests/dh1-auto-run.spec.ts › with seeded validation results, the server's pending reason still sends validation first
+tests/gate3-drafts.spec.ts › generate, chat apply and discard, and verify all work from Gate 3 against the live draft endpoints
+tests/gate3-drafts.spec.ts › the section drafts and chat render inside the Gate 3 body only, next to unchanged sign-offs and export
+tests/intake-upload.spec.ts › a failed job shows the server error and does not select a study
+tests/intake-upload.spec.ts › polls the job stage by stage and selects the new study when it succeeds
+tests/intake-upload.spec.ts › submit stays disabled until files and governed facts are supplied, and never claims receipt early
+tests/journey-progress.spec.ts › contract: a ten-stage array is refused, not merged onto nine nodes
+tests/journey-progress.spec.ts › contract: legacy stages without projection fields are refused
+tests/journey-progress.spec.ts › governance: export stays a separate gate after approvals
+tests/journey-progress.spec.ts › governance: the agent never passes a human gate
+tests/journey-progress.spec.ts › governance: traceability cannot continue while the server reports an undisposed blocker
+tests/journey-progress.spec.ts › labels every projected stage state from the server and marks the three human gates
+tests/journey-progress.spec.ts › reload restores progress from the workspace and resets selection to the current stage
+tests/journey-progress.spec.ts › renders the seeded nine-stage projection with only Upload reachable
+tests/journey-progress.spec.ts › selecting a reached stage changes only the local view and sends no command
+tests/journey-progress.spec.ts › shows a blocked current stage from the server without advancing
+tests/journey-progress.spec.ts › shows a paused current stage from the server without advancing
+tests/review-export.spec.ts › a server-refused approval shows the server detail and leaves the sign-off pending
+tests/review-export.spec.ts › a slower evidence response for an earlier claim never overwrites the current selection (#30 l53LR)
+tests/review-export.spec.ts › demo flag off: no demo label anywhere in the review stage or downloads
+tests/review-export.spec.ts › demo flag on: exported downloads show no demo note
+tests/review-export.spec.ts › demo flag on: freeze stays a human action; nothing freezes on load or on approval
+tests/review-export.spec.ts › demo-frozen run: export is disabled with a visible reason; no refused click, no retry, nothing downloaded
+tests/review-export.spec.ts › demo-frozen run: only a small 'Not qualified' status label; no demo chrome; pending packages untouched
+tests/review-export.spec.ts › downloads list every exported artifact and each download returns the checksummed server bytes
+tests/review-export.spec.ts › export errors are shown with a retry, and a replayed export is labeled idempotent
+tests/review-export.spec.ts › export is enabled only by the server ready_for_export gate and is its own action
+tests/review-export.spec.ts › inspect provenance reads the claim evidence endpoint and shows the lineage edges
+tests/review-export.spec.ts › records one role per call in any order; study director waits for the three priors; never exports
+tests/review-export.spec.ts › reload restores sign-offs, receipt, downloads, and completed progress from getWorkspace alone
+tests/review-export.spec.ts › renders the server report in three columns with blockers, references, and no regulatory claim
+tests/review-export.spec.ts › section agent state follows the selected report section, not the latest run in the workspace (#30 l53LX)
+tests/review-export.spec.ts › strict run: no 'Not qualified' label at any phase
+tests/run-events-client.spec.ts › a terminal cursor_expired frame refreshes the workspace and reconnects
+tests/run-events-client.spec.ts › an untyped conflict is not treated as cursor expiry
+tests/run-events-client.spec.ts › expired cursor refreshes the workspace and reconnects without duplicating completion
+tests/run-events-client.spec.ts › the same frames sent twice call onEvent once per sequence, across reconnects
+tests/shell.spec.ts › announces workspace loading and API errors and retries from the keyboard
+tests/shell.spec.ts › renders the release pill from server state without inferring readiness
+tests/shell.spec.ts › renders the v1 header and one-page shell in dark theme
+tests/shell.spec.ts › renders the v1 header and one-page shell in light theme
+tests/traceability-gate.spec.ts › Continue stays disabled when the server has not opened Review
+tests/traceability-gate.spec.ts › Continue waits for server-reported dispositions and Review, then only changes the view
+tests/traceability-gate.spec.ts › Inspect on a report statement opens Gate 2 on that statement's claim
+tests/traceability-gate.spec.ts › a dispositioned blocker with a remaining warning reads Warnings to review, not Dispositioned
+tests/traceability-gate.spec.ts › a drafted section's Inspect opens Gate 2 on that section's own claim
+tests/traceability-gate.spec.ts › a recorded disposition keeps the blocker and shows Disposition, never Pass
+tests/traceability-gate.spec.ts › claimStatus is green only for a non-empty all-pass set and never hides warnings
+tests/traceability-gate.spec.ts › loads getEvidence per claim and shows the five-step flow, lineage, and receipts
+tests/traceability-gate.spec.ts › mirrors server limits client-side and keeps server rejections in the form
+tests/traceability-gate.spec.ts › renders Gate 2 from server state with an accessible single-open accordion
+tests/traceability-gate.spec.ts › the Gate 2 evidence card shows source hashes, rule versions and exact reconciliation
+tests/traceability-gate.spec.ts › the Gate 2 status chip reads neutral or warning, never green, for empty and warning-only claims
+tests/traceability-gate.spec.ts › the drafted section's review banner is a note, so the page keeps one status region
+tests/traceability-gate.spec.ts › with zero claims the gate shows an empty state and never requests evidence for an empty claim ID
+tests/upload-gate.spec.ts › a Data Validation failure after freeze shows the partial state and retries with the run-scoped key
+tests/upload-gate.spec.ts › a changed manifest uses a new idempotency key
+tests/upload-gate.spec.ts › a retry after an unknown result reuses the same idempotency key, even after reload
+tests/upload-gate.spec.ts › freezes through the server, shows the Pinned Run, and restores it on reload
+tests/upload-gate.spec.ts › legacy validation unlocks once a human freeze has pinned the run
+tests/upload-gate.spec.ts › only Human Gate 1 can pin a run: legacy validation is hidden and the API refuses to auto-freeze
+tests/upload-gate.spec.ts › renders the manifest from the workspace and keeps freeze disabled until consent
+tests/upload-gate.spec.ts › shows the server refusal list and stays unfrozen
+tests/workbench.spec.ts › enables draft from backend eligibility even when claims look incomplete
+tests/workbench.spec.ts › keeps draft blocked when the API reports ineligible despite ready-looking claims
+tests/workbench.spec.ts › labels every approved export artifact kind instead of showing raw kinds
+tests/workbench.spec.ts › offers revise after stop_for_review and shows a new cycle without changing discussion hashes
+tests/workbench.spec.ts › rejects a workspace response from an incompatible API
+tests/workbench.spec.ts › renders backend promotion status and draft evidence without recalculating eligibility
+tests/workbench.spec.ts › renders candidate evaluation and cross-section query from backend-owned workspace fields
+tests/workbench.spec.ts › renders the exact Final Study Approval scope from the workspace
+tests/workbench.spec.ts › shows every immutable attempt and offers no fourth attempt after stop_for_review

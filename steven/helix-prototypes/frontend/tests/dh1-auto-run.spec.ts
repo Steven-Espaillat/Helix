@@ -32,15 +32,22 @@ type Harness = {
   seeded: boolean;
   /** The server reports Human gate 2 as current once validation has run. */
   gateAfterValidation: boolean;
+  /** Fail this many workspace reloads after the freeze (a transient network error). */
+  failReloadsAfterFreeze: number;
   bodies: Record<string, Json[]>;
 };
 
 async function harness(page: Page, overrides: Partial<Harness> = {}) {
-  const h: Harness = { frozen: false, validated: false, freezeStatus: 201, holdValidation: null, seeded: false, gateAfterValidation: false, bodies: {}, ...overrides };
+  const h: Harness = { frozen: false, validated: false, freezeStatus: 201, holdValidation: null, seeded: false, gateAfterValidation: false, failReloadsAfterFreeze: 0, bodies: {}, ...overrides };
   const record = (name: string, route: Route) => {
     (h.bodies[name] ??= []).push((route.request().postDataJSON() ?? {}) as Json);
   };
   await page.route("**/api/v1/studies/*/workspace", async (route) => {
+    if (h.frozen && h.failReloadsAfterFreeze > 0) {
+      h.failReloadsAfterFreeze -= 1;
+      await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ detail: "Workspace unavailable (test double)." }) });
+      return;
+    }
     const live = await liveWorkspace(route);
     if (!live) return;
     const workspace = !h.frozen
@@ -126,7 +133,10 @@ async function harness(page: Page, overrides: Partial<Harness> = {}) {
 }
 
 const live = (page: Page) => page.getByTestId("agent-live");
-const posted = (commands: string[]) => commands.filter((item) => !item.endsWith("/workspace"));
+// Report Assembly (legacy panel) generates a missing section draft on first mount; that is
+// not an agent command, and its timing against the freeze varies.
+const posted = (commands: string[]) =>
+  commands.filter((item) => !item.endsWith("/workspace") && !item.endsWith("/draft"));
 
 async function humanFreeze(page: Page) {
   await page.goto("/");
@@ -253,6 +263,8 @@ test("Human gate 2 reported by the server stops the run; the agent never passes 
   const commands = trackCommands(page);
   await humanFreeze(page);
   await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
+  // The stop message survives the move to the gate as the workbench notice.
+  await expect(page.getByTestId("workbench-notice")).toContainText("The agent stops at Human gate 2. Only a person can pass it.");
   await page.waitForTimeout(1000);
   expect(h.bodies["section-run"]).toBeUndefined();
   expect(posted(commands)).toEqual([
@@ -261,4 +273,38 @@ test("Human gate 2 reported by the server stops the run; the agent never passes 
     "POST /api/v1/studies/STUDY-HLX-028/validation-runs",
   ]);
   await page.screenshot({ path: `${EVIDENCE}/auto-run-stops-at-gate-2.png`, fullPage: true });
+});
+
+const AUTO_RUN_COMMANDS = [
+  "POST /api/v1/studies/STUDY-HLX-028/pinned-runs",
+  "POST /api/v1/studies/STUDY-HLX-028/data-validation-packages",
+  "POST /api/v1/studies/STUDY-HLX-028/validation-runs",
+  "POST /api/v1/studies/STUDY-HLX-028/section-runs",
+];
+
+test("one failed reload after the freeze is retried and the agent still starts once", async ({ page }) => {
+  const h = await harness(page, { failReloadsAfterFreeze: 1 });
+  const commands = trackCommands(page);
+  await humanFreeze(page);
+  await expect(page.getByTestId("workbench-notice")).toContainText(`Manifest frozen by the server as Pinned Run ${runId}.`);
+  await expect(live(page)).toContainText("Run governed Section Agent failed");
+  expect(h.failReloadsAfterFreeze).toBe(0);
+  expect(posted(commands)).toEqual(AUTO_RUN_COMMANDS);
+});
+
+test("if the reload keeps failing, Upload never claims the freeze and the agent starts after a manual reload", async ({ page }) => {
+  await harness(page, { failReloadsAfterFreeze: 2 });
+  const commands = trackCommands(page);
+  await humanFreeze(page);
+  await expect(page.getByTestId("freeze-reload-needed")).toContainText("the workspace did not reload");
+  await expect(page.getByTestId("upload-gate")).toBeVisible();
+  await expect(page.getByTestId("freeze-live")).not.toContainText("Manifest frozen");
+  await expect(page.getByTestId("workbench-notice")).not.toContainText("Manifest frozen");
+  await page.waitForTimeout(1000);
+  expect(posted(commands)).toEqual(["POST /api/v1/studies/STUDY-HLX-028/pinned-runs"]);
+  await page.screenshot({ path: `${EVIDENCE}/freeze-reload-needed.png`, fullPage: true });
+  await page.getByTestId("freeze-reload").click();
+  await expect(page.getByTestId("workbench-notice")).toContainText(`Manifest frozen by the server as Pinned Run ${runId}.`);
+  await expect(live(page)).toContainText("Run governed Section Agent failed");
+  expect(posted(commands)).toEqual(AUTO_RUN_COMMANDS);
 });

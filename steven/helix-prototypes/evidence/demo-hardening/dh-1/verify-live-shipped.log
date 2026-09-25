@@ -3,99 +3,101 @@
 > playwright test
 
 
-Running 85 tests using 1 worker
+Running 87 tests using 1 worker
 
-(node:3638) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:39918) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓   1 tests/agent-steps.spec.ts:154:5 › current stage shows server boundary, evidence, and a disabled pause with its reason (442ms)
-  ✓   2 tests/agent-steps.spec.ts:177:5 › completed stages are read-only review of recorded actions and never send commands (456ms)
-  ✓   3 tests/agent-steps.spec.ts:195:5 › the sequence replays Extract, waits for refreshed state, stops on the first failure, and runs nothing after it (825ms)
-  ✓   4 tests/agent-steps.spec.ts:231:5 › an unknown result reuses the key; a definite rejection gets a new attempt key (691ms)
-  ✓   5 tests/agent-steps.spec.ts:262:5 › extract replays the freeze-created execution with the freeze's key and never runs a second one (908ms)
-  ✓   6 tests/agent-steps.spec.ts:287:5 › extract executes the missing package once, with the freeze's run-scoped key (358ms)
-  ✓   7 tests/agent-steps.spec.ts:352:7 › next agent step after candidate evaluation › a capped candidate (stop_for_review) is a human stop, never the Traceability gate (45ms)
-  ✓   8 tests/agent-steps.spec.ts:358:7 › next agent step after candidate evaluation › retry is a human decision (45ms)
-  ✓   9 tests/agent-steps.spec.ts:362:7 › next agent step after candidate evaluation › hold with an eligible decision and no Section Draft runs promotion on that run (63ms)
-  ✓  10 tests/agent-steps.spec.ts:366:7 › next agent step after candidate evaluation › hold with an ineligible decision stops for a person with the failed conditions (46ms)
-  ✓  11 tests/agent-steps.spec.ts:375:7 › next agent step after candidate evaluation › Traceability is reported only once a Section Draft is promoted for the run (45ms)
-  ✓  12 tests/agent-steps.spec.ts:386:5 › legacy commands wait while an agent command is in flight; no duplicate POST /validation-runs (472ms)
+  ✓   1 tests/agent-steps.spec.ts:154:5 › current stage shows server boundary, evidence, and a disabled pause with its reason (825ms)
+  ✓   2 tests/agent-steps.spec.ts:177:5 › completed stages are read-only review of recorded actions and never send commands (941ms)
+  ✓   3 tests/agent-steps.spec.ts:195:5 › the sequence replays Extract, waits for refreshed state, stops on the first failure, and runs nothing after it (1.9s)
+  ✓   4 tests/agent-steps.spec.ts:231:5 › an unknown result reuses the key; a definite rejection gets a new attempt key (1.1s)
+  ✓   5 tests/agent-steps.spec.ts:262:5 › extract replays the freeze-created execution with the freeze's key and never runs a second one (1.6s)
+  ✓   6 tests/agent-steps.spec.ts:287:5 › extract executes the missing package once, with the freeze's run-scoped key (675ms)
+  ✓   7 tests/agent-steps.spec.ts:352:7 › next agent step after candidate evaluation › a capped candidate (stop_for_review) is a human stop, never the Traceability gate (68ms)
+  ✓   8 tests/agent-steps.spec.ts:358:7 › next agent step after candidate evaluation › retry is a human decision (85ms)
+  ✓   9 tests/agent-steps.spec.ts:362:7 › next agent step after candidate evaluation › hold with an eligible decision and no Section Draft runs promotion on that run (68ms)
+  ✓  10 tests/agent-steps.spec.ts:366:7 › next agent step after candidate evaluation › hold with an ineligible decision stops for a person with the failed conditions (67ms)
+  ✓  11 tests/agent-steps.spec.ts:375:7 › next agent step after candidate evaluation › Traceability is reported only once a Section Draft is promoted for the run (66ms)
+  ✓  12 tests/agent-steps.spec.ts:386:5 › legacy commands wait while an agent command is in flight; no duplicate POST /validation-runs (942ms)
   -  13 tests/codex-section-run.spec.ts:11:5 › drafts the body-weight component through the real Codex SDK
-  ✓  14 tests/dh1-auto-run.spec.ts:146:5 › the human freeze starts the agent once at the server's current stage; it follows the server and stops on error (2.3s)
-  ✓  15 tests/dh1-auto-run.spec.ts:173:5 › Stop ends the run after the command in flight; nothing later is sent (2.2s)
-  ✓  16 tests/dh1-auto-run.spec.ts:201:5 › a reload of a frozen run never auto-starts the agent (1.7s)
-  ✓  17 tests/dh1-auto-run.spec.ts:211:5 › a refused freeze starts nothing, and the agent never freezes on its own (1.8s)
-  ✓  18 tests/dh1-auto-run.spec.ts:222:5 › when idle, a manual pick holds and sends nothing (1.9s)
-  ✓  19 tests/dh1-auto-run.spec.ts:238:5 › with seeded validation results, the server's pending reason still sends validation first (576ms)
-  ✓  20 tests/dh1-auto-run.spec.ts:251:5 › Human gate 2 reported by the server stops the run; the agent never passes it (1.8s)
-  ✓  21 tests/intake-upload.spec.ts:27:5 › submit stays disabled until files and governed facts are supplied, and never claims receipt early (239ms)
-  ✓  22 tests/intake-upload.spec.ts:44:5 › polls the job stage by stage and selects the new study when it succeeds (3.5s)
-  ✓  23 tests/intake-upload.spec.ts:73:5 › a failed job shows the server error and does not select a study (1.7s)
-  ✓  24 tests/journey-progress.spec.ts:31:5 › renders the seeded nine-stage projection with only Upload reachable (272ms)
-  ✓  25 tests/journey-progress.spec.ts:56:5 › labels every projected stage state from the server and marks the three human gates (254ms)
-  ✓  26 tests/journey-progress.spec.ts:91:7 › shows a blocked current stage from the server without advancing (205ms)
-  ✓  27 tests/journey-progress.spec.ts:91:7 › shows a paused current stage from the server without advancing (206ms)
-  ✓  28 tests/journey-progress.spec.ts:101:5 › selecting a reached stage changes only the local view and sends no command (343ms)
-  ✓  29 tests/journey-progress.spec.ts:120:5 › reload restores progress from the workspace and resets selection to the current stage (382ms)
-  ✓  30 tests/journey-progress.spec.ts:130:5 › governance: the agent never passes a human gate (748ms)
-  ✓  31 tests/journey-progress.spec.ts:145:5 › governance: traceability cannot continue while the server reports an undisposed blocker (224ms)
-  ✓  32 tests/journey-progress.spec.ts:155:5 › governance: export stays a separate gate after approvals (207ms)
-  ✓  33 tests/journey-progress.spec.ts:163:5 › contract: a ten-stage array is refused, not merged onto nine nodes (179ms)
-  ✓  34 tests/journey-progress.spec.ts:176:5 › contract: legacy stages without projection fields are refused (205ms)
-  ✓  35 tests/review-export.spec.ts:149:5 › renders the server report in three columns with blockers, references, and no regulatory claim (326ms)
-  ✓  36 tests/review-export.spec.ts:183:5 › inspect provenance reads the claim evidence endpoint and shows the lineage edges (327ms)
-  ✓  37 tests/review-export.spec.ts:199:5 › a slower evidence response for an earlier claim never overwrites the current selection (#30 l53LR) (4.4s)
-  ✓  38 tests/review-export.spec.ts:229:5 › section agent state follows the selected report section, not the latest run in the workspace (#30 l53LX) (329ms)
-  ✓  39 tests/review-export.spec.ts:257:5 › records one role per call in any order; study director waits for the three priors; never exports (575ms)
-  ✓  40 tests/review-export.spec.ts:294:5 › a server-refused approval shows the server detail and leaves the sign-off pending (292ms)
-  ✓  41 tests/review-export.spec.ts:313:5 › export is enabled only by the server ready_for_export gate and is its own action (589ms)
-  ✓  42 tests/review-export.spec.ts:346:5 › downloads list every exported artifact and each download returns the checksummed server bytes (459ms)
-  ✓  43 tests/review-export.spec.ts:379:5 › export errors are shown with a retry, and a replayed export is labeled idempotent (373ms)
-  ✓  44 tests/review-export.spec.ts:403:5 › reload restores sign-offs, receipt, downloads, and completed progress from getWorkspace alone (294ms)
-  ✓  45 tests/review-export.spec.ts:423:5 › demo flag on: the review stage shows no demo UI; the server's pending packages are untouched (294ms)
-  ✓  46 tests/review-export.spec.ts:447:5 › demo flag on: exported downloads show no demo note (244ms)
-  ✓  47 tests/review-export.spec.ts:455:5 › demo flag on: freeze stays a human action; nothing freezes on load or on approval (1.2s)
-  ✓  48 tests/review-export.spec.ts:477:5 › demo flag off: no demo label anywhere in the review stage or downloads (246ms)
-  ✓  49 tests/run-events-client.spec.ts:40:5 › expired cursor refreshes the workspace and reconnects without duplicating completion (2ms)
-  ✓  50 tests/run-events-client.spec.ts:85:5 › an untyped conflict is not treated as cursor expiry (1ms)
-  ✓  51 tests/run-events-client.spec.ts:93:5 › the same frames sent twice call onEvent once per sequence, across reconnects (0ms)
-  ✓  52 tests/run-events-client.spec.ts:121:5 › a terminal cursor_expired frame refreshes the workspace and reconnects (0ms)
-  ✓  53 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in light theme (385ms)
-  ✓  54 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in dark theme (360ms)
-  ✓  55 tests/shell.spec.ts:133:5 › announces workspace loading and API errors and retries from the keyboard (924ms)
-  ✓  56 tests/shell.spec.ts:170:5 › renders the release pill from server state without inferring readiness (331ms)
-  ✓  57 tests/traceability-gate.spec.ts:144:5 › renders Gate 2 from server state with an accessible single-open accordion (354ms)
-  ✓  58 tests/traceability-gate.spec.ts:184:5 › loads getEvidence per claim and shows the five-step flow, lineage, and receipts (423ms)
-  ✓  59 tests/traceability-gate.spec.ts:238:5 › mirrors server limits client-side and keeps server rejections in the form (535ms)
-  ✓  60 tests/traceability-gate.spec.ts:286:5 › a recorded disposition keeps the blocker and shows Disposition, never Pass (758ms)
-  ✓  61 tests/traceability-gate.spec.ts:339:5 › Continue waits for server-reported dispositions and Review, then only changes the view (741ms)
-  ✓  62 tests/traceability-gate.spec.ts:374:5 › Continue stays disabled when the server has not opened Review (238ms)
-  ✓  63 tests/traceability-gate.spec.ts:396:5 › with zero claims the gate shows an empty state and never requests evidence for an empty claim ID (692ms)
-  ✓  64 tests/traceability-gate.spec.ts:417:5 › Inspect on a report statement opens Gate 2 on that statement's claim (564ms)
-  ✓  65 tests/traceability-gate.spec.ts:436:5 › a drafted section's Inspect opens Gate 2 on that section's own claim (698ms)
-  ✓  66 tests/traceability-gate.spec.ts:463:5 › the Gate 2 evidence card shows source hashes, rule versions and exact reconciliation (389ms)
-  ✓  67 tests/upload-gate.spec.ts:70:5 › renders the manifest from the workspace and keeps freeze disabled until consent (344ms)
-  ✓  68 tests/upload-gate.spec.ts:96:5 › freezes through the server, shows the Pinned Run, and restores it on reload (645ms)
-  ✓  69 tests/upload-gate.spec.ts:141:5 › a retry after an unknown result reuses the same idempotency key, even after reload (584ms)
-  ✓  70 tests/upload-gate.spec.ts:160:5 › a changed manifest uses a new idempotency key (533ms)
-  ✓  71 tests/upload-gate.spec.ts:186:5 › shows the server refusal list and stays unfrozen (307ms)
-  ✓  72 tests/upload-gate.spec.ts:206:5 › a Data Validation failure after freeze shows the partial state and retries with the run-scoped key (827ms)
-  ✓  73 tests/upload-gate.spec.ts:253:5 › only Human Gate 1 can pin a run: legacy validation is hidden and the API refuses to auto-freeze (260ms)
-  ✓  74 tests/upload-gate.spec.ts:279:5 › legacy validation unlocks once a human freeze has pinned the run (204ms)
-  ✓  75 tests/workbench.spec.ts:8:5 › rejects a workspace response from an incompatible API (178ms)
-  ✘  76 tests/workbench.spec.ts:38:5 › runs the synthetic study from validation through explicit export (10.7s)
-(node:3764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+  ✓  14 tests/dh1-auto-run.spec.ts:156:5 › the human freeze starts the agent once at the server's current stage; it follows the server and stops on error (3.1s)
+  ✓  15 tests/dh1-auto-run.spec.ts:183:5 › Stop ends the run after the command in flight; nothing later is sent (2.6s)
+  ✓  16 tests/dh1-auto-run.spec.ts:211:5 › a reload of a frozen run never auto-starts the agent (1.8s)
+  ✓  17 tests/dh1-auto-run.spec.ts:221:5 › a refused freeze starts nothing, and the agent never freezes on its own (1.8s)
+  ✓  18 tests/dh1-auto-run.spec.ts:232:5 › when idle, a manual pick holds and sends nothing (2.4s)
+  ✓  19 tests/dh1-auto-run.spec.ts:248:5 › with seeded validation results, the server's pending reason still sends validation first (1.1s)
+  ✓  20 tests/dh1-auto-run.spec.ts:261:5 › Human gate 2 reported by the server stops the run; the agent never passes it (1.8s)
+  ✓  21 tests/dh1-auto-run.spec.ts:285:5 › one failed reload after the freeze is retried and the agent still starts once (818ms)
+  ✓  22 tests/dh1-auto-run.spec.ts:295:5 › if the reload keeps failing, Upload never claims the freeze and the agent starts after a manual reload (2.0s)
+  ✓  23 tests/intake-upload.spec.ts:27:5 › submit stays disabled until files and governed facts are supplied, and never claims receipt early (385ms)
+  ✓  24 tests/intake-upload.spec.ts:44:5 › polls the job stage by stage and selects the new study when it succeeds (3.5s)
+  ✓  25 tests/intake-upload.spec.ts:73:5 › a failed job shows the server error and does not select a study (1.6s)
+  ✓  26 tests/journey-progress.spec.ts:31:5 › renders the seeded nine-stage projection with only Upload reachable (289ms)
+  ✓  27 tests/journey-progress.spec.ts:56:5 › labels every projected stage state from the server and marks the three human gates (255ms)
+  ✓  28 tests/journey-progress.spec.ts:91:7 › shows a blocked current stage from the server without advancing (205ms)
+  ✓  29 tests/journey-progress.spec.ts:91:7 › shows a paused current stage from the server without advancing (206ms)
+  ✓  30 tests/journey-progress.spec.ts:101:5 › selecting a reached stage changes only the local view and sends no command (308ms)
+  ✓  31 tests/journey-progress.spec.ts:120:5 › reload restores progress from the workspace and resets selection to the current stage (381ms)
+  ✓  32 tests/journey-progress.spec.ts:130:5 › governance: the agent never passes a human gate (742ms)
+  ✓  33 tests/journey-progress.spec.ts:145:5 › governance: traceability cannot continue while the server reports an undisposed blocker (224ms)
+  ✓  34 tests/journey-progress.spec.ts:155:5 › governance: export stays a separate gate after approvals (210ms)
+  ✓  35 tests/journey-progress.spec.ts:163:5 › contract: a ten-stage array is refused, not merged onto nine nodes (198ms)
+  ✓  36 tests/journey-progress.spec.ts:176:5 › contract: legacy stages without projection fields are refused (211ms)
+  ✓  37 tests/review-export.spec.ts:149:5 › renders the server report in three columns with blockers, references, and no regulatory claim (332ms)
+  ✓  38 tests/review-export.spec.ts:183:5 › inspect provenance reads the claim evidence endpoint and shows the lineage edges (408ms)
+  ✓  39 tests/review-export.spec.ts:199:5 › a slower evidence response for an earlier claim never overwrites the current selection (#30 l53LR) (4.5s)
+  ✓  40 tests/review-export.spec.ts:229:5 › section agent state follows the selected report section, not the latest run in the workspace (#30 l53LX) (422ms)
+  ✓  41 tests/review-export.spec.ts:257:5 › records one role per call in any order; study director waits for the three priors; never exports (618ms)
+  ✓  42 tests/review-export.spec.ts:294:5 › a server-refused approval shows the server detail and leaves the sign-off pending (286ms)
+  ✓  43 tests/review-export.spec.ts:313:5 › export is enabled only by the server ready_for_export gate and is its own action (661ms)
+  ✓  44 tests/review-export.spec.ts:346:5 › downloads list every exported artifact and each download returns the checksummed server bytes (463ms)
+  ✓  45 tests/review-export.spec.ts:379:5 › export errors are shown with a retry, and a replayed export is labeled idempotent (379ms)
+  ✓  46 tests/review-export.spec.ts:403:5 › reload restores sign-offs, receipt, downloads, and completed progress from getWorkspace alone (430ms)
+  ✓  47 tests/review-export.spec.ts:423:5 › demo flag on: the review stage shows no demo UI; the server's pending packages are untouched (374ms)
+  ✓  48 tests/review-export.spec.ts:447:5 › demo flag on: exported downloads show no demo note (341ms)
+  ✓  49 tests/review-export.spec.ts:455:5 › demo flag on: freeze stays a human action; nothing freezes on load or on approval (1.3s)
+  ✓  50 tests/review-export.spec.ts:477:5 › demo flag off: no demo label anywhere in the review stage or downloads (357ms)
+  ✓  51 tests/run-events-client.spec.ts:40:5 › expired cursor refreshes the workspace and reconnects without duplicating completion (2ms)
+  ✓  52 tests/run-events-client.spec.ts:85:5 › an untyped conflict is not treated as cursor expiry (1ms)
+  ✓  53 tests/run-events-client.spec.ts:93:5 › the same frames sent twice call onEvent once per sequence, across reconnects (0ms)
+  ✓  54 tests/run-events-client.spec.ts:121:5 › a terminal cursor_expired frame refreshes the workspace and reconnects (0ms)
+  ✓  55 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in light theme (480ms)
+  ✓  56 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in dark theme (461ms)
+  ✓  57 tests/shell.spec.ts:133:5 › announces workspace loading and API errors and retries from the keyboard (988ms)
+  ✓  58 tests/shell.spec.ts:170:5 › renders the release pill from server state without inferring readiness (368ms)
+  ✓  59 tests/traceability-gate.spec.ts:144:5 › renders Gate 2 from server state with an accessible single-open accordion (503ms)
+  ✓  60 tests/traceability-gate.spec.ts:184:5 › loads getEvidence per claim and shows the five-step flow, lineage, and receipts (486ms)
+  ✓  61 tests/traceability-gate.spec.ts:238:5 › mirrors server limits client-side and keeps server rejections in the form (616ms)
+  ✓  62 tests/traceability-gate.spec.ts:286:5 › a recorded disposition keeps the blocker and shows Disposition, never Pass (990ms)
+  ✓  63 tests/traceability-gate.spec.ts:339:5 › Continue waits for server-reported dispositions and Review, then only changes the view (976ms)
+  ✓  64 tests/traceability-gate.spec.ts:374:5 › Continue stays disabled when the server has not opened Review (300ms)
+  ✓  65 tests/traceability-gate.spec.ts:396:5 › with zero claims the gate shows an empty state and never requests evidence for an empty claim ID (801ms)
+  ✓  66 tests/traceability-gate.spec.ts:417:5 › Inspect on a report statement opens Gate 2 on that statement's claim (573ms)
+  ✓  67 tests/traceability-gate.spec.ts:436:5 › a drafted section's Inspect opens Gate 2 on that section's own claim (601ms)
+  ✓  68 tests/traceability-gate.spec.ts:463:5 › the Gate 2 evidence card shows source hashes, rule versions and exact reconciliation (473ms)
+  ✓  69 tests/upload-gate.spec.ts:70:5 › renders the manifest from the workspace and keeps freeze disabled until consent (466ms)
+  ✓  70 tests/upload-gate.spec.ts:96:5 › freezes through the server, shows the Pinned Run, and restores it on reload (922ms)
+  ✓  71 tests/upload-gate.spec.ts:141:5 › a retry after an unknown result reuses the same idempotency key, even after reload (742ms)
+  ✓  72 tests/upload-gate.spec.ts:160:5 › a changed manifest uses a new idempotency key (639ms)
+  ✓  73 tests/upload-gate.spec.ts:186:5 › shows the server refusal list and stays unfrozen (392ms)
+  ✓  74 tests/upload-gate.spec.ts:206:5 › a Data Validation failure after freeze shows the partial state and retries with the run-scoped key (1.1s)
+  ✓  75 tests/upload-gate.spec.ts:253:5 › only Human Gate 1 can pin a run: legacy validation is hidden and the API refuses to auto-freeze (427ms)
+  ✓  76 tests/upload-gate.spec.ts:279:5 › legacy validation unlocks once a human freeze has pinned the run (292ms)
+  ✓  77 tests/workbench.spec.ts:8:5 › rejects a workspace response from an incompatible API (235ms)
+  ✘  78 tests/workbench.spec.ts:38:5 › runs the synthetic study from validation through explicit export (10.9s)
+(node:41039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  77 tests/workbench.spec.ts:240:5 › keeps draft blocked when the API reports ineligible despite ready-looking claims (234ms)
-  ✓  78 tests/workbench.spec.ts:275:5 › enables draft from backend eligibility even when claims look incomplete (207ms)
-  ✓  79 tests/workbench.spec.ts:305:5 › renders candidate evaluation and cross-section query from backend-owned workspace fields (771ms)
-  ✘  80 tests/workbench.spec.ts:425:5 › renders predecessor run identity and carry-forward counts from the workspace (180ms)
-(node:3776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+  ✓  79 tests/workbench.spec.ts:244:5 › keeps draft blocked when the API reports ineligible despite ready-looking claims (282ms)
+  ✓  80 tests/workbench.spec.ts:279:5 › enables draft from backend eligibility even when claims look incomplete (244ms)
+  ✓  81 tests/workbench.spec.ts:309:5 › renders candidate evaluation and cross-section query from backend-owned workspace fields (809ms)
+  ✘  82 tests/workbench.spec.ts:429:5 › renders predecessor run identity and carry-forward counts from the workspace (164ms)
+(node:41084) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  81 tests/workbench.spec.ts:448:5 › renders the exact Final Study Approval scope from the workspace (254ms)
-  ✓  82 tests/workbench.spec.ts:472:5 › labels every approved export artifact kind instead of showing raw kinds (208ms)
-  ✓  83 tests/workbench.spec.ts:504:5 › renders backend promotion status and draft evidence without recalculating eligibility (222ms)
-  ✓  84 tests/workbench.spec.ts:557:5 › shows every immutable attempt and offers no fourth attempt after stop_for_review (221ms)
-  ✓  85 tests/workbench.spec.ts:596:5 › offers revise after stop_for_review and shows a new cycle without changing discussion hashes (367ms)
+  ✓  83 tests/workbench.spec.ts:452:5 › renders the exact Final Study Approval scope from the workspace (283ms)
+  ✓  84 tests/workbench.spec.ts:476:5 › labels every approved export artifact kind instead of showing raw kinds (231ms)
+  ✓  85 tests/workbench.spec.ts:508:5 › renders backend promotion status and draft evidence without recalculating eligibility (285ms)
+  ✓  86 tests/workbench.spec.ts:561:5 › shows every immutable attempt and offers no fourth attempt after stop_for_review (279ms)
+  ✓  87 tests/workbench.spec.ts:600:5 › offers revise after stop_for_review and shows a new cycle without changing discussion hashes (373ms)
 
 
   1) tests/workbench.spec.ts:38:5 › runs the synthetic study from validation through explicit export 
@@ -103,7 +105,7 @@ Running 85 tests using 1 worker
     Error: expect(locator).toContainText(expected) failed
 
     Locator: getByTestId('workbench-notice')
-    Expected substring: "Manifest frozen by the server as Pinned Run"
+    Expected pattern: /Manifest frozen by the server as Pinned Run|The agent stops at Human gate 2/
     Timeout: 10000ms
     Error: element(s) not found
 
@@ -112,14 +114,14 @@ Running 85 tests using 1 worker
       - waiting for getByTestId('workbench-notice')
 
 
-      78 |   await page.getByTestId("freeze-consent").check();
       79 |   await page.getByTestId("freeze-manifest").click();
-    > 80 |   await expect(page.getByTestId("workbench-notice")).toContainText("Manifest frozen by the server as Pinned Run");
+      80 |   // The freeze notice is replaced once the auto-run stops at Human gate 2 (DH-1).
+    > 81 |   await expect(page.getByTestId("workbench-notice")).toContainText(
          |                                                      ^
-      81 |   await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
-      82 |   await expect(page.getByTestId("agent-stop-sequence")).toHaveCount(0);
-      83 |   expect(sectionRunPosts).toEqual([]);
-        at /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:80:54
+      82 |     /Manifest frozen by the server as Pinned Run|The agent stops at Human gate 2/,
+      83 |   );
+      84 |   await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
+        at /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:81:54
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/workbench-runs-the-synthet-de3d9-ion-through-explicit-export/test-failed-1.png
@@ -135,19 +137,19 @@ Running 85 tests using 1 worker
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  2) tests/workbench.spec.ts:425:5 › renders predecessor run identity and carry-forward counts from the workspace 
+  2) tests/workbench.spec.ts:429:5 › renders predecessor run identity and carry-forward counts from the workspace 
 
     Error: Workspace is missing a pinned run.
 
-      1070 | function withSupersedingRun(workspace: unknown): unknown {
-      1071 |   if (!isObject(workspace) || !isObject(workspace.pinned_run)) {
-    > 1072 |     throw new Error("Workspace is missing a pinned run.");
+      1074 | function withSupersedingRun(workspace: unknown): unknown {
+      1075 |   if (!isObject(workspace) || !isObject(workspace.pinned_run)) {
+    > 1076 |     throw new Error("Workspace is missing a pinned run.");
            |           ^
-      1073 |   }
-      1074 |   return {
-      1075 |     ...workspace,
-        at withSupersedingRun (/Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:1072:11)
-        at /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:432:28
+      1077 |   }
+      1078 |   return {
+      1079 |     ...workspace,
+        at withSupersedingRun (/Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:1076:11)
+        at /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:436:28
 
     Error: expect(locator).toBeVisible() failed
 
@@ -158,17 +160,17 @@ Running 85 tests using 1 worker
     Call log:
       - Expect "toBeVisible" getByTestId('superseding-run') with timeout 10000ms
       - waiting for getByTestId('superseding-run')
-      - Test ended.
+      - Protocol error (Runtime.callFunctionOn): Internal server error, session closed.
 
 
-      435 |
-      436 |   await page.goto("/");
-    > 437 |   await expect(page.getByTestId("superseding-run")).toBeVisible();
+      439 |
+      440 |   await page.goto("/");
+    > 441 |   await expect(page.getByTestId("superseding-run")).toBeVisible();
           |                                                     ^
-      438 |   await expect(page.getByTestId("predecessor-run-id")).toHaveText("RUN-PRED00000001");
-      439 |   await expect(page.getByTestId("supersession-reason")).toHaveText(
-      440 |     "Correct the locked body-weight source after authorized review",
-        at /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:437:53
+      442 |   await expect(page.getByTestId("predecessor-run-id")).toHaveText("RUN-PRED00000001");
+      443 |   await expect(page.getByTestId("supersession-reason")).toHaveText(
+      444 |     "Correct the locked body-weight source after authorized review",
+        at /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/tests/workbench.spec.ts:441:53
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/workbench-renders-predeces-cd88a-d-counts-from-the-workspace/test-failed-1.png
@@ -186,510 +188,525 @@ Running 85 tests using 1 worker
 
   2 failed
     tests/workbench.spec.ts:38:5 › runs the synthetic study from validation through explicit export 
-    tests/workbench.spec.ts:425:5 › renders predecessor run identity and carry-forward counts from the workspace 
+    tests/workbench.spec.ts:429:5 › renders predecessor run identity and carry-forward counts from the workspace 
   1 skipped
-  82 passed (1.0m)
-INFO:     Started server process [3565]
+  84 passed (1.2m)
+INFO:     Started server process [39576]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8031 (Press CTRL+C to quit)
-INFO:     127.0.0.1:56099 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56102 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56111 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56112 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56113 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56114 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56114 - "POST /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 201 Created
-INFO:     127.0.0.1:56114 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56121 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56122 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56124 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56123 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56121 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56123 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56124 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56122 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56133 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56134 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56136 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56135 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56133 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56133 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56133 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56133 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56144 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56145 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56146 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56143 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56154 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56155 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56157 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56156 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56154 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56156 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56155 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56157 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56154 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56157 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56155 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56156 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56154 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56154 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56165 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56166 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56167 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56168 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56165 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56165 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56176 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56177 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56178 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56179 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56176 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56176 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56186 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56188 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56190 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56187 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56189 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56186 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56186 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56186 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56186 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56186 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56203 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56205 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56202 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56204 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56215 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56216 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56217 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56218 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56226 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56228 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56229 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56227 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56230 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56226 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56248 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56252 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56251 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56249 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56250 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56248 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56248 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56248 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56248 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56248 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56262 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56263 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56261 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56264 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56279 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56281 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56283 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56280 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56282 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56279 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56279 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56279 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56279 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56282 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56293 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56293 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56294 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56295 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56296 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56293 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56295 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56297 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56294 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56305 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56306 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56307 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56308 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56305 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56305 - "GET /api/v1/studies/STUDY-UP-001/workspace HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:56321 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56322 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56324 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56323 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56321 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56332 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56332 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56333 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56334 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56335 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56332 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56334 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56336 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56333 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56343 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56344 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56345 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56346 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56353 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56354 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56355 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56356 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56363 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56365 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56366 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56367 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56376 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56377 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56378 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56379 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56386 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56387 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56389 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56388 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56386 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56388 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56387 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56389 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56396 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56398 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56400 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56399 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56397 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56408 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56411 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56413 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56412 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56410 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56420 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56421 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56422 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56423 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56431 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56438 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56442 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56440 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56441 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56439 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56458 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56460 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56461 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56462 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56470 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56471 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56473 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56472 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56481 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56482 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56483 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56484 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56493 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56494 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56496 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56495 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56503 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56504 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56506 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56505 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56517 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56518 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56520 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56519 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56527 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56528 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56529 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56530 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56527 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56538 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56539 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56540 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56541 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56538 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56548 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56549 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56550 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56551 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56548 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56559 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56560 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56561 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56563 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56562 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56570 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56571 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56572 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56573 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56580 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56581 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56582 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56583 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56590 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56593 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56592 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56591 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56594 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56602 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56603 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56605 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56604 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56608 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56615 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56615 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56616 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56617 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56618 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56615 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56616 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56619 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56617 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56620 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56627 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56627 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56628 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56630 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56631 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56627 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56628 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56632 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56630 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56639 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56640 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56642 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56639 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56641 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56650 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56652 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56654 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56651 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56650 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56651 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56654 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56652 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56655 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56662 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56666 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56664 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56663 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56665 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56673 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56675 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56676 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56674 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56677 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56677 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56677 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56685 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56689 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56687 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56686 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56688 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56685 - "POST /api/v1/studies/STUDY-HLX-028/validation-results/VR-004/dispositions HTTP/1.1" 409 Conflict
-INFO:     127.0.0.1:56696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56698 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56697 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56700 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56699 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56699 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56702 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56698 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56697 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56700 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56699 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56699 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56709 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56713 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56712 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56711 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56710 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56709 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56710 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56710 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-NOAEL/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56709 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56710 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-NOAEL/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56721 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56723 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56722 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56724 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56725 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56732 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56733 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56735 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56734 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56743 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56744 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56745 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56746 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56746 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56746 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56746 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56746 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56753 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56754 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56755 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56755 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56755 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_3_3_microscopic/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "POST /api/v1/studies/STUDY-HLX-028/sections/5_3_3_microscopic/draft HTTP/1.1" 201 Created
-INFO:     127.0.0.1:56756 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56755 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56755 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56755 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "GET /api/v1/studies/STUDY-HLX-028/sections/1_objective/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56756 - "POST /api/v1/studies/STUDY-HLX-028/sections/1_objective/draft HTTP/1.1" 201 Created
-INFO:     127.0.0.1:56763 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56764 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56765 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56766 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56766 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56767 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56774 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56777 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56778 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56776 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56779 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56786 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56790 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56789 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56788 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56787 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56786 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56786 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56786 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56786 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56787 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56788 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56789 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56797 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56800 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56802 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56799 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56801 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56797 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56801 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56799 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56802 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56800 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56797 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56797 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56809 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56813 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56811 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56812 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56810 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56809 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56812 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56813 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56811 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56810 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56822 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56824 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56823 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56826 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56825 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56822 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56833 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56835 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56836 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56837 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56834 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56833 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56833 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56834 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56836 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56837 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56833 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56833 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56833 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56847 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56847 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56848 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56849 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56850 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56847 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56848 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56851 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56852 - "POST /api/v1/studies/STUDY-HLX-028/validation-runs HTTP/1.1" 409 Conflict
-INFO:     127.0.0.1:56852 - "POST /api/v1/studies/STUDY-HLX-028/data-validation-packages HTTP/1.1" 409 Conflict
-INFO:     127.0.0.1:56852 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56859 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56860 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56861 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56862 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56869 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56876 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56876 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56877 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56878 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56879 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56876 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56880 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56878 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56877 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56877 - "POST /api/v1/studies/STUDY-HLX-028/pinned-runs HTTP/1.1" 422 Unprocessable Entity
-INFO:     127.0.0.1:56877 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56904 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56906 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56908 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56905 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56907 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56916 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56920 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56919 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56918 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56917 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56927 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56929 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56930 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56931 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56928 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56927 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56927 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56927 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56939 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56946 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56947 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56948 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56949 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56956 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56959 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56957 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56960 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56958 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56967 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56972 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56971 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56969 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56970 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56979 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56981 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56983 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56980 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56982 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56990 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56992 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56993 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56994 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56991 - "GET /api/v1/studies HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56990 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62061 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62094 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62146 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62153 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62154 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62155 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62155 - "POST /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 201 Created
+INFO:     127.0.0.1:62155 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62170 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62171 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62173 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62172 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62170 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62171 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62173 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62172 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62202 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62204 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62205 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62206 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62202 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62202 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62202 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62202 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62267 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62269 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62268 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62260 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62302 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62312 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62311 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62310 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62302 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62311 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62312 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62310 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62302 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62310 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62311 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62312 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62302 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62302 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62371 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62373 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62375 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62374 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62371 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62371 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62419 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62420 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62422 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62421 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62419 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62419 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62488 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62500 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62499 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62501 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62488 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62488 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62488 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62488 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62488 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62714 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62715 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62713 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62716 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62696 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62852 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62853 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62855 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62854 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62931 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62933 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62934 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62932 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62935 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62931 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62971 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62973 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62972 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62975 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62974 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62971 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62971 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62971 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62971 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62971 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63042 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63043 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63044 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63046 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63045 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63042 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63042 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63042 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63042 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63042 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63079 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63081 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63083 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63080 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63082 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63079 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63079 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63079 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63079 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63082 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63129 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63127 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63130 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63128 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63162 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63181 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63180 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63182 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63183 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63162 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63162 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63162 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63162 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63162 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63253 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63256 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63257 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63258 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63256 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63253 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63279 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63284 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63286 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63279 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63285 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63285 - "GET /api/v1/studies/STUDY-UP-001/workspace HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63406 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63416 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63406 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63418 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63417 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63431 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63431 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63432 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63433 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63434 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63431 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63432 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63435 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63433 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63442 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63443 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63444 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63445 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63453 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63454 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63456 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63455 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63463 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63465 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63466 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63473 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63474 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63476 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63475 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63483 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63484 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63485 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63486 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63483 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63486 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63485 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63484 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63494 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63497 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63495 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63499 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63498 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63525 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63527 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63528 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63526 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63529 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63536 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63537 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63539 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63538 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63553 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63557 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63555 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63556 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63554 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63564 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63565 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63566 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63567 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63593 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63604 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63605 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63606 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63628 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63635 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63636 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63934 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63938 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63939 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63940 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63956 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63962 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63964 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63963 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63988 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63989 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63991 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63990 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64007 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64009 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64010 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64011 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64007 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64021 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64022 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64023 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64024 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64021 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64031 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64032 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64033 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64034 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64045 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64046 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64048 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64049 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64050 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64057 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64058 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64059 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64060 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64067 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64068 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64070 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64069 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64091 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64097 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64098 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64096 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64099 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64151 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64167 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64168 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64166 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64175 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64182 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64183 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64182 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64184 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64185 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64183 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64186 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64182 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64184 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64200 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64212 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64213 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64212 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64217 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64218 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64213 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64217 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64219 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64212 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64268 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64275 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64277 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64276 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64268 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64297 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64303 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64304 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64297 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64303 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64309 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64304 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64324 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64336 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64339 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64335 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64337 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64372 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64374 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64376 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64375 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64373 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64373 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64373 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64389 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64392 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64391 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64394 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64393 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64389 - "POST /api/v1/studies/STUDY-HLX-028/validation-results/VR-004/dispositions HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64429 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64435 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64436 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64437 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64434 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64429 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64434 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64466 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64429 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64437 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64434 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64435 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64436 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64436 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64492 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64502 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64503 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64505 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64504 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64492 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64504 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64504 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-NOAEL/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64492 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64504 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-NOAEL/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64532 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64534 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64533 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64535 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64536 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64561 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64562 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64563 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64564 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64630 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64631 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64632 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64633 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64633 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64633 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64633 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64633 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64666 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64667 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64668 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64668 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64668 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_3_3_microscopic/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "POST /api/v1/studies/STUDY-HLX-028/sections/5_3_3_microscopic/draft HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64669 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64668 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64668 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64668 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "GET /api/v1/studies/STUDY-HLX-028/sections/1_objective/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64669 - "POST /api/v1/studies/STUDY-HLX-028/sections/1_objective/draft HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64698 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64705 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64707 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64706 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64706 - "GET /api/v1/studies/STUDY-HLX-028/claims/C-MI-LIVER/evidence HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64724 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64737 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64741 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64740 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64742 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64739 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64757 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64756 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64755 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64758 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64758 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64755 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64756 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64811 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64812 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64815 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64813 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64814 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64811 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64814 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64812 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64815 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64813 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64811 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64850 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64860 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64861 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64863 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64850 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64863 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64860 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64861 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64871 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64884 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64886 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64885 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64888 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64887 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64884 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64911 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64914 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64913 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64915 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64916 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64911 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64911 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64913 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64916 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64915 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64911 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64911 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64911 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64955 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64956 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64955 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64968 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64969 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64956 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64955 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64970 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64968 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64974 - "POST /api/v1/studies/STUDY-HLX-028/validation-runs HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64974 - "POST /api/v1/studies/STUDY-HLX-028/data-validation-packages HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64974 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64983 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64991 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64993 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64992 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65010 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "OPTIONS /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65023 - "OPTIONS /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65031 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65032 - "OPTIONS /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65033 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65023 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65031 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65031 - "POST /api/v1/studies/STUDY-HLX-028/pinned-runs HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:65031 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65457 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65459 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65461 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65462 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65460 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65469 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65472 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65471 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65473 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65474 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65486 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65488 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65490 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65487 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65489 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65486 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65486 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65486 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65510 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65523 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65530 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65532 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65531 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49156 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49160 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49159 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49158 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49157 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49173 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49174 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49176 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49177 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49175 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49184 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49192 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49194 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49191 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49193 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49206 - "GET /api/v1/studies/STUDY-HLX-028/sections/5_2_3_body_weight/draft HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49204 - "GET /api/v1/studies/STUDY-HLX-028/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49205 - "GET /api/v1/studies/STUDY-HLX-028/sections HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49203 - "GET /api/v1/studies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49201 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.1" 200 OK
 ▲ Next.js 16.3.5 (Turbopack)
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
  We detected multiple lockfiles and selected the directory of /Users/perk/src/Helix-dh1/steven/helix-prototypes/package-lock.json as the root directory.
@@ -698,18 +715,18 @@ INFO:     127.0.0.1:56990 - "GET /api/v1/studies/STUDY-HLX-028/workspace HTTP/1.
  Detected additional lockfiles: 
    * /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/package-lock.json
 
-✓ Running next.config.ts took 11ms
+✓ Running next.config.ts took 22ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 1204ms
+✓ Compiled successfully in 2.2s
   Running TypeScript ...
-  Finished TypeScript in 1249ms ...
+  Finished TypeScript in 2.8s ...
   Collecting page data using 10 workers ...
   Generating static pages using 10 workers (0/4) ...
   Generating static pages using 10 workers (1/4) 
   Generating static pages using 10 workers (2/4) 
   Generating static pages using 10 workers (3/4) 
-✓ Generating static pages using 10 workers (4/4) in 164ms
+✓ Generating static pages using 10 workers (4/4) in 331ms
   Finalizing page optimization ...
 
 Route (app)
@@ -729,7 +746,7 @@ Route (app)
 ▲ Next.js 16.3.5
 - Local:         http://127.0.0.1:3031
 - Network:       http://127.0.0.1:3031
-✓ Ready in 52ms
+✓ Ready in 120ms
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
  We detected multiple lockfiles and selected the directory of /Users/perk/src/Helix-dh1/steven/helix-prototypes/package-lock.json as the root directory.
  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
@@ -737,5 +754,5 @@ Route (app)
  Detected additional lockfiles: 
    * /Users/perk/src/Helix-dh1/steven/helix-prototypes/frontend/package-lock.json
 
-✓ Running next.config.ts took 12ms
+✓ Running next.config.ts took 23ms
 ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.

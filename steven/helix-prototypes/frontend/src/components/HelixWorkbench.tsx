@@ -62,17 +62,28 @@ export function HelixWorkbench({ studyId }: Props) {
     select: selectStage,
     followServer,
   } = useSelectedStage(workspace?.journey, { active: agentBusy });
-  const onFrozen = useCallback(
-    (announcement: string) => {
-      // The freeze confirmation stays on screen as the workbench notice after the view
-      // moves off Upload to the server's current stage.
-      setError(null);
-      setNotice(announcement);
-      followServer();
-      setAutoStart(true);
-    },
-    [followServer],
-  );
+  // A confirmed freeze waits here until a loaded workspace shows the run past Upload, so a
+  // failed reload neither drops the auto-start nor claims "Manifest frozen" on Upload.
+  const [pendingFreeze, setPendingFreeze] = useState<{ runId: string; announcement: string } | null>(null);
+  const onFrozen = useCallback((runId: string, announcement: string) => {
+    setPendingFreeze({ runId, announcement });
+  }, []);
+  useEffect(() => {
+    if (!pendingFreeze || !workspace) return;
+    if (workspace.pinned_run?.run_id !== pendingFreeze.runId || workspace.journey.current_stage_id === "upload") return;
+    setPendingFreeze(null);
+    // The freeze confirmation stays on screen as the workbench notice after the view
+    // moves off Upload to the server's current stage.
+    setError(null);
+    setNotice(pendingFreeze.announcement);
+    followServer();
+    setAutoStart(true);
+  }, [pendingFreeze, workspace, followServer]);
+  // The Gate 2 stop happens after the view has followed the server to the gate.
+  const onGateStop = useCallback((message: string) => {
+    setError(null);
+    setNotice(message);
+  }, []);
   const consumeAutoStart = useCallback(() => setAutoStart(false), []);
   // The one-shot never outlives the freeze: if the server's stage after the freeze is not
   // an agent stage, there is nothing to start and the request is dropped.
@@ -82,17 +93,22 @@ export function HelixWorkbench({ studyId }: Props) {
   // Lane C (#22): Gate 2 handlers live in the lane-C hook.
   const traceabilityGate = useTraceabilityGate({ studyId, setWorkspace, selectStage, setNotice, setError });
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<boolean> => {
     try {
       setError(null);
       setWorkspace(await getWorkspace(studyId));
+      return true;
     } catch (cause) {
       setError(messageFrom(cause));
+      return false;
     }
   }, [studyId]);
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+  const refreshQuietly = useCallback(async () => {
+    await refresh();
   }, [refresh]);
 
   async function validate() {
@@ -411,13 +427,14 @@ export function HelixWorkbench({ studyId }: Props) {
                 onBusyChange={setAgentBusy}
                 autoStart={autoStart}
                 onAutoStartConsumed={consumeAutoStart}
+                onGateStop={onGateStop}
               />
             )}
             {selectedStageId === "review-export" && (
               <ReviewStageView
                 workspace={workspace}
                 onWorkspace={setWorkspace}
-                onRefresh={refresh}
+                onRefresh={refreshQuietly}
                 draftsBody={
                   // DH-4 phase 1: the HITL per-section drafts and grounded chat (Steven's
                   // ReportAssembly + ChatDock) are part of the Gate 3 body, not a second stack

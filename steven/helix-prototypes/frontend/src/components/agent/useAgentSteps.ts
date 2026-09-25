@@ -41,6 +41,11 @@ type Options = {
    * itself, not an effect, so it stays true if this view unmounts mid-command.
    */
   onBusyChange?: (busy: boolean) => void;
+  /**
+   * DH-1 follow-up: reports a sequence that stopped at a human gate. The view follows the
+   * server to that gate and unmounts this stage, so the workbench shows the message.
+   */
+  onGateStop?: (message: string) => void;
 };
 
 const CONFIRMED_KEY = "helix.agent-dv-confirmed.v1";
@@ -65,7 +70,7 @@ export function messageFrom(cause: unknown): string {
   return "The request failed.";
 }
 
-export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }: Options) {
+export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange, onGateStop }: Options) {
   const [planner, setPlanner] = useState<PlannerMode>("fixture");
   const [inFlight, setInFlight] = useState<AgentStep | null>(null);
   const [message, setMessage] = useState<AgentMessage | null>(null);
@@ -83,6 +88,8 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
   const runningRef = useRef(false);
   const onBusyChangeRef = useRef(onBusyChange);
   onBusyChangeRef.current = onBusyChange;
+  const onGateStopRef = useRef(onGateStop);
+  onGateStopRef.current = onGateStop;
 
   const begin = useCallback((): boolean => {
     if (runningRef.current) return false;
@@ -218,6 +225,7 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
         shouldStop: () => stopRef.current,
       });
       if (stop) setMessage({ tone: "info", text: stop.message });
+      if (stop?.kind === "gate") onGateStopRef.current?.(stop.message);
     } catch (cause) {
       const label = (current as AgentStep | null)?.label;
       try {

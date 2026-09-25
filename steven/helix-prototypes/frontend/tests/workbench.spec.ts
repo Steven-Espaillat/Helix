@@ -88,8 +88,12 @@ test("runs the synthetic study from validation through explicit export", async (
   // Human Gate 1 (#22 P1): a human freezes the authorized manifest; validation never auto-freezes.
   await page.getByTestId("freeze-consent").check();
   await page.getByTestId("freeze-manifest").click();
-  await expect(page.getByTestId("workbench-notice")).toContainText("Manifest frozen by the server as Pinned Run");
+  // The freeze notice is replaced once the auto-run stops at Human gate 2 (DH-1).
+  await expect(page.getByTestId("workbench-notice")).toContainText(
+    /Manifest frozen by the server as Pinned Run|The agent stops at Human gate 2/,
+  );
   await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
+  await expect(page.getByTestId("workbench-notice")).toContainText("The agent stops at Human gate 2. Only a person can pass it.");
   await expect(page.getByTestId("agent-stop-sequence")).toHaveCount(0);
   expect(sectionRunPosts).toEqual([]);
   await page.getByTestId("run-validation").click();

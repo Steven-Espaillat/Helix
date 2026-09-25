@@ -28,6 +28,9 @@ const ACTOR = "Synthetic study owner (demo identity)";
 
 type ManifestEntry = Workspace["manifest"][number];
 
+const RELOAD_NEEDED =
+  "The server accepted the command, but the workspace did not reload. Reload to continue; the agent starts once the frozen run loads.";
+
 export function UploadGate({
   workspace,
   onRefresh,
@@ -36,15 +39,17 @@ export function UploadGate({
   children,
 }: {
   workspace: Workspace;
-  onRefresh: () => Promise<void>;
+  /** Resolves false when the workspace could not be reloaded. */
+  onRefresh: () => Promise<boolean | void>;
   /** Keep this gate selected while a command it started refreshes the journey. */
   onKeepView?: () => void;
   /**
    * DH-1: called once after the server confirms the human freeze with its Data Validation
    * recorded (a direct freeze, or the retry that completes a partial one). Never called for
-   * a refused or failed freeze.
+   * a refused or failed freeze. Called even when the reload after the freeze failed: the
+   * workbench starts the agent once a reloaded workspace shows this run past Upload.
    */
-  onFrozen?: (announcement: string) => void;
+  onFrozen?: (runId: string, announcement: string) => void;
   /** Upload controls (#26), rendered only while the manifest is not frozen. */
   children?: ReactNode;
 }) {
@@ -66,11 +71,13 @@ export function UploadGate({
   const storageKey = `helix.freeze-authorization.${studyId}.${fingerprint}`;
   const [consent, setConsent] = useState(false);
   const [authorizationId, setAuthorizationId] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"freeze" | "retry" | null>(null);
+  const [busy, setBusy] = useState<"freeze" | "retry" | "reload" | null>(null);
   const [refusals, setRefusals] = useState<FreezeRefusal[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [partial, setPartial] = useState<FreezeDataValidationFailure | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  // The server accepted the command but the workspace reload failed twice.
+  const [reloadNeeded, setReloadNeeded] = useState(false);
   const liveRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,6 +100,7 @@ export function UploadGate({
     onKeepView?.();
     setBusy("freeze");
     setError(null);
+    setReloadNeeded(false);
     setRefusals([]);
     setPartial(null);
     setAnnouncement("");
@@ -101,10 +109,10 @@ export function UploadGate({
         actor: ACTOR,
         idempotency_key: freezeIdempotencyKey(studyId, fingerprint, authorizationId),
       });
-      await onRefresh();
+      const reloaded = await reloadAfterCommand();
       const frozen = `Manifest frozen by the server as Pinned Run ${result.run_id}.`;
-      setAnnouncement(frozen);
-      onFrozen?.(frozen);
+      setAnnouncement(reloaded ? frozen : RELOAD_NEEDED);
+      onFrozen?.(result.run_id, frozen);
     } catch (cause) {
       if (cause instanceof FreezeError && cause.partial) {
         setPartial(cause.partial);
@@ -124,11 +132,28 @@ export function UploadGate({
     }
   }
 
+  /** Reload once more if the first reload fails, so a transient error doesn't strand the UI. */
+  async function reloadAfterCommand(): Promise<boolean> {
+    const reloaded = (await onRefresh()) !== false || (await onRefresh()) !== false;
+    setReloadNeeded(!reloaded);
+    return reloaded;
+  }
+
+  async function reloadWorkspace() {
+    setBusy("reload");
+    try {
+      setReloadNeeded((await onRefresh()) === false);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function retryDataValidation() {
     if (!run) return;
     onKeepView?.();
     setBusy("retry");
     setError(null);
+    setReloadNeeded(false);
     try {
       await retryFreezeDataValidation(
         studyId,
@@ -145,10 +170,10 @@ export function UploadGate({
         ACTOR,
       );
       setPartial(null);
-      await onRefresh();
+      const reloaded = await reloadAfterCommand();
       const recorded = `Data Validation recorded for Pinned Run ${run.run_id}.`;
-      setAnnouncement(recorded);
-      onFrozen?.(recorded);
+      setAnnouncement(reloaded ? recorded : RELOAD_NEEDED);
+      onFrozen?.(run.run_id, recorded);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Data Validation retry failed.";
       setError(message);
@@ -305,6 +330,15 @@ export function UploadGate({
                   ))}
                 </ul>
               </div>
+            </div>
+          )}
+          {reloadNeeded && (
+            <div className="hx-notice t-block" role="alert" data-testid="freeze-reload-needed">
+              <span>{RELOAD_NEEDED}</span>
+              <Button size="sm" data-testid="freeze-reload" disabled={busy !== null} onClick={() => void reloadWorkspace()}>
+                <RetryIcon size={14} />
+                {busy === "reload" ? "Reloading\u2026" : "Reload workspace"}
+              </Button>
             </div>
           )}
           {error && (
