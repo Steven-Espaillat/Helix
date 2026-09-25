@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { ApiError, exportPackage, recordApproval, recordFinalStudyApproval } from "@/lib/api";
 import { APPROVAL_POLICY } from "@/lib/api/release";
@@ -22,11 +22,17 @@ export function ReviewStageView({
   workspace,
   onWorkspace,
   onRefresh,
+  draftsBody,
 }: {
   workspace: Workspace;
   /** Render a workspace returned by a command. */
   onWorkspace: (workspace: Workspace) => void;
   onRefresh: () => Promise<void>;
+  /**
+   * DH-4 phase 1: the HITL per-section drafts (legacy ReportAssembly + ChatDock) rendered as part
+   * of the Gate 3 body. Placement only: the workbench owns the element and its handlers.
+   */
+  draftsBody?: ReactNode;
 }) {
   const studyId = workspace.study.study_id;
   const sections = workspace.report.sections;
@@ -143,6 +149,11 @@ export function ReviewStageView({
         </Card>
       </div>
       <Downloads workspace={workspace} />
+      {draftsBody && (
+        <section className="hx-review-drafts" aria-label="Section drafts" data-testid="review-drafts-body">
+          {draftsBody}
+        </section>
+      )}
       <p className="hx-sub hx-fine hx-review-disclaimer">
         {/* #30 P2 (critique P2-3): the export panel keeps the reference line "A prepared package is not
             FDA acceptance."; the footer no longer repeats it. */}

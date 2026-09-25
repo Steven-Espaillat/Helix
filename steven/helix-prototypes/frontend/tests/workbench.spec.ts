@@ -162,8 +162,9 @@ test("runs the synthetic study from validation through explicit export", async (
   await page.screenshot({ path: "../evidence/helix-body-weight-lineage.png", fullPage: true });
 
   // Lane C (#22): dispositions are typed reviewer commands recorded at Human Gate 2.
-  // The legacy report button only routes there; it never fabricates a command.
-  await page.getByRole("button", { name: /Record (synthetic|Gate 2) disposition/ }).first().click();
+  // DH-4: the legacy report (and its routing button) now renders only in the Gate 3 body, so the
+  // reviewer opens Gate 2 from the journey Progress Bar; still no command is fabricated.
+  await page.getByRole("navigation", { name: "Journey progress" }).getByRole("button").nth(7).click();
   await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
   for (const [resultId, decision] of [
     ["VR-004", "Corrected"],
@@ -528,7 +529,8 @@ test("labels every approved export artifact kind instead of showing raw kinds", 
       status: index % 2 === 0 ? "exported" : "pending",
       checksum: index % 2 === 0 ? INJECTED_HASH : null,
     }));
-    await route.fulfill({ status: response.status(), contentType: "application/json", body: JSON.stringify(workspace) });
+    // DH-4: the legacy export card renders in the Gate 3 body, so project Gate 3 as current.
+    await route.fulfill({ status: response.status(), contentType: "application/json", body: JSON.stringify(withReviewStage(workspace)) });
   });
 
   await page.goto("/");

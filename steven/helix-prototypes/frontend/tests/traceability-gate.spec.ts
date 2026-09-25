@@ -434,13 +434,32 @@ test("with zero claims the gate shows an empty state and never requests evidence
   expect(evidenceCalls).toEqual([]);
 });
 
+// DH-4 phase 1: the HITL report (ReportAssembly) renders only in the Gate 3 body, so these tests
+// make Gate 3 selectable (status stays pending) and open it before each Inspect. Assertions are unchanged.
+const reportReachable = (workspace: Json): Json => {
+  const journey = workspace.journey as Journey;
+  return {
+    ...workspace,
+    journey: {
+      ...journey,
+      stages: journey.stages.map((stage) => (stage.stage_id === "review-export" ? { ...stage, selectable: true } : stage)),
+    },
+  };
+};
+
+async function openReport(page: Page) {
+  await stageButtons(page).nth(8).click();
+  await expect(page.getByTestId("review-drafts-body")).toBeVisible();
+}
+
 test("Inspect on a report statement opens Gate 2 on that statement's claim", async ({ page }) => {
-  await serveGate(page);
+  await serveGate(page, reportReachable);
   await openGate(page);
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
 
   // The legacy report panel's section S7 carries the liver statements (C-MI-LIVER).
   const inspectLiver = page.getByRole("button", { name: "Inspect 4 provenance edges" }).first();
+  await openReport(page);
   await inspectLiver.click();
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
   await expect(page.getByTestId("rule-badge-VR-005")).toBeVisible();
@@ -449,6 +468,7 @@ test("Inspect on a report statement opens Gate 2 on that statement's claim", asy
   // Inspecting the same statement again reselects it after the reviewer switched away.
   await page.getByTestId("claim-C-BW-HIGH").click();
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
+  await openReport(page);
   await inspectLiver.click();
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
 });
@@ -468,12 +488,13 @@ async function reportClaims(request: APIRequestContext, sectionId: string): Prom
 }
 
 test("a drafted section's Inspect opens Gate 2 on that section's own claim", async ({ page, request }) => {
-  await serveGate(page);
+  await serveGate(page, reportReachable);
   await openGate(page);
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
   const navigator = page.getByRole("complementary", { name: "Report sections" });
   const paperClaims = page.getByTestId("draft-section-claims");
 
+  await openReport(page);
   // 5.3.3 Microscopic Findings maps to template section S7, whose only claim is C-MI-LIVER.
   await navigator.getByRole("button", { name: /5\.3\.3 Microscopic Findings/ }).click();
   const inspectLiver = paperClaims.getByTestId("inspect-claim-C-MI-LIVER");
@@ -490,9 +511,15 @@ test("a drafted section's Inspect opens Gate 2 on that section's own claim", asy
   const bodyWeight = await reportClaims(request, "S5");
   expect(bodyWeight.length).toBeGreaterThan(0);
   if (!LIVE_WRITES) expect(bodyWeight).toEqual([{ claimId: "C-BW-HIGH", edges: 10 }]);
+  await openReport(page);
   await navigator.getByRole("button", { name: /5\.2\.3 Body Weight/ }).click();
   await expect(paperClaims.getByRole("button")).toHaveCount(bodyWeight.length);
-  for (const { claimId, edges } of bodyWeight) {
+  for (const [index, { claimId, edges }] of bodyWeight.entries()) {
+    if (index > 0) {
+      // DH-4: each Inspect moves to Gate 2; reopen the report in Gate 3 on 5.2.3 for the next claim.
+      await openReport(page);
+      await navigator.getByRole("button", { name: /5\.2\.3 Body Weight/ }).click();
+    }
     const inspect = paperClaims.getByTestId(`inspect-claim-${claimId}`);
     await expect(inspect).toHaveText(`Inspect ${edges} provenance edges`);
     await inspect.click();
@@ -501,13 +528,15 @@ test("a drafted section's Inspect opens Gate 2 on that section's own claim", asy
   }
 
   // A section whose template section has no claims shows no Inspect button.
+  await openReport(page);
   await navigator.getByRole("button", { name: /1\. Objective/ }).click();
   await expect(page.getByTestId("draft-section-claims")).toHaveCount(0);
 });
 
 test("the drafted section's review banner is a note, so the page keeps one status region", async ({ page }) => {
-  await serveGate(page);
+  await serveGate(page, reportReachable);
   await openGate(page);
+  await openReport(page); // DH-4: the HITL report renders in the Gate 3 body.
   const navigator = page.getByRole("complementary", { name: "Report sections" });
   await navigator.getByRole("button", { name: /5\.2\.3 Body Weight/ }).click();
   const banner = page.locator(".report-view .review-banner");

@@ -89,6 +89,8 @@
 }
 #helix-e2e .hx-export-receipt dd { margin: 0; }
 #helix-e2e .hx-review-disclaimer { text-align: center; }
+/* DH-4 phase 1: the HITL section drafts sit inside the Gate 3 body, after downloads. */
+#helix-e2e .hx-review-drafts { border-top: 1px solid var(--hx-line-soft); padding-top: var(--hx-sp-16); }
 /* .hx-doc p is the serif report body; references, disclaimers, and meta stay in the UI face. */
 #helix-e2e .hx-doc .hx-doc-refs p,
 #helix-e2e .hx-doc p.hx-sub { font-family: var(--hx-sans); font-size: var(--hx-fs-row); }

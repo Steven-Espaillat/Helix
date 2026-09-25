@@ -414,7 +414,25 @@ export function HelixWorkbench({ studyId }: Props) {
               />
             )}
             {selectedStageId === "review-export" && (
-              <ReviewStageView workspace={workspace} onWorkspace={setWorkspace} onRefresh={refresh} />
+              <ReviewStageView
+                workspace={workspace}
+                onWorkspace={setWorkspace}
+                onRefresh={refresh}
+                draftsBody={
+                  // DH-4 phase 1: the HITL per-section drafts and grounded chat (Steven's
+                  // ReportAssembly + ChatDock) are part of the Gate 3 body, not a second stack
+                  // under every stage view. Same component, props and handlers as before.
+                  <ReportAssembly
+                    workspace={workspace}
+                    busy={busy}
+                    onInspectClaim={traceabilityGate.onInspectClaim}
+                    onResolve={() => selectStage("traceability")}
+                    onApprove={(role) => void approve(role)}
+                    onFinalStudyApproval={() => void approveFinalStudy()}
+                    onExport={() => void performExport()}
+                  />
+                }
+              />
             )}
             {/* Lanes B, C and D replace these legacy panels with their stage views. Until
                 then they remain the fallback so no stage loses its working controls. */}
@@ -438,15 +456,6 @@ export function HelixWorkbench({ studyId }: Props) {
               onEvaluateCandidate={() => void evaluateBodyWeight()}
               onQueryCrossSection={() => void queryBodyWeightFacts()}
               onPromoteSectionDraft={() => void promoteBodyWeight()}
-            />
-            <ReportAssembly
-              workspace={workspace}
-              busy={busy}
-              onInspectClaim={traceabilityGate.onInspectClaim}
-              onResolve={() => selectStage("traceability")}
-              onApprove={(role) => void approve(role)}
-              onFinalStudyApproval={() => void approveFinalStudy()}
-              onExport={() => void performExport()}
             />
           </section>
 
