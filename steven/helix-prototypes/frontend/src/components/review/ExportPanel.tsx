@@ -4,7 +4,7 @@ import type { ExportReceipt, Workspace } from "@/lib/types";
 
 import { RetryIcon } from "../icons";
 import { Button, Spinner } from "../ui";
-import { exportedAtFromJourney } from "./reviewState";
+import { demoFrozenPackages, exportedAtFromJourney } from "./reviewState";
 
 // Lane D (#23): the explicit export. Enabled only when the SERVER release gate reports
 // ready_for_export. It is its own button press with loading, success, error, and replay states.
@@ -26,7 +26,10 @@ export function ExportPanel({
 }) {
   const status = workspace.release_gate.status;
   const exported = status === "exported";
-  const ready = status === "ready_for_export";
+  // DH-7 (#68): the server refuses every export of a demo-frozen run (409 demo_not_qualified),
+  // so the button stays disabled with the reason instead of inviting a refused click or retry.
+  const demoFrozen = demoFrozenPackages(workspace).length > 0 && !exported;
+  const ready = status === "ready_for_export" && !demoFrozen;
   const exportedAt = state.kind === "success" ? state.receipt.exported_at : exportedAtFromJourney(workspace);
   return (
     <div className="stack hx-export" data-testid="export-panel" data-state={state.kind}>
@@ -42,7 +45,7 @@ export function ExportPanel({
           </>
         ) : exported ? (
           "Package exported"
-        ) : state.kind === "error" ? (
+        ) : state.kind === "error" && !demoFrozen ? (
           <>
             <RetryIcon size={16} /> Retry export
           </>
@@ -50,10 +53,18 @@ export function ExportPanel({
           "Export final package"
         )}
       </Button>
-      {!ready && !exported && (
-        <p className="hx-sub hx-fine" data-testid="export-disabled-reason" data-gate={status}>
-          {disabledReason(status)}
+      {demoFrozen ? (
+        <p className="hx-sub hx-fine" data-testid="export-disabled-reason" data-gate="demo_not_qualified">
+          Export is refused for this run. It was frozen with the demo flag, so its section packages have no
+          passing qualification.
         </p>
+      ) : (
+        !ready &&
+        !exported && (
+          <p className="hx-sub hx-fine" data-testid="export-disabled-reason" data-gate={status}>
+            {disabledReason(status)}
+          </p>
+        )
       )}
       {state.kind === "error" && (
         <p className="hx-notice t-block" role="alert" data-testid="export-error">

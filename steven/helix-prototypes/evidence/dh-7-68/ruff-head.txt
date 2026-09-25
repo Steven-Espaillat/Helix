@@ -1,0 +1,5 @@
+app/intake.py: B905 `zip()` without an explicit `strict=` parameter
+app/main.py: B008 Do not perform function call `File` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+app/main.py: B008 Do not perform function call `File` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+app/main.py: I001 [*] Import block is un-sorted or un-formatted
+tests/test_intake.py: F401 [*] `pathlib.Path` imported but unused

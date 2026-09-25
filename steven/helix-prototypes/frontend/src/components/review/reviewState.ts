@@ -23,3 +23,14 @@ export function exportedAtFromJourney(workspace: Workspace): string | null {
   const stage = workspace.journey.stages.find((item) => item.stage_id === "review-export");
   return stage?.status === "complete" ? (stage.finished_at ?? null) : null;
 }
+
+/**
+ * DH-7 (#68): package ids whose qualification was skipped when the pinned run was frozen with
+ * the demo flag. Mirrors backend qualification.demo_packages_of: the run_requested event of a
+ * demo-frozen run carries the ids under "demo_unqualified_packages". A strict run returns [].
+ */
+export function demoFrozenPackages(workspace: Workspace): string[] {
+  const requested = workspace.pinned_run?.event_history.find((event) => event.event === "run_requested");
+  const value = requested?.details?.demo_unqualified_packages;
+  return typeof value === "string" ? value.split(",").filter(Boolean) : [];
+}

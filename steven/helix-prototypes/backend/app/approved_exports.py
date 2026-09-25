@@ -6,7 +6,14 @@ from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from typing import Literal
 
-from .qualification import DEMO_LABEL, DEMO_NOTE, demo_notice, demo_packages_of, section_titles
+from .qualification import (
+    DEMO_LABEL,
+    DEMO_NOTE,
+    demo_frozen_export_refusal,
+    demo_notice,
+    demo_packages_of,
+    section_titles,
+)
 from .run_plans import canonical_hash
 from .schemas import (
     ExportArtifact,
@@ -102,6 +109,8 @@ def materialize_approved_artifacts(
     section_runs: list[StoredSectionRun],
     section_drafts: list[SectionDraft],
 ) -> list[MaterializedApprovedArtifact]:
+    if refusal := demo_frozen_export_refusal(package.pinned_run):
+        raise ApprovedExportError(refusal)
     if approval.run_id != live.run_id or approval.manifest_hash != live.content_hash:
         raise ApprovedExportError("Final Study Approval does not match the live release candidate")
     recorded = {(item.artifact_id, item.content_hash) for item in approval.included_artifact_hashes}

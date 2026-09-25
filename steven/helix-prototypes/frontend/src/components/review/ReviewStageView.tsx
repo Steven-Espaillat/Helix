@@ -6,13 +6,13 @@ import { ApiError, exportPackage, recordApproval, recordFinalStudyApproval } fro
 import { APPROVAL_POLICY } from "@/lib/api/release";
 import type { ApprovalRole, Workspace } from "@/lib/types";
 
-import { Card, GateBanner } from "../ui";
+import { Card, Chip, GateBanner } from "../ui";
 import { DraftCanvas } from "./DraftCanvas";
 import { Downloads } from "./Downloads";
 import { ExportPanel, type ExportState } from "./ExportPanel";
 import { SectionList } from "./SectionList";
 import { SignOffs } from "./SignOffs";
-import { stageStatus } from "./reviewState";
+import { demoFrozenPackages, stageStatus } from "./reviewState";
 
 // Lane D (#23): Human Gate 3, Review and export. Three columns (section list | document canvas |
 // sign-offs), then downloads. Every state shown comes from WorkspaceResponse; the view never
@@ -49,6 +49,8 @@ export function ReviewStageView({
     : gateStatus === "pending"
       ? "Opens after the traceability gate."
       : "Record sign-offs, then export.";
+  // DH-7 (#68): a small status label for a demo-frozen run only. The server refuses its export.
+  const notQualified = demoFrozenPackages(workspace).length > 0;
 
   async function approve(role: ApprovalRole) {
     setBusy(role);
@@ -95,7 +97,29 @@ export function ReviewStageView({
 
   return (
     <div className="stack" data-testid="review-stage" data-gate-status={gateStatus ?? undefined}>
-      <GateBanner gateNumber={3} passed={passed} title="Review sections, sign and export" right={hint} data-testid="review-gate-banner" />
+      <GateBanner
+        gateNumber={3}
+        passed={passed}
+        title="Review sections, sign and export"
+        right={
+          notQualified ? (
+            <>
+              <Chip
+                tone="warn"
+                size="xs"
+                data-testid="run-not-qualified"
+                title="This run was frozen without a passing qualification for some section packages. Export is refused."
+              >
+                Not qualified
+              </Chip>
+              {hint}
+            </>
+          ) : (
+            hint
+          )
+        }
+        data-testid="review-gate-banner"
+      />
       <p className="hx-visually-hidden" aria-live="polite" data-testid="review-message">
         {announcement}
       </p>

@@ -36,7 +36,7 @@ from .manifest_authorization import (
     HumanFreezeRequiredError,
     freeze_data_validation_key,
 )
-from .qualification import demo_package_labels
+from .qualification import DEMO_NOT_QUALIFIED, demo_frozen_export_refusal, demo_package_labels
 from .release_candidates import (
     MissingReleaseCandidateError,
     approval_is_current,
@@ -137,6 +137,21 @@ class WorkflowConflictError(RuntimeError):
 
 class InvalidCommandError(ValueError):
     pass
+
+
+class DemoNotQualifiedExportError(WorkflowConflictError):
+    """DH-7 (#68): export, replay, or download of a demo-frozen run. Always a 409."""
+
+    code = DEMO_NOT_QUALIFIED
+
+    def as_detail(self) -> dict[str, str]:
+        return {"code": self.code, "message": str(self)}
+
+
+def refuse_demo_frozen_export(package: StudyEvidencePackage) -> None:
+    """Fail closed before any export path, including replays of exports made before the guard."""
+    if refusal := demo_frozen_export_refusal(package.pinned_run):
+        raise DemoNotQualifiedExportError(refusal)
 
 
 class StudyService:
@@ -1006,6 +1021,8 @@ class StudyService:
 
     def _export_command(self, study_id: str, command: ExportCommand) -> ExportReceipt:
         package = self.repository.get(study_id, for_update=True)
+        # DH-7: ahead of the idempotent replay, so a legacy demo export cannot be replayed.
+        refuse_demo_frozen_export(package)
         storage_key = f"export:{command.idempotency_key}"
         prior_event = self.repository.get_event_by_idempotency_key(study_id, storage_key)
         already_exported = bool(package.export_artifacts) and all(
@@ -1116,6 +1133,8 @@ class StudyService:
 
     def artifact(self, study_id: str, artifact_id: str) -> GeneratedArtifact:
         package = self.repository.get(study_id)
+        # DH-7: stored bytes of a demo-frozen run are never served, flag on or off.
+        refuse_demo_frozen_export(package)
         artifact = next((item for item in package.export_artifacts if item.artifact_id == artifact_id), None)
         if artifact is None:
             raise InvalidCommandError(f"Unknown artifact {artifact_id}")

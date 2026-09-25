@@ -42,6 +42,8 @@ type Harness = {
   approvalBodies: Json[];
   exportPosts: number;
   exportFailuresLeft: number;
+  /** DH-7: the server's fail-closed refusal for a demo-frozen run (409, string detail). */
+  exportRefusal?: string;
   evidenceRequests: string[];
   /** Last live GET workspace; POST mocks reuse it and never forward a command to the backend. */
   live: Json | null;
@@ -108,6 +110,10 @@ async function harness(page: Page, init: Partial<Harness> = {}): Promise<Harness
   });
   await page.route("**/api/v1/studies/*/exports", async (route) => {
     h.exportPosts += 1;
+    if (h.exportRefusal) {
+      await json(route, 409, { detail: { code: "demo_not_qualified", message: h.exportRefusal } });
+      return;
+    }
     if (h.exportFailuresLeft > 0) {
       h.exportFailuresLeft -= 1;
       await json(route, 409, { detail: "Synthetic export conflict injected by the test" });
@@ -420,12 +426,20 @@ test("reload restores sign-offs, receipt, downloads, and completed progress from
   expect(commands).toEqual([]);
 });
 
-test("demo flag on: the review stage shows no demo UI; the server's pending packages are untouched", async ({
+const NOT_QUALIFIED = "Not qualified";
+const DEMO_EXPORT_REFUSAL = "Export refused: this run was frozen with the demo flag (packages not qualified).";
+
+test("demo-frozen run: only a small 'Not qualified' status label; no demo chrome; pending packages untouched", async ({
   page,
 }) => {
-  // Critique P1-c: the demo flag has no visible UI. The server still reports the packages.
+  // Critique P1-c + DH-7 (#68): no demo-flag chrome. A demo-frozen run shows one small status label.
   await harness(page, { demo: true });
   await page.goto("/");
+  const label = page.getByTestId("run-not-qualified");
+  await expect(label).toHaveText(NOT_QUALIFIED);
+  await expect(label).toHaveClass(/hx-chip/);
+  await expect(page.getByTestId("review-gate-banner").getByTestId("run-not-qualified")).toHaveCount(1);
+  await expect(page.getByText(NOT_QUALIFIED, { exact: true })).toHaveCount(1);
   const packages = fx.demo_review.demo_unqualified_packages as { section_package_id: string; prototype_section_id: string }[];
   expect(packages.map((item) => item.section_package_id)).toEqual(["section.5_2_3_body_weight", "section.5_3_discussion"]);
   await expect(page.getByTestId("review-stage")).toBeVisible();
@@ -436,12 +450,55 @@ test("demo flag on: the review stage shows no demo UI; the server's pending pack
   await expect(page.getByText(DEMO)).toHaveCount(0);
   await expect(page.getByTestId("demo-mode-banner")).toHaveCount(0);
   await expect(page.locator(".demo-label, .demo-banner")).toHaveCount(0);
+  await expect(page.getByText(/^Demo:/)).toHaveCount(0);
   // Packages stay pending: nothing claims qualification or invents hashes.
   for (const item of fx.demo_review.demo_unqualified_packages as Json[]) {
     expect(item.qualification_status).toBe("pending");
     expect(Object.keys(item)).not.toContain("qualification_hash");
   }
   expect(await page.locator("body").innerText()).not.toMatch(regulatoryClaim);
+});
+
+test("demo-frozen run: export is disabled with a visible reason; no refused click, no retry, nothing downloaded", async ({
+  page,
+}) => {
+  const h = await harness(page, {
+    demo: true,
+    phase: "fsa",
+    roles: ["pathologist", "peer_reviewer", "qau", "study_director"],
+    exportRefusal: DEMO_EXPORT_REFUSAL,
+  });
+  await page.goto("/");
+  await expect(page.getByTestId("run-not-qualified")).toHaveText(NOT_QUALIFIED);
+  const button = page.getByTestId("export-final-package");
+  // DH-7 P2 (Tester): the server refuses every export of this run, so the button never invites it.
+  await expect(button).toBeDisabled();
+  await expect(button).toHaveText("Export final package");
+  const reason = page.getByTestId("export-disabled-reason");
+  await expect(reason).toBeVisible();
+  await expect(reason).toHaveAttribute("data-gate", "demo_not_qualified");
+  await expect(reason).toContainText("Export is refused for this run");
+  const panel = page.getByTestId("export-panel");
+  await expect(panel).not.toContainText(/ready for export/i);
+  await expect(panel).not.toContainText("Retry export");
+  await expect(page.getByTestId("export-error")).toHaveCount(0);
+  await button.click({ force: true }).catch(() => undefined);
+  expect(h.exportPosts).toBe(0);
+  // The label stays in the Gate 3 banner only.
+  await expect(page.getByText(NOT_QUALIFIED, { exact: true })).toHaveCount(1);
+  await expect(page.getByTestId("downloads")).toHaveCount(0);
+  await expect(page.getByTestId("review-stage")).not.toHaveAttribute("data-gate-status", "complete");
+});
+
+test("strict run: no 'Not qualified' label at any phase", async ({ page }) => {
+  for (const phase of ["review", "fsa", "exported"] as const) {
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+    await harness(page, { phase, roles: phase === "review" ? [] : ["pathologist", "peer_reviewer", "qau", "study_director"] });
+    await page.goto("/");
+    await expect(page.getByTestId("review-stage")).toBeVisible();
+    await expect(page.getByTestId("run-not-qualified")).toHaveCount(0);
+    await expect(page.getByText(NOT_QUALIFIED, { exact: true })).toHaveCount(0);
+  }
 });
 
 test("demo flag on: exported downloads show no demo note", async ({ page }) => {
@@ -469,6 +526,8 @@ test("demo flag on: freeze stays a human action; nothing freezes on load or on a
   await expect(page.getByTestId("stage-view")).toHaveAttribute("data-selected-stage", "upload");
   await expect(page.getByTestId("demo-mode-banner")).toHaveCount(0);
   await expect(page.getByTestId("freeze-manifest")).toBeDisabled();
+  // Flag on but not yet frozen: not a demo-frozen run, so no label.
+  await expect(page.getByTestId("run-not-qualified")).toHaveCount(0);
   await page.waitForTimeout(1000);
   expect(commands.filter((command) => command.includes("/pinned-runs"))).toEqual([]);
   await expect(stageButtons(page).nth(0)).toHaveAccessibleName(/\(Awaiting you\)$/);
@@ -480,4 +539,5 @@ test("demo flag off: no demo label anywhere in the review stage or downloads", a
   await expect(page.getByTestId("downloads")).toBeVisible();
   await expect(page.getByText(DEMO)).toHaveCount(0);
   await expect(page.getByTestId("demo-mode-banner")).toHaveCount(0);
+  await expect(page.getByTestId("run-not-qualified")).toHaveCount(0);
 });

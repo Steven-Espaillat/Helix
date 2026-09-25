@@ -1,0 +1,46 @@
+
+> helix-workbench@0.1.0 test:parity
+> playwright test -c playwright.parity.config.ts
+
+
+Running 35 tests using 1 worker
+
+(node:64296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/parity/parity.spec.ts:161:7 › shell-header-light [enforced] lane step0 (481ms)
+  ✓   2 tests/parity/parity.spec.ts:161:7 › shell-header-dark [enforced] lane step0 (445ms)
+  ✓   3 tests/parity/parity.spec.ts:161:7 › component-stage-rail-s0-light [enforced] lane step0 (388ms)
+  ✓   4 tests/parity/parity.spec.ts:161:7 › component-stage-rail-s7-light [enforced] lane step0 (384ms)
+  ✓   5 tests/parity/parity.spec.ts:161:7 › component-stage-rail-s0-dark [enforced] lane step0 (382ms)
+  ✓   6 tests/parity/parity.spec.ts:161:7 › component-gate-banner-light [enforced] lane step0 (355ms)
+  ✓   7 tests/parity/parity.spec.ts:161:7 › component-file-table-light [enforced] lane step0 (449ms)
+  ✓   8 tests/parity/parity.spec.ts:161:7 › component-auth-card-light [enforced] lane step0 (372ms)
+  ✓   9 tests/parity/parity.spec.ts:161:7 › component-upload-composition-light [enforced] lane step0 (537ms)
+  ✓  10 tests/parity/parity.spec.ts:161:7 › shell-viewport-light [report-only] lane step0 (663ms)
+  ✓  11 tests/parity/parity.spec.ts:161:7 › journey-progress-light [enforced] lane A (482ms)
+  ✓  12 tests/parity/parity.spec.ts:161:7 › upload-gate-light [report-only] lane A (772ms)
+  ✓  13 tests/parity/parity.spec.ts:161:7 › agent-run-banner-light [enforced] lane B (343ms)
+  ✓  14 tests/parity/parity.spec.ts:161:7 › agent-stage-card-light [enforced] lane B (394ms)
+  ✓  15 tests/parity/parity.spec.ts:161:7 › agent-activity-card-light [enforced] lane B (365ms)
+  ✓  16 tests/parity/parity.spec.ts:161:7 › agent-step-light [enforced] lane B (468ms)
+  ✓  17 tests/parity/parity.spec.ts:161:7 › traceability-gate-light [enforced] lane C (598ms)
+  ✓  18 tests/parity/parity.spec.ts:161:7 › review-header-light [enforced] lane D (371ms)
+  ✓  19 tests/parity/parity.spec.ts:161:7 › review-rail-s8-light [enforced] lane D (385ms)
+  ✓  20 tests/parity/parity.spec.ts:161:7 › review-gate-banner-light [enforced] lane D (360ms)
+  ✓  21 tests/parity/parity.spec.ts:161:7 › review-export-control-light [enforced] lane D (341ms)
+  ✓  22 tests/parity/parity.spec.ts:161:7 › review-header-dark [enforced] lane D (370ms)
+  ✓  23 tests/parity/parity.spec.ts:161:7 › review-rail-s8-dark [enforced] lane D (380ms)
+  ✓  24 tests/parity/parity.spec.ts:161:7 › review-gate-banner-dark [enforced] lane D (362ms)
+  ✓  25 tests/parity/parity.spec.ts:161:7 › review-export-control-dark [enforced] lane D (343ms)
+  ✓  26 tests/parity/parity.spec.ts:161:7 › review-export-light [report-only] lane D (783ms)
+  ✓  27 tests/parity/parity.spec.ts:161:7 › review-export-dark [report-only] lane D (757ms)
+  ✓  28 tests/parity/parity.spec.ts:161:7 › report-assembly-light [report-only] lane D (1.1s)
+  ✓  29 tests/parity/parity.spec.ts:161:7 › chat-dock-closed-light [report-only] lane D (543ms)
+  ✓  30 tests/parity/parity.spec.ts:161:7 › chat-dock-open-light [report-only] lane D (598ms)
+  ✓  31 tests/parity/parity.spec.ts:161:7 › report-assembly-dark [report-only] lane D (1.1s)
+  ✓  32 tests/parity/parity.spec.ts:161:7 › chat-dock-closed-dark [report-only] lane D (530ms)
+  ✓  33 tests/parity/parity.spec.ts:161:7 › chat-dock-open-dark [report-only] lane D (597ms)
+  ✓  34 tests/parity/parity.spec.ts:275:9 › design-tokens-light [enforced] lane step0 (147ms)
+  ✓  35 tests/parity/parity.spec.ts:275:9 › design-tokens-dark [enforced] lane step0 (150ms)
+
+  35 passed (17.4s)

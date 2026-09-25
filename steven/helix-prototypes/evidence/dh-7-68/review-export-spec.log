@@ -1,0 +1,24 @@
+
+Running 16 tests using 1 worker
+
+(node:54324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/16] tests/review-export.spec.ts:155:5 › renders the server report in three columns with blockers, references, and no regulatory claim
+[2/16] tests/review-export.spec.ts:189:5 › inspect provenance reads the claim evidence endpoint and shows the lineage edges
+[3/16] tests/review-export.spec.ts:205:5 › a slower evidence response for an earlier claim never overwrites the current selection (#30 l53LR)
+[4/16] tests/review-export.spec.ts:235:5 › section agent state follows the selected report section, not the latest run in the workspace (#30 l53LX)
+[5/16] tests/review-export.spec.ts:263:5 › records one role per call in any order; study director waits for the three priors; never exports
+[6/16] tests/review-export.spec.ts:300:5 › a server-refused approval shows the server detail and leaves the sign-off pending
+[7/16] tests/review-export.spec.ts:319:5 › export is enabled only by the server ready_for_export gate and is its own action
+[8/16] tests/review-export.spec.ts:352:5 › downloads list every exported artifact and each download returns the checksummed server bytes
+[9/16] tests/review-export.spec.ts:385:5 › export errors are shown with a retry, and a replayed export is labeled idempotent
+[10/16] tests/review-export.spec.ts:409:5 › reload restores sign-offs, receipt, downloads, and completed progress from getWorkspace alone
+[11/16] tests/review-export.spec.ts:432:5 › demo-frozen run: only a small 'Not qualified' status label; no demo chrome; pending packages untouched
+[12/16] tests/review-export.spec.ts:462:5 › demo-frozen run: export is disabled with a visible reason; no refused click, no retry, nothing downloaded
+[13/16] tests/review-export.spec.ts:493:5 › strict run: no 'Not qualified' label at any phase
+[14/16] tests/review-export.spec.ts:504:5 › demo flag on: exported downloads show no demo note
+[15/16] tests/review-export.spec.ts:512:5 › demo flag on: freeze stays a human action; nothing freezes on load or on approval
+[16/16] tests/review-export.spec.ts:536:5 › demo flag off: no demo label anywhere in the review stage or downloads
+  16 passed (17.2s)

@@ -1,0 +1,32 @@
+{
+  "freeze": {
+    "status": 201,
+    "run_requested_details": {
+      "run_id": "RUN-63DFA01CA5B8CDD9",
+      "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+      "run_plan_fingerprint": "sha256:4ef2e13f26a0d8039d0795bd4a42ad0e6aa0f5c339d49f337dd042adf304b1b5",
+      "demo_unqualified_packages": "section.5_2_3_body_weight,section.5_3_discussion"
+    }
+  },
+  "validation": 201,
+  "approval_pathologist": 200,
+  "approval_peer_reviewer": 200,
+  "approval_qau": 200,
+  "approval_study_director": 200,
+  "fsa": 200,
+  "release_gate_before_export": "ready_for_export",
+  "export": {
+    "status": 409,
+    "body": {
+      "detail": {
+        "code": "demo_not_qualified",
+        "message": "Export refused: this run was frozen with the demo flag (packages not qualified)."
+      }
+    }
+  },
+  "release_gate_after_export": "ready_for_export",
+  "export_artifacts_after": [
+    "pending",
+    "pending"
+  ]
+}

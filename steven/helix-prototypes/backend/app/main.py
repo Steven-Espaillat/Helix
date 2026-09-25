@@ -91,7 +91,7 @@ from .section_runs import (
     UnknownSectionPackageError,
 )
 from .seed import seed_database
-from .service import InvalidCommandError, StudyService, WorkflowConflictError
+from .service import DemoNotQualifiedExportError, InvalidCommandError, StudyService, WorkflowConflictError
 from .validation import PlannerUnavailableError, PlannerUpstreamError
 
 
@@ -771,6 +771,9 @@ def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:
         KeyError,
     ) as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
+    except DemoNotQualifiedExportError as error:
+        # DH-7: typed 409 {code, message}, the same envelope as other typed errors.
+        raise HTTPException(status_code=409, detail=error.as_detail()) from error
     except (
         WorkflowConflictError,
         SectionRunConflictError,
