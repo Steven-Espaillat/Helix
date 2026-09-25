@@ -1,5 +1,6 @@
 "use client";
 
+import { artifactLabel } from "@/lib/api/release";
 import type { ExportReceipt, Workspace } from "@/lib/types";
 
 import { RetryIcon } from "../icons";
@@ -31,6 +32,12 @@ export function ExportPanel({
   const demoFrozen = demoFrozenPackages(workspace).length > 0 && !exported;
   const ready = status === "ready_for_export" && !demoFrozen;
   const exportedAt = state.kind === "success" ? state.receipt.exported_at : exportedAtFromJourney(workspace);
+  // DH-6 (#71): the receipt names exactly what left HELIX: the slice-11 approved files and their
+  // full hashes, from the export response or, after reload, the workspace export_artifacts.
+  const files =
+    state.kind === "success"
+      ? state.receipt.artifacts
+      : workspace.export_artifacts.filter((item) => item.status === "exported");
   return (
     <div className="stack hx-export" data-testid="export-panel" data-state={state.kind}>
       <Button
@@ -82,6 +89,21 @@ export function ExportPanel({
             ) : (
               <span data-testid="export-exported-at">Recorded by the server</span>
             )}
+          </dd>
+          <dt>What was exported</dt>
+          <dd data-testid="export-receipt-scope">
+            Only the {files.length} {files.length === 1 ? "file" : "files"} approved in Final Study Approval, with
+            these SHA-256 hashes:
+            <ul className="hx-export-hashes" data-testid="export-receipt-hashes">
+              {files.map((item) => (
+                <li key={item.artifact_id}>
+                  <span>{artifactLabel(item.kind)}</span>{" "}
+                  <code className="hx-mono" data-testid={`export-receipt-hash-${item.artifact_id}`}>
+                    {item.checksum}
+                  </code>
+                </li>
+              ))}
+            </ul>
           </dd>
           {state.kind === "success" && state.receipt.idempotent_replay && (
             <>

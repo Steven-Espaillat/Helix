@@ -156,8 +156,10 @@ export function ReviewStageView({
       )}
       <p className="hx-sub hx-fine hx-review-disclaimer">
         {/* #30 P2 (critique P2-3): the export panel keeps the reference line "A prepared package is not
-            FDA acceptance."; the footer no longer repeats it. */}
-        Synthetic data · Not for submission. HELIX makes no regulatory claim.
+            FDA acceptance."; the footer no longer repeats it. DH-6 (#71): the FDA-like layout line
+            appears exactly once on the page, here. */}
+        Synthetic data · Not for submission. The report follows an FDA-like layout for demonstration only.
+        HELIX makes no regulatory claim.
       </p>
     </div>
   );
