@@ -48,6 +48,28 @@ export function ruleDisplay(result: ValidationResult, disposition: Disposition |
   return "warning";
 }
 
+export type ClaimStatus = {
+  tone: "pass" | "warn" | "block" | "muted";
+  /** Stable machine key for tests and styling hooks. */
+  status: "blocked" | "warnings" | "dispositioned" | "skipped" | "pass" | "empty";
+  label: string;
+};
+
+/**
+ * One count-free status for a claim's rule results (#70; P2s from #34). "All rules pass" is
+ * reserved for a non-empty set of passes only: a blocker outranks everything, remaining
+ * warnings outrank recorded dispositions (a dispositioned claim with warnings is not clear),
+ * and no results or only skipped results read neutral, never green.
+ */
+export function claimStatus(displays: readonly RuleDisplay[]): ClaimStatus {
+  if (displays.length === 0) return { tone: "muted", status: "empty", label: "No rule results" };
+  if (displays.includes("blocked")) return { tone: "block", status: "blocked", label: "Needs disposition" };
+  if (displays.includes("warning")) return { tone: "warn", status: "warnings", label: "Warnings to review" };
+  if (displays.includes("disposition")) return { tone: "warn", status: "dispositioned", label: "Dispositioned" };
+  if (displays.includes("skipped")) return { tone: "muted", status: "skipped", label: "Rules skipped" };
+  return { tone: "pass", status: "pass", label: "All rules pass" };
+}
+
 export function stageById(workspace: TraceabilityWorkspace, id: JourneyStage["stage_id"]): GateStage | undefined {
   return workspace.journey.stages.find((stage) => stage.stage_id === id);
 }

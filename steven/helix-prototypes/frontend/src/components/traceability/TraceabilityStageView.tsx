@@ -12,6 +12,7 @@ import { ClaimEvidence } from "./ClaimEvidence";
 import type { DispositionCommand } from "./dispositionRules";
 import {
   claimForResult,
+  claimStatus,
   continueEligibility,
   evaluationForClaim,
   isRecorded,
@@ -105,11 +106,7 @@ export function TraceabilityStageView({
 
   // One calm status for the selected claim; per-rule badges carry the detail (no tallies, #70).
   const displays = results.map((result) => ruleDisplay(result, dispositions.get(result.result_id)));
-  const claimStatus: { tone: "pass" | "block" | "warn"; label: string } = displays.includes("blocked")
-    ? { tone: "block", label: "Needs disposition" }
-    : displays.includes("disposition")
-      ? { tone: "warn", label: "Dispositioned" }
-      : { tone: "pass", label: "All rules pass" };
+  const status = claimStatus(displays);
 
   const selectedClaim = workspace.claims.find((claim) => claim.claim_id === claimId);
   const evaluation = evaluationForClaim(workspace, claimId);
@@ -186,9 +183,9 @@ export function TraceabilityStageView({
             <p className="hx-sub">Open a rule to see how the value flows from the frozen source to the report.</p>
           </div>
           {current && (
-            <div className="hx-trace-chips" data-testid="trace-summary" data-status={claimStatus.tone}>
-              <Chip tone={claimStatus.tone} className="hx-trace-chip">
-                {claimStatus.label}
+            <div className="hx-trace-chips" data-testid="trace-summary" data-status={status.tone} data-claim-status={status.status}>
+              <Chip tone={status.tone} className="hx-trace-chip">
+                {status.label}
               </Chip>
             </div>
           )}

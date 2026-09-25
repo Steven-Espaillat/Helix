@@ -15,6 +15,7 @@ import {
   type Json,
   type Journey,
 } from "./lane-a-helpers";
+import { claimStatus, type RuleDisplay } from "../src/components/traceability/gateState";
 
 // Lane C (#22): Human Gate 2, the Traceability Review.
 //
@@ -547,4 +548,102 @@ test("the Gate 2 evidence card shows source hashes, rule versions and exact reco
   await expect(evidence.getByTestId("evidence-recomputed")).toHaveText("4 animals");
   await expect(evidence.getByTestId("evidence-exact-match")).toHaveText("Yes");
   await expect(evidence.getByTestId("source-records").getByRole("row")).toHaveCount(5);
+});
+
+// DH-5 P2s (#34 Tester P2-1/P2-2, Codex thread PRRT_kwDOUohZWs6l8Tzz): the claim status chip
+// is honest. Green "All rules pass" only for a non-empty all-pass set; warnings outrank
+// "Dispositioned"; no results or only skipped results read neutral. Still no counts (#70).
+test("claimStatus is green only for a non-empty all-pass set and never hides warnings", () => {
+  const status = (displays: RuleDisplay[]) => {
+    const { tone, status: key, label } = claimStatus(displays);
+    return { tone, key, label };
+  };
+  expect(status([])).toEqual({ tone: "muted", key: "empty", label: "No rule results" });
+  expect(status(["skipped"])).toEqual({ tone: "muted", key: "skipped", label: "Rules skipped" });
+  expect(status(["pass", "skipped"])).toEqual({ tone: "muted", key: "skipped", label: "Rules skipped" });
+  expect(status(["warning"])).toEqual({ tone: "warn", key: "warnings", label: "Warnings to review" });
+  expect(status(["warning", "skipped"])).toEqual({ tone: "warn", key: "warnings", label: "Warnings to review" });
+  expect(status(["pass", "warning"])).toEqual({ tone: "warn", key: "warnings", label: "Warnings to review" });
+  expect(status(["disposition", "warning"])).toEqual({ tone: "warn", key: "warnings", label: "Warnings to review" });
+  expect(status(["disposition", "pass"])).toEqual({ tone: "warn", key: "dispositioned", label: "Dispositioned" });
+  expect(status(["blocked", "warning", "disposition"])).toEqual({ tone: "block", key: "blocked", label: "Needs disposition" });
+  expect(status(["pass"])).toEqual({ tone: "pass", key: "pass", label: "All rules pass" });
+  expect(status(["pass", "pass"])).toEqual({ tone: "pass", key: "pass", label: "All rules pass" });
+  for (const displays of [[], ["warning"], ["skipped"], ["disposition", "warning"]] as RuleDisplay[][]) {
+    expect(claimStatus(displays).label).not.toMatch(/\d/);
+  }
+});
+
+test("the Gate 2 status chip reads neutral or warning, never green, for empty and warning-only claims", async ({ page }) => {
+  // Route-mocked getEvidence: the live C-BW-HIGH chain with its validations replaced.
+  let patch: (validations: Json[]) => Json[] = (validations) => validations;
+  await page.route("**/api/v1/studies/*/claims/C-BW-HIGH/evidence", async (route) => {
+    const body = (await (await route.fetch()).json()) as Json;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...body, validations: patch(body.validations as Json[]) }),
+    });
+  });
+  await serveGate(page);
+  const summary = page.getByTestId("trace-summary");
+
+  // No rule results: neutral, and the accordion shows its empty state.
+  patch = () => [];
+  await openGate(page);
+  await page.getByTestId("claim-C-BW-HIGH").click();
+  await expect(summary).toHaveText("No rule results");
+  await expect(summary).toHaveAttribute("data-status", "muted");
+  await expect(summary).toHaveAttribute("data-claim-status", "empty");
+  await expect(page.getByTestId("traceability-gate")).not.toContainText("All rules pass");
+
+  // Only warning results: a warning state, not green.
+  patch = (validations) => validations.map((item) => ({ ...item, status: "fail", severity: "warning" }));
+  await openGate(page);
+  await page.getByTestId("claim-C-BW-HIGH").click();
+  await expect(summary).toHaveText("Warnings to review");
+  await expect(summary).toHaveAttribute("data-status", "warn");
+  await expect(summary).toHaveAttribute("data-claim-status", "warnings");
+  // VR-003 passes live; here it is only a warning. (VR-004 may carry an earlier serial disposition.)
+  await expect(page.getByTestId("rule-badge-VR-003")).toHaveText("Warning");
+  await expectNoCountChrome(page);
+});
+
+test("a dispositioned blocker with a remaining warning reads Warnings to review, not Dispositioned", async ({ page }) => {
+  // Display-only mocks, no writes: the workspace carries a recorded disposition for VR-004,
+  // and getEvidence turns the passing rule into a warning.
+  await page.route("**/api/v1/studies/*/claims/C-BW-HIGH/evidence", async (route) => {
+    const body = (await (await route.fetch()).json()) as Json;
+    const validations = (body.validations as Json[]).map((item) =>
+      item.status === "pass" ? { ...item, status: "fail", severity: "warning", message: "Synthetic warning left to review." } : item,
+    );
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ...body, validations }) });
+  });
+  await serveGate(page, (workspace) => ({
+    ...workspace,
+    dispositions: [
+      ...(workspace.dispositions as Json[]),
+      {
+        disposition_id: "RD-P2-MOCK-1",
+        result_id: "VR-004",
+        decision: "corrected",
+        reason: "Synthetic display-only disposition.",
+        reviewer: "Dr. Lane C Reviewer",
+        timestamp: new Date().toISOString(),
+        artifact_id: null,
+        artifact_hash: null,
+        dependency_fingerprint: null,
+      },
+    ],
+  }));
+  await openGate(page);
+  await page.getByTestId("claim-C-BW-HIGH").click();
+  await expect(page.getByTestId("rule-badge-VR-004")).toHaveText("Disposition");
+  await expect(page.getByTestId("rule-badge-VR-003")).toHaveText("Warning");
+  const summary = page.getByTestId("trace-summary");
+  await expect(summary).toHaveText("Warnings to review");
+  await expect(summary).toHaveAttribute("data-claim-status", "warnings");
+  await expect(summary).not.toContainText("Dispositioned");
+  await expect(summary).not.toContainText("All rules pass");
+  await expectNoCountChrome(page);
 });
