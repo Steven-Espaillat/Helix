@@ -72,6 +72,11 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
   const [receipts, setReceipts] = useState<AgentReceipts>({});
   const [eligibilityChange, setEligibilityChange] = useState<EligibilityChange | null>(null);
   const [confirmed, setConfirmed] = useState<Set<string>>(() => new Set());
+  // DH-1: a running sequence and a pending operator stop. The stop is honoured before the
+  // next governed command; the command already sent to the server always settles.
+  const [sequenceRunning, setSequenceRunning] = useState(false);
+  const [stopRequested, setStopRequested] = useState(false);
+  const stopRef = useRef(false);
   const confirmedRef = useRef<Set<string>>(new Set());
   // Set synchronously before any await, so a double click cannot start a second command
   // or sequence before React re-renders the disabled button.
@@ -196,6 +201,9 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
   const runSequence = useCallback(async () => {
     if (!begin()) return;
     setMessage(null);
+    stopRef.current = false;
+    setStopRequested(false);
+    setSequenceRunning(true);
     let current: AgentStep | null = null;
     try {
       const stop = await runAgentSequence(studyId, planner, {
@@ -207,6 +215,7 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
         },
         onReceipt: record,
         options,
+        shouldStop: () => stopRef.current,
       });
       if (stop) setMessage({ tone: "info", text: stop.message });
     } catch (cause) {
@@ -221,9 +230,17 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
         text: `${label ? `${label} failed. ` : ""}${messageFrom(cause)} The agent stopped; later steps did not run.`,
       });
     } finally {
+      stopRef.current = false;
+      setStopRequested(false);
+      setSequenceRunning(false);
       end();
     }
   }, [begin, end, refresh, studyId, planner, record, options]);
+
+  const stop = useCallback(() => {
+    stopRef.current = true;
+    setStopRequested(true);
+  }, []);
 
   return {
     planner,
@@ -236,5 +253,8 @@ export function useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange }:
     next: nextAgentStep(workspace, { confirmedDataValidationRuns: confirmed }),
     runStep: () => void runStep(),
     runSequence: () => void runSequence(),
+    sequenceRunning,
+    stopRequested,
+    stop,
   };
 }

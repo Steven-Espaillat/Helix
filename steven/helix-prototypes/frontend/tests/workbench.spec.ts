@@ -65,12 +65,24 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("source-manifest").getByText("body-weights.csv")).toBeVisible();
   await page.screenshot({ path: "../evidence/helix-source-manifest.png", fullPage: true });
 
+  // DH-1: the freeze auto-starts the governed agent sequence. On this seed the server moves
+  // to Human gate 2 after validation, so the agent must stop there and never call the Section
+  // Agent. The route is a guard so a regression can never reach Codex from this live run.
+  const sectionRunPosts: string[] = [];
+  await page.route("**/api/v1/studies/*/section-runs", (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    sectionRunPosts.push(route.request().url());
+    return route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ detail: "Section Agent not under test." }) });
+  });
   // Human Gate 1 (#22 P1): a human freezes the authorized manifest; validation never auto-freezes.
   await page.getByTestId("freeze-consent").check();
   await page.getByTestId("freeze-manifest").click();
-  await expect(page.getByTestId("upload-gate")).toHaveAttribute("data-frozen", "true");
+  await expect(page.getByTestId("workbench-notice")).toContainText("Manifest frozen by the server as Pinned Run");
+  await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
+  await expect(page.getByTestId("agent-stop-sequence")).toHaveCount(0);
+  expect(sectionRunPosts).toEqual([]);
   await page.getByTestId("run-validation").click();
-  await expect(page.getByRole("status")).toContainText("13 checks completed");
+  await expect(page.getByTestId("workbench-notice")).toContainText("13 checks completed");
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
   await expect(page.getByTestId("evaluate-candidate")).toBeDisabled();
   await expect(page.getByTestId("query-cross-section")).toBeDisabled();
@@ -108,7 +120,7 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("section-claim-references").getByText("section.5_2_3_body_weight")).toBeVisible();
   await expect(page.getByTestId("section-claim-references").getByText("section.5_3_discussion")).toBeVisible();
   await page.getByTestId("run-body-weight-validation").click();
-  await expect(page.getByRole("status")).toContainText("persisted claims");
+  await expect(page.getByTestId("workbench-notice")).toContainText("persisted claims");
   const executionResponse = await request.post(`${apiRoot}/studies/STUDY-HLX-028/data-validation-packages`, {
     data: {
       actor: "HELIX workbench",

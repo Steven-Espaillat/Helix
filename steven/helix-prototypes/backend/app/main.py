@@ -368,6 +368,7 @@ def create_app(
         study_id: str,
         run_id: str,
         study_service: ServiceDependency,
+        session: SessionDependency,
         last_event_id_header: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
         last_event_id_query: Annotated[str | None, Query(alias="last_event_id")] = None,
     ) -> Response:
@@ -394,6 +395,10 @@ def create_app(
         # already current) never re-emits retained events on the first poll.
         initial_sequence = parse_cursor(run_id, cursor) if cursor else 0
         stream_label, stream_run_version = study_service.run_event_context(study_id, run_id)
+        # End the request session's read transaction before streaming. On file SQLite every
+        # transaction is BEGIN IMMEDIATE, so an open one here held the write lock for the whole
+        # stream and made concurrent commands (and the poll below) fail with "database is locked".
+        session.close()
 
         def frames() -> Iterator[str]:
             last_sequence = initial_sequence

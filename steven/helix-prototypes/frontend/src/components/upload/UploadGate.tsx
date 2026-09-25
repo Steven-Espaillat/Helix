@@ -32,12 +32,19 @@ export function UploadGate({
   workspace,
   onRefresh,
   onKeepView,
+  onFrozen,
   children,
 }: {
   workspace: Workspace;
   onRefresh: () => Promise<void>;
   /** Keep this gate selected while a command it started refreshes the journey. */
   onKeepView?: () => void;
+  /**
+   * DH-1: called once after the server confirms the human freeze with its Data Validation
+   * recorded (a direct freeze, or the retry that completes a partial one). Never called for
+   * a refused or failed freeze.
+   */
+  onFrozen?: (announcement: string) => void;
   /** Upload controls (#26), rendered only while the manifest is not frozen. */
   children?: ReactNode;
 }) {
@@ -95,7 +102,9 @@ export function UploadGate({
         idempotency_key: freezeIdempotencyKey(studyId, fingerprint, authorizationId),
       });
       await onRefresh();
-      setAnnouncement(`Manifest frozen by the server as Pinned Run ${result.run_id}.`);
+      const frozen = `Manifest frozen by the server as Pinned Run ${result.run_id}.`;
+      setAnnouncement(frozen);
+      onFrozen?.(frozen);
     } catch (cause) {
       if (cause instanceof FreezeError && cause.partial) {
         setPartial(cause.partial);
@@ -137,7 +146,9 @@ export function UploadGate({
       );
       setPartial(null);
       await onRefresh();
-      setAnnouncement(`Data Validation recorded for Pinned Run ${run.run_id}.`);
+      const recorded = `Data Validation recorded for Pinned Run ${run.run_id}.`;
+      setAnnouncement(recorded);
+      onFrozen?.(recorded);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Data Validation retry failed.";
       setError(message);

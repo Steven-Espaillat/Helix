@@ -86,6 +86,9 @@ function step(action: AgentAction, runId?: string): AgentStep {
   return { action, stageId: ACTION_STAGE[action], label: ACTION_LABELS[action], runId };
 }
 
+/** Backend `SectionRunService` eligibility reason while no validation run is recorded. */
+export const VALIDATION_PENDING_REASON = "Run hybrid validation first";
+
 /** The next governed command, or why the agent must stop, from server state only. */
 // Workspace validations also carry the Data Validation Package results, so hybrid
 // validation counts as run only when a result exists that no package execution made.
@@ -123,7 +126,11 @@ export function nextAgentStep(workspace: Workspace, options: NextStepOptions = {
     (item) => item.receipt.section_package_id === BODY_WEIGHT_SECTION,
   );
   const run = runs.at(-1)?.receipt;
-  if (!run && !eligibility?.eligible && hybridValidationCount(workspace) === 0) {
+  // DH-1: seeded studies carry validation results that no run on this Pinned Run made, so
+  // the server's own eligibility reason also says when validation has not run yet.
+  const validationPending =
+    hybridValidationCount(workspace) === 0 || (eligibility?.reasons ?? []).includes(VALIDATION_PENDING_REASON);
+  if (!run && !eligibility?.eligible && validationPending) {
     return step("validation");
   }
   if (!run) {
@@ -338,7 +345,33 @@ export type SequenceHooks = {
   onReceipt?: (agentStep: AgentStep, receipt: AgentStepReceipt, before: Workspace, after: Workspace) => void;
   /** Read before each decision, so a replay confirmed mid-sequence is honoured. */
   options?: () => NextStepOptions;
+  /**
+   * DH-1: read before each decision. When it returns true the sequence ends before the
+   * next governed command; a command already sent to the server is never cancelled.
+   */
+  shouldStop?: () => boolean;
 };
+
+/** DH-1: the operator stopped the sequence between governed commands. */
+export type OperatorStop = { kind: "operator-stop"; message: string };
+
+/**
+ * DH-1: the sequence never runs past a human gate the server reports as current (Gate 2
+ * Traceability, Gate 3 Review and export), whatever the governed records would allow next.
+ */
+export function serverGateStop(workspace: Workspace): AgentStop | null {
+  const journey = workspace.journey;
+  const current = journey?.stages.find((stage) => stage.stage_id === journey.current_stage_id);
+  if (!current || current.kind !== "human_gate" || (current.gate_number ?? 0) < 2) return null;
+  return {
+    kind: "gate",
+    stageId: current.stage_id,
+    message: `The agent stops at Human gate ${current.gate_number}. Only a person can pass it.`,
+  };
+}
+
+export const OPERATOR_STOP_MESSAGE =
+  "You stopped the agent. The last command finished on the server; no later step ran.";
 
 /**
  * Run governed commands in order until the agent must stop. Each command waits for
@@ -350,11 +383,18 @@ export async function runAgentSequence(
   planner: PlannerMode,
   hooks: SequenceHooks,
   maxSteps = 9,
-): Promise<AgentStop | null> {
+): Promise<AgentStop | OperatorStop | null> {
   let workspace = await hooks.fetchWorkspace();
   hooks.onWorkspace(workspace);
   try {
     for (let index = 0; index < maxSteps; index += 1) {
+      if (hooks.shouldStop?.()) {
+        return { kind: "operator-stop", message: OPERATOR_STOP_MESSAGE };
+      }
+      const gate = serverGateStop(workspace);
+      if (gate) {
+        return gate;
+      }
       const next = nextAgentStep(workspace, hooks.options?.());
       if (!isAgentStep(next)) {
         return next;

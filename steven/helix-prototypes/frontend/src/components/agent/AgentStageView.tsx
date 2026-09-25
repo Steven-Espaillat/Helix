@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { isAgentStep } from "@/lib/api/agentSteps";
-import type { JourneyStage, Workspace } from "@/lib/types";
+import type { JourneyStage, JourneyStageId, Workspace } from "@/lib/types";
 
 import { PersonIcon, ShieldIcon } from "../icons";
 import { Button, Card, Chip, Kicker, type Tone } from "../ui";
@@ -30,6 +32,12 @@ type Props = {
   otherBusy?: boolean;
   /** Tells the workbench an agent command is in flight, so legacy controls wait. */
   onBusyChange?: (busy: boolean) => void;
+  /**
+   * DH-1: set once by the workbench right after a successful human freeze. The view starts
+   * the governed sequence at most once, then calls onAutoStartConsumed.
+   */
+  autoStart?: boolean;
+  onAutoStartConsumed?: () => void;
 };
 
 const CHIP: Record<JourneyStage["status"], [string, Tone]> = {
@@ -40,9 +48,41 @@ const CHIP: Record<JourneyStage["status"], [string, Tone]> = {
   pending: ["Not started", "muted"],
 };
 
-export function AgentStageView({ studyId, workspace, stageId, onWorkspace, otherBusy = false, onBusyChange }: Props) {
-  const agent = useAgentSteps({ studyId, workspace, onWorkspace, onBusyChange });
+export function AgentStageView({
+  studyId,
+  workspace,
+  stageId,
+  onWorkspace,
+  otherBusy = false,
+  onBusyChange,
+  autoStart = false,
+  onAutoStartConsumed,
+}: Props) {
+  const agent = useAgentSteps({
+    studyId,
+    workspace,
+    onWorkspace,
+    onBusyChange,
+  });
   const stage = workspace.journey.stages.find((item) => item.stage_id === stageId);
+
+  // DH-1: one-shot auto-start after the human freeze. It only fires when this stage is the
+  // server's actionable stage and the next governed command is runnable from here; the
+  // sequence then stops on error, blocker, human decision, Gate 2, or the Stop button.
+  const autoStartedRef = useRef(false);
+  const runnable =
+    Boolean(stage && (stage.status === "current" || stage.status === "blocked")) &&
+    isAgentStep(agent.next) &&
+    (agent.next.stageId === stageId || Boolean(agent.next.replay));
+  const idle = !agent.inFlight && !agent.sequenceRunning && !otherBusy;
+  const { runSequence } = agent;
+  useEffect(() => {
+    if (!autoStart || autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    onAutoStartConsumed?.();
+    if (runnable && idle) runSequence();
+  }, [autoStart, runnable, idle, runSequence, onAutoStartConsumed]);
+
   if (!stage || !isAgentStageId(stage.stage_id)) return null;
 
   const { next, inFlight } = agent;
@@ -136,9 +176,11 @@ export function AgentStageView({ studyId, workspace, stageId, onWorkspace, other
                   >
                     {inFlight ? `${inFlight.label}…` : next.label}
                   </Button>
-                  <Button disabled={busy} onClick={agent.runSequence} data-testid="agent-run-sequence">
-                    Run agent steps to the next stop
-                  </Button>
+                  {!agent.sequenceRunning && (
+                    <Button disabled={busy} onClick={agent.runSequence} data-testid="agent-run-sequence">
+                      Run agent steps to the next stop
+                    </Button>
+                  )}
                   {next.replay && (
                     <p className="hx-sub" data-testid="agent-replay-note">
                       Extract: the freeze already recorded the Data Validation execution. This call sends the same
@@ -157,6 +199,17 @@ export function AgentStageView({ studyId, workspace, stageId, onWorkspace, other
                   {next.kind === "gate" ? <PersonIcon size={16} /> : null} {next.message}
                 </p>
               )}
+            </div>
+          )}
+          {agent.sequenceRunning && (
+            <div className="hx-agent-commands" data-testid="agent-sequence-controls">
+              <Button
+                disabled={agent.stopRequested}
+                onClick={agent.stop}
+                data-testid="agent-stop-sequence"
+              >
+                {agent.stopRequested ? "Stopping after this step…" : "Stop agent"}
+              </Button>
             </div>
           )}
           {!actionable && stage.status === "complete" && (

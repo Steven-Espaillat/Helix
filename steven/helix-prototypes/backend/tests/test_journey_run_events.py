@@ -833,3 +833,36 @@ def test_concurrent_commands_on_one_study_emit_gap_free_sequences_without_duplic
     assert len(finished) == len(set(finished)), finished
     dispositioned = {action for action, outcome in finished if outcome == "dispositioned"}
     assert {"disposition:VR-004", "disposition:VR-005"} <= dispositioned
+
+
+def test_open_event_stream_does_not_hold_the_sqlite_write_lock(tmp_path: Path) -> None:
+    """DH-1: auto-run writes right after freeze while the events stream is open."""
+    import sqlite3
+
+    db = tmp_path / "helix.db"
+    settings = Settings(
+        database_url=f"sqlite+pysqlite:///{db}",
+        seed_path=ROOT / "synthetic-e2e" / "helix-synthetic-bundle.json",
+        codex_repository_root=qualified_fixture_root(tmp_path),
+        auto_seed=True,
+        run_event_stream_seconds=2,
+    )
+    client = TestClient(create_app(settings, create_database_engine(settings)))
+    with client:
+        run_id = client.post(f"{BASE}/pinned-runs", json=FREEZE).json()["run_id"]
+
+        def consume() -> None:
+            with client.stream("GET", f"{BASE}/pinned-runs/{run_id}/events") as response:
+                for _ in response.iter_lines():
+                    pass
+
+        reader = threading.Thread(target=consume)
+        reader.start()
+        time.sleep(0.5)
+        connection = sqlite3.connect(db, timeout=0.3, isolation_level=None)
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute("ROLLBACK")
+        finally:
+            connection.close()
+            reader.join()

@@ -42,6 +42,16 @@ async function harness(page: Page, respond: (h: Harness, request: Request) => { 
     h.dataValidation = true;
     await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(freezeFixture.after.data_validation_executions) });
   });
+  // DH-1: a successful freeze auto-starts the governed sequence. Later commands are refused
+  // here so the sequence stops on the first error and never reaches the live API or Codex.
+  for (const path of ["validation-runs", "section-runs"]) {
+    await page.route(`**/api/v1/studies/*/${path}`, (route) =>
+      route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ detail: "not under test" }) }),
+    );
+  }
+  await page.route("**/api/v1/studies/*/pinned-runs/*/events", (route) =>
+    route.fulfill({ status: 200, contentType: "text/event-stream", body: "" }),
+  );
   return h;
 }
 
@@ -92,7 +102,10 @@ test("freezes through the server, shows the Pinned Run, and restores it on reloa
   expect(h.freezeBodies[0].actor).toBeTruthy();
   expect(String(h.freezeBodies[0].idempotency_key)).toMatch(/^STUDY-HLX-028:[0-9a-f]+:freeze-pinned-run:v1:AUTH-/);
 
-  await expect(page.getByTestId("freeze-live")).toHaveText(`Manifest frozen by the server as Pinned Run ${runId}.`);
+  // DH-1: the confirmation stays as the workbench notice while the view moves to the
+  // server's current stage and the agent sequence starts there.
+  await expect(page.getByTestId("workbench-notice")).toContainText(`Manifest frozen by the server as Pinned Run ${runId}.`);
+  await expect(page.getByTestId("agent-stage-view")).toBeVisible();
   // Progress moved only because the refreshed workspace says so.
   await expect(stageButtons(page).nth(0)).toHaveAccessibleName(/\(Approved\)$/);
   await expect(stageButtons(page).nth(4)).toHaveAttribute("aria-current", "step");
@@ -139,7 +152,7 @@ test("a retry after an unknown result reuses the same idempotency key, even afte
   await page.reload();
   await page.getByTestId("freeze-consent").check();
   await page.getByTestId("freeze-manifest").click();
-  await expect(page.getByTestId("freeze-live")).toContainText(runId);
+  await expect(page.getByTestId("workbench-notice")).toContainText(runId);
   expect(h.freezeBodies).toHaveLength(2);
   expect(h.freezeBodies[1].idempotency_key).toBe(h.freezeBodies[0].idempotency_key);
 });
@@ -228,9 +241,11 @@ test("a Data Validation failure after freeze shows the partial state and retries
   await expect(page.getByTestId("freeze-partial")).toBeVisible();
   await page.getByTestId("retry-data-validation").click();
   await expect(page.getByTestId("freeze-partial")).toHaveCount(0);
-  await expect(page.getByTestId("freeze-live")).toHaveText(`Data Validation recorded for Pinned Run ${runId}.`);
-  expect(h.dvBodies).toHaveLength(1);
-  expect(h.dvBodies[0].idempotency_key).toBe(retry.idempotency_key);
+  await expect(page.getByTestId("workbench-notice")).toContainText(`Data Validation recorded for Pinned Run ${runId}.`);
+  // DH-1: the completed freeze auto-starts the agent, whose first command is the idempotent
+  // replay of that same execution (same run-scoped key, never a second execution).
+  await expect.poll(() => h.dvBodies.length).toBe(2);
+  expect(h.dvBodies.map((body) => body.idempotency_key)).toEqual([retry.idempotency_key, retry.idempotency_key]);
   expect(h.dvBodies[0].package_id).toBe("validation.body_weight");
   expect(h.freezeBodies).toHaveLength(1);
 });
