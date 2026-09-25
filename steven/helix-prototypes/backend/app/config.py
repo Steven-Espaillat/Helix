@@ -23,7 +23,8 @@ class Settings(BaseSettings):
     run_event_poll_seconds: float = Field(default=1.0, gt=0)
     # DEMO ONLY, NOT QUALIFICATION. Env: HELIX_DEMO_UNQUALIFIED_PACKAGES. Off by default.
     # When on, the human Pinned Run freeze accepts the two pending section packages (5.2.3,
-    # 5.3) and every surface labels them "Demo: not qualified". See app/qualification.py.
+    # 5.3); the workspace payload and exports label them "Demo: not qualified". See
+    # app/qualification.py.
     demo_unqualified_packages: bool = False
 
 

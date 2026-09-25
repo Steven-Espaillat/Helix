@@ -9,8 +9,10 @@ With the flag on:
 - The Pinned Run gate accepts section.5_2_3_body_weight and section.5_3_discussion while
   their qualification_status is still "pending". No other package, status, or hash is
   affected, and the package files are never written.
-- Every surface that shows these sections carries the exact label "Demo: not qualified":
-  the workspace payload, the UI, and the exported artifacts of a demo-frozen run.
+- The exact label "Demo: not qualified" is carried by the workspace payload
+  (demo_unqualified_packages), the run_requested event, and the exported artifacts of a
+  demo-frozen run. The review UI does not render a demo label; that is a separate
+  demo-hardening ticket.
 - The freeze stays human-only. The flag never creates, triggers, or replays a Pinned Run;
   it only changes what the human freeze command accepts.
 - No qualification hash, skill hash, or package hash is fabricated. A skipped package has no

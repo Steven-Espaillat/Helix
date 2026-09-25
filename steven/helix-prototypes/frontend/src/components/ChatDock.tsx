@@ -208,7 +208,7 @@ export function ChatDock({ studyId, sectionId, sectionTitle, onApplied }: Props)
               </div>
             )}
             {proposed && (
-              <div className="proposed-card" data-testid="proposed-card">
+              <div className="proposed-card hx-card" data-testid="proposed-card">
                 <div className="proposed-head">
                   <strong>Proposed rewrite · v{proposed.version}</strong>
                   <span>{proposed.title}</span>
@@ -220,7 +220,7 @@ export function ChatDock({ studyId, sectionId, sectionTitle, onApplied }: Props)
                 </div>
                 <div className="proposed-actions">
                   <button
-                    className="button small thumbs-up"
+                    className="button small thumbs-up hx-btn sm primary"
                     type="button"
                     onClick={() => void apply()}
                     disabled={busy !== null}
@@ -229,7 +229,7 @@ export function ChatDock({ studyId, sectionId, sectionTitle, onApplied }: Props)
                     <CheckIcon size={14} /> Apply
                   </button>
                   <button
-                    className="button small thumbs-down"
+                    className="button small thumbs-down hx-btn sm"
                     type="button"
                     onClick={() => void discard()}
                     disabled={busy !== null}
@@ -241,7 +241,7 @@ export function ChatDock({ studyId, sectionId, sectionTitle, onApplied }: Props)
               </div>
             )}
           </div>
-          {error && <div className="chat-error">{error}</div>}
+          {error && <div className="chat-error hx-notice t-block">{error}</div>}
         </div>
       )}
 
@@ -260,7 +260,7 @@ export function ChatDock({ studyId, sectionId, sectionTitle, onApplied }: Props)
           onFocus={() => setOpen(true)}
           data-testid="chat-input"
         />
-        <button className="button primary small" type="submit" disabled={busy !== null || !input.trim()}>
+        <button className="button primary small hx-btn sm primary" type="submit" disabled={busy !== null || !input.trim()}>
           {busy === "send" ? "…" : "Send"}
         </button>
       </form>

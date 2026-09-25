@@ -147,3 +147,293 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* ---------------------------------------------------------------------------------------------
+ * Legacy Report Assembly restyle (presentation only). Steven's ReportAssembly.tsx keeps its DOM,
+ * handlers, testids, and class names; these rules map them onto helix-v1 tokens and the UI kit
+ * (hx-card, hx-kicker, hx-chip, hx-btn, hx-banner, hx-fsa-scope). Tokens only, no hex values.
+ * ------------------------------------------------------------------------------------------- */
+#helix-e2e .report-view { color: var(--hx-ink); font-family: var(--hx-sans); }
+#helix-e2e .report-view .eyebrow.hx-kicker { margin: 0 0 var(--hx-sp-4); font-size: var(--hx-fs-meta); color: var(--hx-muted); }
+#helix-e2e .report-view h2 { margin: 0 0 var(--hx-sp-6); font-size: var(--hx-fs-h1); font-weight: var(--hx-fw-semibold); color: var(--hx-ink); }
+#helix-e2e .report-view h3 { color: var(--hx-ink); }
+#helix-e2e .report-view .report-intro p:not(.eyebrow) { color: var(--hx-ink-2); font-size: var(--hx-fs-body); line-height: var(--hx-lh); }
+#helix-e2e .report-view .template-identity {
+  background: var(--hx-surface);
+  border: 1px solid var(--hx-line);
+  border-radius: var(--hx-radius-inner);
+  box-shadow: none;
+}
+#helix-e2e .report-view .template-identity span {
+  font-size: var(--hx-fs-step);
+  font-weight: var(--hx-fw-semibold);
+  letter-spacing: var(--hx-tracking-kicker);
+  text-transform: uppercase;
+  color: var(--hx-muted);
+}
+#helix-e2e .report-view .template-identity strong { font-family: var(--hx-mono); font-size: var(--hx-fs-meta); font-weight: var(--hx-fw-medium); color: var(--hx-ink); }
+
+/* Cards */
+#helix-e2e .report-view .panel.hx-card { background: var(--hx-surface); border: 1px solid var(--hx-line); border-radius: var(--hx-radius); box-shadow: none; }
+#helix-e2e .report-view .report-sections.hx-card { padding: var(--hx-sp-16) var(--hx-sp-8); }
+#helix-e2e .report-view .report-sections .panel-heading { padding: 0 var(--hx-sp-10) var(--hx-sp-8); }
+#helix-e2e .report-view .release-card.hx-card,
+#helix-e2e .report-view .approval-card.hx-card,
+#helix-e2e .report-view .export-card.hx-card { padding: var(--hx-sp-20); }
+
+/* Report navigator (same row as the lane D section list) */
+#helix-e2e .report-view .section-button {
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--hx-radius-control);
+  background: transparent;
+  box-shadow: none;
+  color: var(--hx-ink);
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .report-view .section-button:not(.active):hover { background: var(--hx-surface-2); }
+#helix-e2e .report-view .section-button.active { background: var(--hx-accent-soft); }
+#helix-e2e .report-view .section-button:focus-visible { outline: var(--hx-focus-outline); outline-offset: 1px; }
+#helix-e2e .report-view .section-number { background: transparent; color: var(--hx-muted); font-family: var(--hx-mono); font-size: var(--hx-fs-meta); }
+#helix-e2e .report-view .section-button.active .section-number { background: transparent; color: var(--hx-accent); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .report-view .section-label strong { font-size: var(--hx-fs-row); font-weight: var(--hx-fw-semibold); color: var(--hx-ink); }
+#helix-e2e .report-view .section-label small { font-size: var(--hx-fs-meta); color: var(--hx-muted); }
+
+/* Status chips: kit hx-chip with the tone helpers' colors */
+#helix-e2e .report-view .hx-chip { border: 0; letter-spacing: 0; text-transform: none; background: var(--hx-surface-2); color: var(--hx-ink-2); }
+#helix-e2e .report-view .hx-chip.reviewed,
+#helix-e2e .report-view .hx-chip.exported,
+#helix-e2e .report-view .count-chip[data-state="current"] { background: var(--hx-pass-soft); color: var(--hx-pass); }
+#helix-e2e .report-view .hx-chip.needs_review,
+#helix-e2e .report-view .hx-chip.ready_for_signature,
+#helix-e2e .report-view .count-chip[data-state="stale"] { background: var(--hx-warn-soft); color: var(--hx-warn); }
+#helix-e2e .report-view .hx-chip.blocked { background: var(--hx-block-soft); color: var(--hx-block); }
+#helix-e2e .report-view .hx-chip.ready_for_export { background: var(--hx-accent-soft); color: var(--hx-accent); }
+
+/* Kit buttons on the legacy controls: secondary by default, primary for export */
+#helix-e2e .report-view .hx-btn,
+#helix-e2e .chat-dock .hx-btn { box-shadow: none; text-transform: none; letter-spacing: 0; line-height: 1.2; text-decoration: none; }
+#helix-e2e .report-view .hx-btn:not(.primary) { background: var(--hx-surface); border: 1px solid var(--hx-line); color: var(--hx-ink); }
+#helix-e2e .report-view .hx-btn:not(.primary):hover:not(:disabled) { background: var(--hx-surface-2); }
+#helix-e2e .report-view .hx-btn:focus-visible,
+#helix-e2e .chat-dock .hx-btn:focus-visible { outline: var(--hx-focus-outline); outline-offset: 2px; }
+#helix-e2e .report-view .hx-btn.wide { width: 100%; }
+
+/* Draft paper (hx-doc reading type) */
+#helix-e2e .report-view .report-paper.hx-card { padding: var(--hx-sp-32) var(--hx-sp-40); border-top: 1px solid var(--hx-line); }
+#helix-e2e .report-view .report-paper-header h3 { font-size: var(--hx-fs-h1); }
+#helix-e2e .report-view .report-paper-actions { gap: var(--hx-sp-8); align-items: center; }
+#helix-e2e .report-view .report-rule { height: 1px; border: 0; background: var(--hx-line-soft); }
+#helix-e2e .report-view .review-banner.hx-banner {
+  display: block;
+  margin: var(--hx-sp-16) 0;
+  font-size: var(--hx-fs-body);
+  line-height: var(--hx-lh);
+  color: var(--hx-ink);
+}
+#helix-e2e .report-view .review-banner.hx-banner strong { color: var(--hx-warn); }
+#helix-e2e .report-view .notice.error {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-block-soft);
+  color: var(--hx-block);
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .report-view .report-block.prose p,
+#helix-e2e .report-view .report-block.prose li { font-family: var(--hx-serif); font-size: var(--hx-fs-h3); line-height: var(--hx-lh-doc); color: var(--hx-ink); }
+#helix-e2e .report-view .report-block.note {
+  padding: 12px 14px;
+  border: 1px solid var(--hx-warn-line);
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-warn-soft);
+}
+#helix-e2e .report-view .report-block.note .marker-label {
+  color: var(--hx-warn);
+  font-size: var(--hx-fs-step);
+  font-weight: var(--hx-fw-semibold);
+  letter-spacing: var(--hx-tracking-kicker);
+  text-transform: uppercase;
+}
+#helix-e2e .report-view .report-block.note p { margin: var(--hx-sp-4) 0 0; font-family: var(--hx-sans); font-size: var(--hx-fs-body); color: var(--hx-ink); }
+#helix-e2e .report-view .draft-table-wrap figcaption { font-size: var(--hx-fs-body); font-weight: var(--hx-fw-semibold); color: var(--hx-ink); }
+#helix-e2e .report-view .draft-table {
+  border: 1px solid var(--hx-line-soft);
+  border-radius: var(--hx-radius-inner);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: var(--hx-fs-row);
+  background: var(--hx-surface);
+}
+#helix-e2e .report-view .draft-table th {
+  background: var(--hx-surface-2);
+  color: var(--hx-ink-2);
+  font-size: var(--hx-fs-meta);
+  font-weight: var(--hx-fw-semibold);
+  border: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+}
+#helix-e2e .report-view .draft-table td { border: 0; border-bottom: 1px solid var(--hx-line-soft); color: var(--hx-ink); font-variant-numeric: tabular-nums; }
+#helix-e2e .report-view .draft-table tr:last-child td { border-bottom: 0; }
+#helix-e2e .report-view .draft-provenance { font-size: var(--hx-fs-meta); color: var(--hx-muted); }
+#helix-e2e .report-view [data-testid="draft-section-claims"] { display: flex; flex-wrap: wrap; gap: var(--hx-sp-8); margin-top: var(--hx-sp-12); }
+#helix-e2e .report-view .report-paper-footer { border-top: 1px solid var(--hx-line-soft); font-family: var(--hx-mono); font-size: var(--hx-fs-step); color: var(--hx-muted); }
+#helix-e2e .report-view .empty-copy { color: var(--hx-muted); font-size: var(--hx-fs-row); }
+#helix-e2e .report-view .template-note { border-top: 1px solid var(--hx-line-soft); font-size: var(--hx-fs-row); color: var(--hx-ink-2); }
+#helix-e2e .report-view .template-note strong { color: var(--hx-ink); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .report-view .template-note p { color: var(--hx-muted); }
+#helix-e2e .report-view .template-note .hx-btn { margin: var(--hx-sp-4) 0 var(--hx-sp-8); }
+
+/* Release column: blocker list, progress, approvals */
+#helix-e2e .report-view .gate-progress span { color: var(--hx-muted); font-size: var(--hx-fs-meta); }
+#helix-e2e .report-view .gate-progress strong { color: var(--hx-ink); }
+#helix-e2e .report-view .progress-track { height: 6px; border-radius: var(--hx-radius-pill); background: var(--hx-surface-2); }
+#helix-e2e .report-view .progress-track span { border-radius: var(--hx-radius-pill); background: var(--hx-pass); }
+#helix-e2e .report-view .blocker {
+  border: 1px solid transparent;
+  border-radius: var(--hx-radius-inner);
+  background: var(--hx-block-soft);
+  box-shadow: none;
+}
+#helix-e2e .report-view .blocker.resolved { background: var(--hx-pass-soft); border-color: var(--hx-pass-line); }
+#helix-e2e .report-view .blocker-top span {
+  color: var(--hx-block);
+  font-size: var(--hx-fs-step);
+  font-weight: var(--hx-fw-semibold);
+  letter-spacing: var(--hx-tracking-kicker);
+  text-transform: uppercase;
+}
+#helix-e2e .report-view .blocker.resolved .blocker-top span { color: var(--hx-pass); }
+#helix-e2e .report-view .blocker-top code { font-family: var(--hx-mono); font-size: var(--hx-fs-step); color: var(--hx-muted); background: transparent; }
+#helix-e2e .report-view .blocker strong { color: var(--hx-ink); font-size: var(--hx-fs-row); text-transform: capitalize; }
+#helix-e2e .report-view .blocker p { color: var(--hx-ink-2); font-size: var(--hx-fs-row); }
+#helix-e2e .report-view .blocker small { color: var(--hx-muted); font-size: var(--hx-fs-meta); }
+#helix-e2e .report-view .approval-row { min-height: 48px; border: 0; border-bottom: 1px solid var(--hx-line-soft); background: transparent; }
+#helix-e2e .report-view .approval-row:last-child { border-bottom: 0; }
+#helix-e2e .report-view .approval-index {
+  border-radius: var(--hx-radius-pill);
+  background: var(--hx-surface-2);
+  color: var(--hx-muted);
+  font-family: var(--hx-mono);
+  font-size: var(--hx-fs-meta);
+}
+#helix-e2e .report-view .approval-row.complete .approval-index { background: var(--hx-pass-soft); color: var(--hx-pass); }
+#helix-e2e .report-view .approval-row strong { color: var(--hx-ink); font-size: var(--hx-fs-row); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .report-view .approval-row div > span { color: var(--hx-muted); font-size: var(--hx-fs-meta); }
+#helix-e2e .report-view .approval-check { color: var(--hx-pass); font-size: var(--hx-fs-row); font-weight: var(--hx-fw-semibold); }
+
+/* Final Study Approval card: the lane D sign-off FSA-scope box (every hash stays visible) */
+#helix-e2e .report-view .approval-card > p { color: var(--hx-ink-2); font-size: var(--hx-fs-row); line-height: var(--hx-lh); }
+#helix-e2e .report-view .artifact-list.hx-fsa-scope > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--hx-sp-4); padding: var(--hx-sp-6) 0; border-bottom: 1px solid var(--hx-line-soft); }
+#helix-e2e .report-view .artifact-list.hx-fsa-scope > div:last-child { border-bottom: 0; }
+#helix-e2e .report-view .artifact-list.hx-fsa-scope strong { color: var(--hx-ink-2); font-size: var(--hx-fs-meta); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .report-view .artifact-list.hx-fsa-scope code { font-family: var(--hx-mono); font-size: var(--hx-fs-step); color: var(--hx-muted); overflow-wrap: anywhere; background: transparent; }
+
+/* Export card: the lane D downloads list rows */
+#helix-e2e .report-view .export-card .artifact-list > div {
+  display: flex;
+  align-items: center;
+  gap: var(--hx-sp-10);
+  min-height: 44px;
+  border-bottom: 1px solid var(--hx-line-soft);
+}
+#helix-e2e .report-view .export-card .artifact-list > div:last-child { border-bottom: 0; }
+#helix-e2e .report-view .artifact-icon { border: 1px solid var(--hx-line); border-radius: var(--hx-radius-chev); background: var(--hx-surface); color: var(--hx-pass); }
+#helix-e2e .report-view .artifact-icon.exported { background: var(--hx-pass-soft); border-color: var(--hx-pass-line); }
+#helix-e2e .report-view .export-card strong { color: var(--hx-ink); font-size: var(--hx-fs-row); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .report-view .export-card code { font-family: var(--hx-mono); font-size: var(--hx-fs-step); color: var(--hx-muted); background: transparent; overflow-wrap: anywhere; }
+#helix-e2e .report-view .artifact-download { color: var(--hx-accent); text-decoration: none; }
+#helix-e2e .report-view .artifact-download:hover strong { text-decoration: underline; }
+#helix-e2e .report-view .artifact-download:focus-visible { outline: var(--hx-focus-outline); outline-offset: 2px; border-radius: var(--hx-radius-chev); }
+#helix-e2e .report-view .fine-print { color: var(--hx-muted); font-size: var(--hx-fs-meta); }
+
+/* ---------------------------------------------------------------------------------------------
+ * Legacy ChatDock restyle (presentation only). Steven's ChatDock.tsx keeps its DOM, handlers,
+ * testids, class names, and the fixed bottom dock; these rules map it onto helix-v1 tokens and
+ * the UI kit (hx-card, hx-btn, hx-notice). Ask/revise turns, the typing state, the proposed
+ * rewrite with Apply/Discard, and errors each get a token tone.
+ * ------------------------------------------------------------------------------------------- */
+#helix-e2e .chat-dock {
+  background: var(--hx-surface);
+  border-top: 1px solid var(--hx-line);
+  box-shadow: none;
+  color: var(--hx-ink);
+  font-family: var(--hx-sans);
+}
+#helix-e2e .chat-dock .chat-header { border-bottom: 1px solid var(--hx-line-soft); background: var(--hx-surface); }
+#helix-e2e .chat-dock .chat-title-button {
+  gap: var(--hx-sp-10);
+  border: 0;
+  border-radius: var(--hx-radius-control);
+  background: transparent;
+  color: var(--hx-ink);
+}
+#helix-e2e .chat-dock .chat-title-button:hover { background: var(--hx-surface-2); }
+#helix-e2e .chat-dock .chat-title-button:focus-visible { outline: var(--hx-focus-outline); outline-offset: 2px; }
+#helix-e2e .chat-dock .chat-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-accent-soft);
+  color: var(--hx-accent);
+}
+#helix-e2e .chat-dock .chat-title { color: var(--hx-muted); font-size: var(--hx-fs-meta); }
+#helix-e2e .chat-dock .chat-title strong { color: var(--hx-ink); font-size: var(--hx-fs-body); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .chat-dock .chat-chevron { color: var(--hx-muted); }
+#helix-e2e .chat-dock .chat-body { background: var(--hx-bg); }
+#helix-e2e .chat-dock .chat-messages { gap: var(--hx-sp-10); }
+#helix-e2e .chat-dock .chat-empty { color: var(--hx-muted); font-size: var(--hx-fs-row); }
+#helix-e2e .chat-dock .chat-bubble {
+  border-radius: var(--hx-radius);
+  font-size: var(--hx-fs-body);
+  line-height: var(--hx-lh);
+  box-shadow: none;
+}
+#helix-e2e .chat-dock .chat-msg.user .chat-bubble {
+  border: 0;
+  border-bottom-right-radius: var(--hx-radius-chev);
+  background: var(--hx-accent);
+  color: var(--hx-on-accent);
+}
+#helix-e2e .chat-dock .chat-msg.assistant .chat-bubble {
+  border: 1px solid var(--hx-line);
+  border-bottom-left-radius: var(--hx-radius-chev);
+  background: var(--hx-surface);
+  color: var(--hx-ink);
+}
+#helix-e2e .chat-dock .chat-bubble p { margin: 0 0 var(--hx-sp-6); }
+#helix-e2e .chat-dock .chat-bubble p:last-child { margin-bottom: 0; }
+#helix-e2e .chat-dock .chat-bubble.typing { color: var(--hx-muted); font-style: normal; }
+#helix-e2e .chat-dock .proposed-card.hx-card {
+  padding: var(--hx-sp-16) var(--hx-sp-18);
+  border: 1px solid var(--hx-accent-ring);
+  border-radius: var(--hx-radius);
+  background: var(--hx-surface);
+  box-shadow: none;
+}
+#helix-e2e .chat-dock .proposed-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--hx-sp-8); }
+#helix-e2e .chat-dock .proposed-head strong { color: var(--hx-accent); font-size: var(--hx-fs-meta); font-weight: var(--hx-fw-semibold); letter-spacing: var(--hx-tracking-kicker); text-transform: uppercase; }
+#helix-e2e .chat-dock .proposed-head span { color: var(--hx-muted); font-size: var(--hx-fs-meta); }
+#helix-e2e .chat-dock .proposed-body,
+#helix-e2e .chat-dock .proposed-body p { color: var(--hx-ink); font-family: var(--hx-serif); font-size: var(--hx-fs-body); line-height: var(--hx-lh-doc); }
+#helix-e2e .chat-dock .proposed-actions { display: flex; gap: var(--hx-sp-8); }
+#helix-e2e .chat-dock .hx-btn:not(.primary) { background: var(--hx-surface); border: 1px solid var(--hx-line); color: var(--hx-ink); }
+#helix-e2e .chat-dock .hx-btn:not(.primary):hover:not(:disabled) { background: var(--hx-surface-2); }
+#helix-e2e .chat-dock .chat-error.hx-notice { margin: 0 var(--hx-sp-16) var(--hx-sp-10); border: 0; }
+#helix-e2e .chat-dock .chat-input-row { gap: var(--hx-sp-8); border-top: 1px solid var(--hx-line-soft); background: var(--hx-surface); }
+#helix-e2e .chat-dock .chat-input {
+  min-height: var(--hx-control-h-sm);
+  padding: 0 var(--hx-sp-12);
+  border: 1px solid var(--hx-line);
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-surface);
+  color: var(--hx-ink);
+  font-family: var(--hx-sans);
+  font-size: var(--hx-fs-body);
+}
+#helix-e2e .chat-dock .chat-input::placeholder { color: var(--hx-faint); }
+#helix-e2e .chat-dock .chat-input:focus-visible { outline: var(--hx-focus-outline); outline-offset: 1px; border-color: var(--hx-accent); }

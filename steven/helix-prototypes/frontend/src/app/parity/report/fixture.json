@@ -1,0 +1,458 @@
+{
+ "_note": "Display-only fixture for /parity/report (restyle before/after). sections and drafts v1 were captured from a fresh lane D seed (GET /sections, POST /sections/{id}/draft, no model configured). The chat turns and the proposed v2 draft are authored display data so the ChatDock ask/revise/proposed states can be captured; they are never sent to the API.",
+ "sections": [
+  {
+   "section_id": "summary",
+   "title": "Summary",
+   "order": 0,
+   "template_section": "S8",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "1_objective",
+   "title": "1. Objective",
+   "order": 1,
+   "template_section": "S2",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "2_experimental_design",
+   "title": "2. Experimental Design",
+   "order": 2,
+   "template_section": "S3",
+   "has_verified_claims": true,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "3_materials_methods",
+   "title": "3. Materials and Methods",
+   "order": 3,
+   "template_section": "S3",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "4_deviations",
+   "title": "4. Deviations from Protocol",
+   "order": 4,
+   "template_section": "S2",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "5_1_formulation",
+   "title": "5.1 Formulation Analysis",
+   "order": 5,
+   "template_section": "S4",
+   "has_verified_claims": true,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "5_2_1_mortality",
+   "title": "5.2.1 Mortality",
+   "order": 6,
+   "template_section": "S5",
+   "has_verified_claims": true,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "5_2_2_clinical_obs",
+   "title": "5.2.2 Clinical Observations",
+   "order": 7,
+   "template_section": "S5",
+   "has_verified_claims": true,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "5_2_3_body_weight",
+   "title": "5.2.3 Body Weight",
+   "order": 8,
+   "template_section": "S5",
+   "has_verified_claims": true,
+   "status": "needs_review",
+   "version": 1,
+   "data_available": true
+  },
+  {
+   "section_id": "5_3_1_organ_weights",
+   "title": "5.3.1 Organ Weights",
+   "order": 9,
+   "template_section": "S7",
+   "has_verified_claims": true,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "5_3_2_macroscopic",
+   "title": "5.3.2 Macroscopic Observations",
+   "order": 10,
+   "template_section": "S7",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "5_3_3_microscopic",
+   "title": "5.3.3 Microscopic Findings",
+   "order": 11,
+   "template_section": "S7",
+   "has_verified_claims": true,
+   "status": "needs_review",
+   "version": 1,
+   "data_available": true
+  },
+  {
+   "section_id": "5_3_4_conclusion",
+   "title": "5.3.4 Conclusion",
+   "order": 12,
+   "template_section": "S8",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  },
+  {
+   "section_id": "7_qa_statement",
+   "title": "7. Quality Assurance Statement",
+   "order": 13,
+   "template_section": "S1",
+   "has_verified_claims": false,
+   "status": "empty",
+   "version": null,
+   "data_available": null
+  }
+ ],
+ "drafts": {
+  "5_2_3_body_weight": {
+   "section_id": "5_2_3_body_weight",
+   "title": "5.2.3 Body Weight",
+   "version": 1,
+   "status": "needs_review",
+   "data_available": true,
+   "blocks": [
+    {
+     "kind": "note",
+     "text": "Narrative pending \u2014 the model is not configured."
+    },
+    {
+     "kind": "table",
+     "title": "Male mean body weight (g)",
+     "columns": [
+      "Group",
+      "Day 1",
+      "Day 7",
+      "Day 14",
+      "Day 21",
+      "Day 28"
+     ],
+     "rows": [
+      [
+       "G1 - Control (0 mg/kg/day)",
+       "296.5",
+       "302.1",
+       "310.0",
+       "317.2",
+       "324.8"
+      ],
+      [
+       "G2 - Low (10 mg/kg/day)",
+       "295.3",
+       "300.8",
+       "307.4",
+       "315.0",
+       "321.4"
+      ],
+      [
+       "G3 - Mid (30 mg/kg/day)",
+       "295.4",
+       "300.9",
+       "306.6",
+       "312.9",
+       "319.1"
+      ],
+      [
+       "G4 - High (100 mg/kg/day)",
+       "298.1",
+       "301.0",
+       "305.0",
+       "307.4",
+       "310.7"
+      ]
+     ]
+    },
+    {
+     "kind": "table",
+     "title": "Female mean body weight (g)",
+     "columns": [
+      "Group",
+      "Day 1",
+      "Day 7",
+      "Day 14",
+      "Day 21",
+      "Day 28"
+     ],
+     "rows": [
+      [
+       "G1 - Control (0 mg/kg/day)",
+       "247.0",
+       "252.4",
+       "258.2",
+       "265.1",
+       "271.0"
+      ],
+      [
+       "G2 - Low (10 mg/kg/day)",
+       "252.1",
+       "256.9",
+       "263.2",
+       "268.8",
+       "274.8"
+      ],
+      [
+       "G3 - Mid (30 mg/kg/day)",
+       "248.4",
+       "252.8",
+       "258.3",
+       "263.3",
+       "268.1"
+      ],
+      [
+       "G4 - High (100 mg/kg/day)",
+       "250.7",
+       "253.5",
+       "255.9",
+       "259.3",
+       "261.8"
+      ]
+     ]
+    }
+   ],
+   "narrative_md": null,
+   "note": null,
+   "provenance_count": 40,
+   "feedback": [],
+   "model": null,
+   "created_at": "2026-09-25T07:05:05+00:00"
+  },
+  "5_3_3_microscopic": {
+   "section_id": "5_3_3_microscopic",
+   "title": "5.3.3 Microscopic Findings",
+   "version": 1,
+   "status": "needs_review",
+   "data_available": true,
+   "blocks": [
+    {
+     "kind": "note",
+     "text": "Narrative pending \u2014 the model is not configured."
+    },
+    {
+     "kind": "table",
+     "title": "Microscopic finding incidence (affected/total)",
+     "columns": [
+      "Tissue",
+      "Finding",
+      "G1",
+      "G2",
+      "G3",
+      "G4"
+     ],
+     "rows": [
+      [
+       "Liver",
+       "Hepatocellular hypertrophy",
+       "\u2014",
+       "\u2014",
+       "\u2014",
+       "4/10"
+      ]
+     ]
+    }
+   ],
+   "narrative_md": null,
+   "note": null,
+   "provenance_count": 1,
+   "feedback": [],
+   "model": null,
+   "created_at": "2026-09-25T07:05:05+00:00"
+  }
+ },
+ "proposed": {
+  "5_2_3_body_weight": {
+   "2": {
+    "section_id": "5_2_3_body_weight",
+    "title": "5.2.3 Body Weight",
+    "version": 2,
+    "status": "proposed",
+    "data_available": true,
+    "blocks": [
+     {
+      "kind": "prose",
+      "markdown": "Mean body weight in high-dose males was lower than control from Day 15 onward (about 9% by Day 28). Females showed no dose-related change."
+     },
+     {
+      "kind": "table",
+      "title": "Male mean body weight (g)",
+      "columns": [
+       "Group",
+       "Day 1",
+       "Day 7",
+       "Day 14",
+       "Day 21",
+       "Day 28"
+      ],
+      "rows": [
+       [
+        "G1 - Control (0 mg/kg/day)",
+        "296.5",
+        "302.1",
+        "310.0",
+        "317.2",
+        "324.8"
+       ],
+       [
+        "G2 - Low (10 mg/kg/day)",
+        "295.3",
+        "300.8",
+        "307.4",
+        "315.0",
+        "321.4"
+       ],
+       [
+        "G3 - Mid (30 mg/kg/day)",
+        "295.4",
+        "300.9",
+        "306.6",
+        "312.9",
+        "319.1"
+       ],
+       [
+        "G4 - High (100 mg/kg/day)",
+        "298.1",
+        "301.0",
+        "305.0",
+        "307.4",
+        "310.7"
+       ]
+      ]
+     },
+     {
+      "kind": "table",
+      "title": "Female mean body weight (g)",
+      "columns": [
+       "Group",
+       "Day 1",
+       "Day 7",
+       "Day 14",
+       "Day 21",
+       "Day 28"
+      ],
+      "rows": [
+       [
+        "G1 - Control (0 mg/kg/day)",
+        "247.0",
+        "252.4",
+        "258.2",
+        "265.1",
+        "271.0"
+       ],
+       [
+        "G2 - Low (10 mg/kg/day)",
+        "252.1",
+        "256.9",
+        "263.2",
+        "268.8",
+        "274.8"
+       ],
+       [
+        "G3 - Mid (30 mg/kg/day)",
+        "248.4",
+        "252.8",
+        "258.3",
+        "263.3",
+        "268.1"
+       ],
+       [
+        "G4 - High (100 mg/kg/day)",
+        "250.7",
+        "253.5",
+        "255.9",
+        "259.3",
+        "261.8"
+       ]
+      ]
+     }
+    ],
+    "narrative_md": null,
+    "note": null,
+    "provenance_count": 40,
+    "feedback": [
+     "Add one plain-language sentence on the high-dose body weight trend."
+    ],
+    "model": null,
+    "created_at": "2026-09-25T07:10:00+00:00"
+   }
+  }
+ },
+ "chat": [
+  {
+   "message_id": 1,
+   "role": "user",
+   "content": "Why is body weight flagged for review?",
+   "scope": "section",
+   "section_id": "5_2_3_body_weight",
+   "intent": "ask",
+   "created_at": "2026-09-25T07:06:00+00:00",
+   "draft_version": null
+  },
+  {
+   "message_id": 2,
+   "role": "assistant",
+   "content": "The tables are drawn from the verified records. The narrative is still pending, so the section stays **needs review** until you verify it.",
+   "scope": "section",
+   "section_id": "5_2_3_body_weight",
+   "intent": "ask",
+   "created_at": "2026-09-25T07:06:05+00:00",
+   "draft_version": null
+  },
+  {
+   "message_id": 3,
+   "role": "user",
+   "content": "Add one plain-language sentence on the high-dose body weight trend.",
+   "scope": "section",
+   "section_id": "5_2_3_body_weight",
+   "intent": "revise",
+   "created_at": "2026-09-25T07:09:50+00:00",
+   "draft_version": null
+  },
+  {
+   "message_id": 4,
+   "role": "assistant",
+   "content": "I drafted a rewrite (v2). Apply it or discard it.",
+   "scope": "section",
+   "section_id": "5_2_3_body_weight",
+   "intent": "revise",
+   "created_at": "2026-09-25T07:10:00+00:00",
+   "draft_version": 2
+  }
+ ]
+}

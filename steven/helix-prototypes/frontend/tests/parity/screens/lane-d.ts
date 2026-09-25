@@ -89,4 +89,55 @@ const body = (colorScheme: "light" | "dark"): ParityScreen => ({
     "Report-only by decision: the report body is server-driven (WorkspaceResponse.report, per-role sign-offs, FSA scope), so the section list, canvas, and sign-off card are masked and the panel is taller than the reference.",
 });
 
-export const laneDScreens: ParityScreen[] = [...chrome("light"), ...chrome("dark"), body("light"), body("dark")];
+// Report Assembly + ChatDock restyle tracking (REPORT-ONLY, never fails). Steven's legacy
+// ReportAssembly and ChatDock render through /parity/report (fixture route, display only; its
+// API answers come from src/app/parity/report/fixture.json). The reference has no report
+// navigator or chat dock, so the reference side is the Gate 3 panel and the ratio is only
+// informational: these screens exist to record ours before and after the restyle.
+const legacyReference = { path: "?stage=8", selector: "#hx-panel" };
+const legacy = (colorScheme: "light" | "dark"): ParityScreen[] => [
+  {
+    id: `report-assembly-${colorScheme}`,
+    title: `Legacy Report Assembly panel (navigator, draft, release column) (${colorScheme})`,
+    lane: "D",
+    status: "report-only",
+    colorScheme,
+    reference: legacyReference,
+    ours: {
+      path: "/parity/report",
+      selector: ".report-view",
+      waitFor: ".report-blocks",
+      css: '[data-testid="chat-dock"] { display: none !important; }',
+    },
+    notes: "Restyle tracking only. The fixed chat dock is hidden here and captured by chat-dock-* screens.",
+  },
+  {
+    id: `chat-dock-closed-${colorScheme}`,
+    title: `Legacy ChatDock, closed (${colorScheme})`,
+    lane: "D",
+    status: "report-only",
+    colorScheme,
+    reference: legacyReference,
+    ours: { path: "/parity/report", selector: '[data-testid="chat-dock"]', waitFor: ".report-blocks" },
+    notes: "Restyle tracking only (no reference counterpart).",
+  },
+  {
+    id: `chat-dock-open-${colorScheme}`,
+    title: `Legacy ChatDock, open with an ask turn, a revise turn and a proposed rewrite (${colorScheme})`,
+    lane: "D",
+    status: "report-only",
+    colorScheme,
+    reference: legacyReference,
+    ours: { path: "/parity/report?chat=open", selector: '[data-testid="chat-dock"]', waitFor: '[data-testid="proposed-card"]' },
+    notes: "Restyle tracking only (no reference counterpart). Chat turns and the proposed v2 are fixture display data.",
+  },
+];
+
+export const laneDScreens: ParityScreen[] = [
+  ...chrome("light"),
+  ...chrome("dark"),
+  body("light"),
+  body("dark"),
+  ...legacy("light"),
+  ...legacy("dark"),
+];

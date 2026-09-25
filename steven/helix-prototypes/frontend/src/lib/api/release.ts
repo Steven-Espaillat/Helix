@@ -25,7 +25,7 @@ export const APPROVAL_POLICY: Record<ApprovalRole, ApprovalPolicy> = {
   peer_reviewer: {
     role: "peer_reviewer",
     buttonLabel: "Sign peer review",
-    label: "Pathologist peer review",
+    label: "Peer review",
     meaning: "Independent peer review complete",
     reviewer: "Dr. Priya Reviewer",
   },

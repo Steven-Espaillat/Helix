@@ -152,7 +152,7 @@ export function ReportAssembly({
     <section className="view-content report-view" aria-labelledby="report-heading">
       <div className="view-intro report-intro">
         <div>
-          <p className="eyebrow">Drafted from verified study data</p>
+          <p className="eyebrow hx-kicker">Drafted from verified study data</p>
           <h2 id="report-heading">Read each section as it will appear in the report.</h2>
           <p>
             Tables are drawn directly from the verified numbers; the narrative is written around them.
@@ -172,10 +172,10 @@ export function ReportAssembly({
       </div>
 
       <div className="report-layout">
-        <aside className="panel report-sections" aria-label="Report sections">
+        <aside className="panel report-sections hx-card" aria-label="Report sections">
           <div className="panel-heading compact">
             <div>
-              <p className="eyebrow">Report navigator</p>
+              <p className="eyebrow hx-kicker">Report navigator</p>
               <h3>Fourteen sections</h3>
             </div>
           </div>
@@ -192,7 +192,7 @@ export function ReportAssembly({
                   <strong>{item.title}</strong>
                   <small>{item.has_verified_claims ? "verified data" : "narrative / review"}</small>
                 </span>
-                <span className={`section-state ${statusClass(item.status)}`}>{statusLabel(item.status)}</span>
+                <span className={`section-state hx-chip xs ${statusClass(item.status)}`}>{statusLabel(item.status)}</span>
               </button>
             ))}
             {!sections.length && <div className="empty-copy">Loading sections…</div>}
@@ -205,7 +205,7 @@ export function ReportAssembly({
                   <p>
                     {item.title} · {item.claimId}
                   </p>
-                  <button type="button" className="lineage-button" onClick={() => onInspectClaim(item.claimId)}>
+                  <button type="button" className="lineage-button hx-btn sm" onClick={() => onInspectClaim(item.claimId)}>
                     Inspect {item.edges} provenance edges
                   </button>
                 </div>
@@ -219,21 +219,21 @@ export function ReportAssembly({
         </aside>
 
         <div className="report-center-column">
-          <article className="panel report-paper">
+          <article className="panel report-paper hx-card">
             <header className="report-paper-header">
               <div>
-                <p className="eyebrow">Draft section</p>
+                <p className="eyebrow hx-kicker">Draft section</p>
                 <h3>{selectedTitle}</h3>
               </div>
               <div className="report-paper-actions">
                 {draft && (
-                  <span className={`document-status ${statusClass(draft.status)}`}>
+                  <span className={`document-status hx-chip xs ${statusClass(draft.status)}`}>
                     {statusLabel(draft.status)} · v{draft.version}
                   </span>
                 )}
                 {draft && draft.status === "needs_review" && (
                   <button
-                    className="button secondary small"
+                    className="button secondary small hx-btn sm"
                     type="button"
                     onClick={() => void markVerified()}
                     disabled={draftBusy}
@@ -243,7 +243,7 @@ export function ReportAssembly({
                   </button>
                 )}
                 <button
-                  className="button secondary small"
+                  className="button secondary small hx-btn sm"
                   type="button"
                   onClick={() => void generate()}
                   disabled={draftBusy}
@@ -258,7 +258,7 @@ export function ReportAssembly({
             {draftError && <div className="notice error inline">{draftError}</div>}
 
             {draft && draft.status !== "verified" && (
-              <div className="review-banner" role="status">
+              <div className="review-banner hx-banner awaiting" role="status">
                 <strong>Needs your review.</strong> Verify the content below and use the chat to give
                 feedback or rerun this section.
               </div>
@@ -292,7 +292,7 @@ export function ReportAssembly({
                   <button
                     key={item.claimId}
                     type="button"
-                    className="lineage-button"
+                    className="lineage-button hx-btn sm"
                     data-testid={`inspect-claim-${item.claimId}`}
                     onClick={() => onInspectClaim(item.claimId)}
                   >
@@ -311,13 +311,13 @@ export function ReportAssembly({
         </div>
 
         <aside className="release-column">
-          <section className="panel release-card">
+          <section className="panel release-card hx-card">
             <div className="panel-heading">
               <div>
-                <p className="eyebrow">Release controls</p>
+                <p className="eyebrow hx-kicker">Release controls</p>
                 <h3>Human gate</h3>
               </div>
-              <span className={`gate-badge ${workspace.release_gate.status}`}>
+              <span className={`gate-badge hx-chip xs ${workspace.release_gate.status}`}>
                 {workspace.release_gate.status.replaceAll("_", " ")}
               </span>
             </div>
@@ -354,7 +354,7 @@ export function ReportAssembly({
                       </small>
                     ) : (
                       <button
-                        className="button secondary small"
+                        className="button secondary small hx-btn sm"
                         type="button"
                         disabled={busy !== null}
                         onClick={() => onResolve(result.result_id, result.message)}
@@ -371,13 +371,13 @@ export function ReportAssembly({
             )}
           </section>
 
-          <section className="panel approval-card">
+          <section className="panel approval-card hx-card">
             <div className="panel-heading compact">
               <div>
-                <p className="eyebrow">Required records</p>
+                <p className="eyebrow hx-kicker">Required records</p>
                 <h3>Review and approval</h3>
               </div>
-              <span className="count-chip">{approvalRoles.size}/4</span>
+              <span className="count-chip hx-chip xs">{approvalRoles.size}/4</span>
             </div>
             <div className="approval-list">
               {approvalOrder.map((role, index) => {
@@ -398,7 +398,7 @@ export function ReportAssembly({
                     ) : (
                       <button
                         type="button"
-                        className="text-button"
+                        className="text-button hx-btn sm"
                         disabled={openBlockers.length > 0 || directorBlocked || busy !== null}
                         onClick={() => onApprove(role)}
                       >
@@ -411,13 +411,17 @@ export function ReportAssembly({
             </div>
           </section>
 
-          <section className="panel approval-card" data-testid="final-study-approval-scope">
+          <section className="panel approval-card hx-card" data-testid="final-study-approval-scope">
             <div className="panel-heading compact">
               <div>
-                <p className="eyebrow">Hash-bound record</p>
+                <p className="eyebrow hx-kicker">Hash-bound record</p>
                 <h3>Final Study Approval</h3>
               </div>
-              <span className="count-chip" data-testid="approval-current">
+              <span
+                className="count-chip hx-chip xs"
+                data-testid="approval-current"
+                data-state={workspace.approval_current ? "current" : workspace.final_study_approval ? "stale" : "ready"}
+              >
                 {workspace.approval_current
                   ? "current"
                   : workspace.final_study_approval
@@ -431,7 +435,7 @@ export function ReportAssembly({
               approval claim.
             </p>
             {workspace.release_candidate && (
-              <div className="artifact-list">
+              <div className="artifact-list hx-fsa-scope">
                 <div>
                   <strong>Manifest</strong>
                   <code data-testid="approval-manifest-hash">
@@ -457,7 +461,7 @@ export function ReportAssembly({
             ) : (
               <button
                 type="button"
-                className="text-button"
+                className="text-button hx-btn sm"
                 data-testid="record-final-study-approval"
                 disabled={
                   !priorHumanApprovalsComplete ||
@@ -473,8 +477,8 @@ export function ReportAssembly({
             )}
           </section>
 
-          <section className="panel export-card">
-            <p className="eyebrow">Explicit action</p>
+          <section className="panel export-card hx-card">
+            <p className="eyebrow hx-kicker">Explicit action</p>
             <h3>Approved artifact export</h3>
             <div className="artifact-list">
               {workspace.export_artifacts.map((artifact) => (
@@ -505,7 +509,7 @@ export function ReportAssembly({
               ))}
             </div>
             <button
-              className="button primary wide"
+              className="button primary wide hx-btn primary"
               type="button"
               disabled={workspace.release_gate.status !== "ready_for_export" || busy !== null}
               onClick={onExport}

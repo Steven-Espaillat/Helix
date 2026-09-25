@@ -120,8 +120,9 @@ export function ReviewStageView({
       </div>
       <Downloads workspace={workspace} />
       <p className="hx-sub hx-fine hx-review-disclaimer">
-        Synthetic data · Not for submission. The report follows an FDA-like layout for demonstration only and
-        HELIX makes no regulatory claim. A prepared package is not FDA acceptance.
+        {/* #30 P2 (critique P2-3): the export panel keeps the reference line "A prepared package is not
+            FDA acceptance."; the footer no longer repeats it. */}
+        Synthetic data · Not for submission. HELIX makes no regulatory claim.
       </p>
     </div>
   );

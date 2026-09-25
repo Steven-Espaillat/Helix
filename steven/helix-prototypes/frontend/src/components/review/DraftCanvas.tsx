@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ApiError, getEvidence } from "@/lib/api";
 import type { EvidenceChainData, Workspace } from "@/lib/types";
@@ -24,16 +24,24 @@ export function DraftCanvas({ workspace, section }: { workspace: Workspace; sect
   const templateSection = template.sections.find((item) => item.section_id === section.section_id);
   const references = new Map(template.references.map((item) => [item.reference_id, item]));
   const [lineage, setLineage] = useState<Lineage>({ state: "idle" });
+  // #30 Codex P2 (l53LR): only the latest inspect request may write the readout. A newer
+  // inspect or a section change bumps the generation, so a slower earlier response is dropped.
+  const generation = useRef(0);
 
   useEffect(() => {
+    generation.current += 1;
     setLineage({ state: "idle" });
   }, [section.section_id]);
 
   async function inspect(claimId: string) {
+    const request = ++generation.current;
     setLineage({ state: "loading", claimId });
     try {
-      setLineage({ state: "loaded", claimId, chain: await getEvidence(studyId, claimId) });
+      const chain = await getEvidence(studyId, claimId);
+      if (request !== generation.current) return;
+      setLineage({ state: "loaded", claimId, chain });
     } catch (cause) {
+      if (request !== generation.current) return;
       const message = cause instanceof ApiError || cause instanceof Error ? cause.message : "Evidence unavailable.";
       setLineage({ state: "error", claimId, message });
     }
@@ -127,7 +135,7 @@ export function DraftCanvas({ workspace, section }: { workspace: Workspace; sect
 
       {usedReferenceIds.length === 0 && <p className="hx-sub hx-doc-disclaimer">{template.disclaimer}</p>}
 
-      <AgentState workspace={workspace} />
+      <AgentState workspace={workspace} section={section} />
       <p className="hx-sub hx-mono hx-doc-footer" data-testid="draft-footer">
         {workspace.study.study_id} · Protocol {workspace.study.protocol_version} · Synthetic working draft
       </p>
@@ -156,9 +164,28 @@ function LineageReadout({ chain }: { chain: EvidenceChainData }) {
   );
 }
 
-/** Candidate, evaluation, promotion, and disposition state from the server, when it exists. */
-function AgentState({ workspace }: { workspace: Workspace }) {
-  const runs = workspace.section_runs ?? [];
+// #30 Codex P2 (l53LX): the governed section packages and the template section each drafts,
+// as the server's review scaffold maps them (backend/app/review_scaffolds.py, template_contracts.py).
+const PACKAGE_TEMPLATE_SECTION: Record<string, string> = {
+  "section.5_2_3_body_weight": "S5",
+  "section.5_3_discussion": "S8",
+};
+
+/** Section runs that belong to this report section: by governed package, else by validated claim. */
+function runsForSection(workspace: Workspace, section: Section): Workspace["section_runs"] {
+  const claimIds = section.blocks.map((block) => block.claim_id).filter((id): id is string => Boolean(id));
+  return (workspace.section_runs ?? []).filter((run) => {
+    const mapped = PACKAGE_TEMPLATE_SECTION[run.candidate.section_package_id];
+    if (mapped) return mapped === section.section_id;
+    return (run.candidate.validated_claim_ids ?? []).some((id) =>
+      claimIds.some((claimId) => claimId === id || claimId.startsWith(`${id}-`)),
+    );
+  });
+}
+
+/** Candidate, evaluation, promotion, and disposition state for this section's latest run, when it exists. */
+function AgentState({ workspace, section }: { workspace: Workspace; section: Section }) {
+  const runs = runsForSection(workspace, section);
   if (runs.length === 0) return null;
   const latest = runs.at(-1);
   if (!latest) return null;

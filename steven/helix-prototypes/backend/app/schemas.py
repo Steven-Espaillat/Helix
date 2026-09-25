@@ -1299,7 +1299,8 @@ class WorkspaceResponse(StrictModel):
         default_factory=list,
         description=(
             "DEMO ONLY, not qualification. Empty unless HELIX_DEMO_UNQUALIFIED_PACKAGES is on or the "
-            "current Pinned Run was frozen with it. Each entry must be shown as 'Demo: not qualified'."
+            "current Pinned Run was frozen with it. Each entry carries the label 'Demo: not qualified', "
+            "which is also written into a demo-frozen run's exported artifacts."
         ),
     )
 
