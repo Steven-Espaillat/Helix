@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { isAgentStep } from "@/lib/api/agentSteps";
+import { isAgentStep, nextAgentStep, type AgentAction } from "@/lib/api/agentSteps";
 import type { JourneyStage, JourneyStageId, Workspace } from "@/lib/types";
 
 import { PersonIcon, ShieldIcon } from "../icons";
@@ -31,7 +31,7 @@ type Props = {
   /** Another workbench command is running; governed commands here wait. */
   otherBusy?: boolean;
   /** Tells the workbench an agent command is in flight, so legacy controls wait. */
-  onBusyChange?: (busy: boolean) => void;
+  onBusyChange?: (busy: boolean, follow?: boolean) => void;
   /**
    * DH-1: set once by the workbench right after a successful human freeze. The view starts
    * the governed sequence at most once, then calls onAutoStartConsumed.
@@ -49,6 +49,9 @@ const CHIP: Record<JourneyStage["status"], [string, Tone]> = {
   paused: ["Paused", "muted"],
   pending: ["Not started", "muted"],
 };
+
+/** Governed steps on an already recorded Section Run (StudyJourney: query, evaluate, promote). */
+const DRAFT_FOLLOW_UPS: ReadonlySet<AgentAction> = new Set(["cross-section-query", "candidate-evaluation", "section-promotion"]);
 
 export function AgentStageView({
   studyId,
@@ -90,8 +93,27 @@ export function AgentStageView({
   if (!stage || !isAgentStageId(stage.stage_id)) return null;
 
   const { next, inFlight } = agent;
-  const actionable = stage.status === "current" || stage.status === "blocked";
-  const busy = Boolean(inFlight) || otherBusy;
+  // P1 (Codex PRRT_kwDOUohZWs6l85Fw): the server reports Draft complete once validation passes,
+  // but after a person's retry or new-cycle attempt the run still needs its query, evaluation
+  // and promotion. StudyJourney offered those on any recorded run; the Draft view offers the
+  // agent's next governed step for them, and running it keeps the view on Draft. In a new
+  // session the next step is first the idempotent Extract replay (confirmation is per session);
+  // visibility is decided by the step after it, and the button still runs the real next step.
+  const pinnedRunId = workspace.pinned_run?.run_id;
+  const afterReplay =
+    isAgentStep(next) && next.replay && pinnedRunId
+      ? nextAgentStep(workspace, { confirmedDataValidationRuns: new Set([pinnedRunId]) })
+      : next;
+  const draftFollowUp =
+    stage.stage_id === "draft" &&
+    stage.status !== "current" &&
+    stage.status !== "blocked" &&
+    isAgentStep(next) &&
+    isAgentStep(afterReplay) &&
+    afterReplay.stageId === "draft" &&
+    DRAFT_FOLLOW_UPS.has(afterReplay.action);
+  const actionable = stage.status === "current" || stage.status === "blocked" || draftFollowUp;
+  const busy = Boolean(inFlight) || Boolean(agent.humanInFlight) || otherBusy;
   const llm = workspace.planner_capabilities.find((item) => item.mode === "openai_compatible");
   const [chipText, chipTone] = inFlight?.stageId === stage.stage_id ? (["Running", "accent"] as const) : CHIP[stage.status];
 
@@ -175,13 +197,13 @@ export function AgentStageView({
                   <Button
                     variant="primary"
                     disabled={busy || (next.stageId !== stage.stage_id && !next.replay)}
-                    onClick={agent.runStep}
+                    onClick={() => agent.runStep(!draftFollowUp)}
                     data-testid="agent-run-step"
                   >
                     {inFlight ? `${inFlight.label}…` : next.label}
                   </Button>
                   {!agent.sequenceRunning && (
-                    <Button disabled={busy} onClick={agent.runSequence} data-testid="agent-run-sequence">
+                    <Button disabled={busy} onClick={() => agent.runSequence(!draftFollowUp)} data-testid="agent-run-sequence">
                       Run agent steps to the next stop
                     </Button>
                   )}
@@ -214,6 +236,26 @@ export function AgentStageView({
               >
                 {agent.stopRequested ? "Stopping after this step…" : "Stop agent"}
               </Button>
+            </div>
+          )}
+          {stage.stage_id === "draft" && agent.humanDecisions.length > 0 && (
+            // DH-2 (#66): the Draft-stage decisions the agent stops at, offered here instead of
+            // the legacy StudyJourney panel. Shown on the Draft stage whatever its server status,
+            // because the server reports Draft complete once validation passes.
+            <div className="hx-agent-commands" data-testid="agent-human-decisions">
+              <p className="hx-stage-note">
+                <PersonIcon size={16} /> Human decision. The agent never retries, revises or opens a cycle on its own.
+              </p>
+              {agent.humanDecisions.map((decision) => (
+                <Button
+                  key={decision.id}
+                  disabled={busy}
+                  onClick={() => agent.runHumanDecision(decision.id)}
+                  data-testid={`agent-human-${decision.id}`}
+                >
+                  {agent.humanInFlight?.id === decision.id ? `${decision.label}…` : decision.label}
+                </Button>
+              ))}
             </div>
           )}
           {!actionable && stage.status === "complete" && (

@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 
 import { expect, test } from "@playwright/test";
 
+import { openLegacyJourney } from "./legacy-journey";
+
 const live = process.env.HELIX_CODEX_LIVE === "1";
 const apiRoot = process.env.HELIX_API_URL ?? "http://127.0.0.1:8000/api/v1";
 
@@ -10,6 +12,7 @@ test.skip(!live, "Set HELIX_CODEX_LIVE=1 to run the real Codex SDK proof.");
 
 test("drafts the body-weight component through the real Codex SDK", async ({ page, request }) => {
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("draft-body-weight")).toBeDisabled();
   await page.getByTestId("run-validation").click();
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();

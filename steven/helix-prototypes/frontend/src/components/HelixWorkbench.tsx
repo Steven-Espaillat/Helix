@@ -53,6 +53,8 @@ export function HelixWorkbench({ studyId }: Props) {
   const [planner, setPlanner] = useState<PlannerMode>("fixture");
   const [busy, setBusy] = useState<string | null>(null);
   const [agentBusy, setAgentBusy] = useState(false); // lane B: agent command in flight
+  const [agentFollow, setAgentFollow] = useState(false); // DH-2: false for a person's Draft decision
+  const [legacyOpen, setLegacyOpen] = useState(false); // DH-2 (#66): legacy records, off the default path
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // DH-1: follow the server stage while the agent works; auto-start once after a freeze.
@@ -61,7 +63,7 @@ export function HelixWorkbench({ studyId }: Props) {
     selectedStageId,
     select: selectStage,
     followServer,
-  } = useSelectedStage(workspace?.journey, { active: agentBusy });
+  } = useSelectedStage(workspace?.journey, { active: agentFollow });
   // A confirmed freeze waits here until a loaded workspace shows the run past Upload, so a
   // failed reload neither drops the auto-start nor claims "Manifest frozen" on Upload.
   const [pendingFreeze, setPendingFreeze] = useState<{ runId: string; announcement: string } | null>(null);
@@ -424,7 +426,10 @@ export function HelixWorkbench({ studyId }: Props) {
                 stageId={selectedStageId}
                 onWorkspace={setWorkspace}
                 otherBusy={busy !== null || agentBusy}
-                onBusyChange={setAgentBusy}
+                onBusyChange={(value, follow = value) => {
+                  setAgentBusy(value);
+                  setAgentFollow(follow);
+                }}
                 autoStart={autoStart}
                 onAutoStartConsumed={consumeAutoStart}
                 onGateStop={onGateStop}
@@ -451,8 +456,18 @@ export function HelixWorkbench({ studyId }: Props) {
                 }
               />
             )}
-            {/* Lanes B, C and D replace these legacy panels with their stage views. Until
-                then they remain the fallback so no stage loses its working controls. */}
+            {/* DH-2 (#66): the legacy StudyJourney is off the default path; its governed
+                commands live on the stage views. Its read-only records (attempt history,
+                cycles, contract gates, scaffold history) stay one click away. */}
+            <Button
+              size="sm"
+              aria-expanded={legacyOpen}
+              onClick={() => setLegacyOpen((open) => !open)}
+              data-testid="legacy-journey-toggle"
+            >
+              {legacyOpen ? "Hide legacy journey records" : "Show legacy journey records"}
+            </Button>
+            {legacyOpen && (
             <StudyJourney
               workspace={workspace}
               planner={planner}
@@ -474,6 +489,10 @@ export function HelixWorkbench({ studyId }: Props) {
               onQueryCrossSection={() => void queryBodyWeightFacts()}
               onPromoteSectionDraft={() => void promoteBodyWeight()}
             />
+            )}
+            {/* DH-2 x #37: on Gate 3 the fixed chat dock would cover the legacy toggle, which now
+                ends the page; keep the room ReportAssembly reserved below it before #37. */}
+            {selectedStageId === "review-export" && <div aria-hidden="true" style={{ height: 120 }} />}
           </section>
 
           <footer className="hx-footer">

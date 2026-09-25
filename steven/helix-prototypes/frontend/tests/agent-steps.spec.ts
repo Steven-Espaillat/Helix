@@ -14,6 +14,7 @@ import {
   trackCommands,
   type Json,
 } from "./lane-a-helpers";
+import { openLegacyJourney } from "./legacy-journey";
 
 // Lane B (#21): the shared Agent Step view and the governed command sequence.
 // The Pinned Run comes from the recorded freeze fixture, and every command response
@@ -409,6 +410,9 @@ test("legacy commands wait while an agent command is in flight; no duplicate POS
   });
   const commands = trackCommands(page);
   await page.goto("/");
+  // DH-2 (#66): the legacy panel is off the default path; open it to prove its still-wired
+  // controls share the agent's one-command lock.
+  await openLegacyJourney(page);
   const run = page.getByTestId("agent-run-step");
   await expect(run).toHaveText("Run deterministic and hybrid validation");
   await run.dblclick();

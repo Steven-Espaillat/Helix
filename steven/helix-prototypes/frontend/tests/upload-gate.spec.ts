@@ -11,6 +11,7 @@ import {
   studyId,
   type Json,
 } from "./lane-a-helpers";
+import { openLegacyJourney } from "./legacy-journey";
 
 // Lane A (#20): Human Gate 1 and the real freeze command. Freeze responses are mocked
 // because the shipped section packages are not qualified (the live API refuses with 422);
@@ -253,6 +254,7 @@ test("a Data Validation failure after freeze shows the partial state and retries
 test("only Human Gate 1 can pin a run: legacy validation is hidden and the API refuses to auto-freeze", async ({ page, request }) => {
   // P1 on #22, against the live API: no service actor may freeze the manifest.
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("freeze-consent")).not.toBeChecked();
   await expect(page.getByTestId("validation-locked")).toBeVisible();
   await expect(page.getByTestId("run-validation")).toBeDisabled();
@@ -279,6 +281,7 @@ test("only Human Gate 1 can pin a run: legacy validation is hidden and the API r
 test("legacy validation unlocks once a human freeze has pinned the run", async ({ page }) => {
   await serveWorkspace(page, (workspace) => frozenWorkspace(workspace));
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("validation-locked")).toHaveCount(0);
   await expect(page.getByTestId("run-validation")).toBeEnabled();
   await expect(page.getByTestId("run-body-weight-validation")).toBeEnabled();

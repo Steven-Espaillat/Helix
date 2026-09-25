@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import { clone, liveWorkspace, regulatoryClaim, stageButtons, trackCommands, type Json } from "./lane-a-helpers";
+import { openLegacyJourney } from "./legacy-journey";
 
 // Lane D (#23): Human Gate 3 review, per-role approvals, explicit export, downloads, and the
 // HELIX_DEMO_UNQUALIFIED_PACKAGES labels. Every state below was captured from a real backend
@@ -196,6 +197,8 @@ test("inspect provenance reads the claim evidence endpoint and shows the lineage
   // Critique P1-b: the provenance readout carries no hashes.
   await expect(page.getByTestId("lineage-edges")).not.toContainText("sha256:");
   // Chief of Staff: the legacy panels (StudyJourney, ReportAssembly) stay reachable at Gate 3.
+  // DH-2 (#66): StudyJourney is behind the legacy records toggle, off the default path.
+  await openLegacyJourney(page);
   for (const panel of await page.getByTestId("stage-view").locator(":scope > .view-content").all()) {
     await expect(panel).toBeVisible();
   }

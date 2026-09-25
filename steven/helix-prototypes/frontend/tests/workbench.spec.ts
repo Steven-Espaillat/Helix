@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import { openLegacyJourney } from "./legacy-journey";
+
 const apiRoot = process.env.HELIX_API_URL ?? "http://127.0.0.1:8000/api/v1";
 
 test("rejects a workspace response from an incompatible API", async ({ page }) => {
@@ -57,6 +59,8 @@ test("runs the synthetic study from validation through explicit export", async (
 
   await page.goto("/");
   await expect(page.getByTestId("helix-workbench")).toBeVisible();
+  // DH-2 (#66): the default stage path shows no StudyJourney; its records are one toggle away.
+  await openLegacyJourney(page);
   await expect(page.getByText("Synthetic data · Not for submission", { exact: true })).toBeVisible();
   await expect(page.getByTestId("release-status")).toHaveText("Release blocked");
   await expect(page.getByTestId("release-status")).toHaveAttribute("data-status", "blocked");
@@ -307,6 +311,7 @@ test("keeps draft blocked when the API reports ineligible despite ready-looking 
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("helix-workbench")).toBeVisible();
   await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("blocked");
   await expect(page.getByTestId("eligibility-section.5_3_discussion")).toHaveText("ready");
@@ -340,6 +345,7 @@ test("enables draft from backend eligibility even when claims look incomplete", 
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("eligibility-section.5_2_3_body_weight")).toHaveText("ready");
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
   expect(sectionRunPosts).toBe(0);
@@ -409,6 +415,7 @@ test("renders candidate evaluation and cross-section query from backend-owned wo
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("evaluate-candidate")).toBeEnabled();
   await expect(page.getByTestId("query-cross-section")).toBeEnabled();
   await expect(page.getByTestId("promote-section-draft")).toBeDisabled();
@@ -477,6 +484,7 @@ test("renders predecessor run identity and carry-forward counts from the workspa
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("superseding-run")).toBeVisible();
   await expect(page.getByTestId("predecessor-run-id")).toHaveText("RUN-PRED00000001");
   await expect(page.getByTestId("supersession-reason")).toHaveText(
@@ -585,6 +593,7 @@ test("renders backend promotion status and draft evidence without recalculating 
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("promotion-status")).toHaveText("eligible");
   await expect(page.getByTestId("promotion-failed")).toHaveText("package_permission");
   await expect(page.getByTestId("promotion-condition-package_permission")).toContainText("failed");
@@ -625,6 +634,7 @@ test("shows every immutable attempt and offers no fourth attempt after stop_for_
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-1")).toBeVisible();
   await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-2")).toBeVisible();
   await expect(page.getByTestId("candidate-attempt-CYCLE-BW-001-3")).toBeVisible();
@@ -676,6 +686,7 @@ test("offers revise after stop_for_review and shows a new cycle without changing
   });
 
   await page.goto("/");
+  await openLegacyJourney(page);
   await expect(page.getByTestId("revise-body-weight")).toBeEnabled();
   const discussionBefore = await page.getByTestId("impact-section.5_3_discussion").textContent();
   await page.getByTestId("revise-body-weight").click();

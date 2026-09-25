@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { PlannerMode, Workspace } from "@/lib/types";
 
+import { canRetryBodyWeight } from "./agent/humanDecisions";
 import { ArrowIcon, CheckIcon } from "./icons";
 import { demoExportStageCopy } from "./review/reviewState";
 
@@ -80,9 +81,8 @@ export function StudyJourney({
   const bodyWeightEvaluation = bodyWeightEvaluations.find(
     (item) => item.run_id === bodyWeightRun?.receipt.run_id,
   );
-  const canRetry =
-    bodyWeightEvaluation?.next_attempt_decision.action === "retry" &&
-    bodyWeightEvaluation.next_attempt_decision.attempt < 3;
+  // DH-2 (#66): shared with the Draft stage view so both offer retry under one condition.
+  const canRetry = canRetryBodyWeight(workspace);
   const bodyWeightQuery = (workspace.cross_section_queries ?? []).find(
     (item) => item.run_id === bodyWeightRun?.receipt.run_id,
   );
