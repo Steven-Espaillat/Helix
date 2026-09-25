@@ -1,0 +1,24 @@
+{
+  "stage": "review-export",
+  "exportFinal": {
+    "enabled": true,
+    "text": "Export final package"
+  },
+  "exportPackage": {
+    "enabled": true,
+    "text": "Export approved artifacts"
+  },
+  "exportCardHeading": "Approved artifact export",
+  "liveDownloadLinks": 0,
+  "anchorsInExportCard": 0,
+  "checksums": 0,
+  "receiptHashes": 0,
+  "downloadsCard": 0,
+  "downloadsRefused": 0,
+  "receiptRefused": 0,
+  "exportReason": null,
+  "packageReason": null,
+  "approvedReleasePackageText": 1,
+  "approvedArtifactExportText": 1,
+  "exportRequestsDuringView": []
+}

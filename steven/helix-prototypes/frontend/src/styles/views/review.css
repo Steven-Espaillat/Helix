@@ -442,3 +442,13 @@
 }
 #helix-e2e .chat-dock .chat-input::placeholder { color: var(--hx-faint); }
 #helix-e2e .chat-dock .chat-input:focus-visible { outline: var(--hx-focus-outline); outline-offset: 1px; border-color: var(--hx-accent); }
+
+/* DH-8 (#79, Tester P2 on #33): the ChatDock is fixed to the viewport bottom (about 112px
+ * collapsed). When the export reasons, receipt refusal or the refused Downloads card are scrolled
+ * into view (anchor, focus, scrollIntoView), stop clear of the dock instead of under it. */
+#helix-e2e [data-testid="export-panel"],
+#helix-e2e [data-testid="export-disabled-reason"],
+#helix-e2e [data-testid="export-receipt-refused"],
+#helix-e2e [data-testid="downloads-refused"],
+#helix-e2e [data-testid="export-package-disabled-reason"],
+#helix-e2e .export-card { scroll-margin-bottom: 136px; }

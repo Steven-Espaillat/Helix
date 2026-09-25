@@ -7,6 +7,7 @@ import { artifactLabel, probeArtifact, type ArtifactProbe, type ExportArtifact }
 import type { Workspace } from "@/lib/types";
 
 import { Card, DataTable, Kicker } from "../ui";
+import { DEMO_EXPORT_REASON, DEMO_NOT_AVAILABLE, isDemoFrozen } from "./reviewState";
 
 // Lane D (#23): after export, every artifact's ID, label, checksum, media type, and a download
 // that uses artifactDownloadUrl and returns the server bytes. Media type comes from the download
@@ -14,7 +15,12 @@ import { Card, DataTable, Kicker } from "../ui";
 
 export function Downloads({ workspace }: { workspace: Workspace }) {
   const studyId = workspace.study.study_id;
-  const exported = workspace.export_artifacts.filter((item) => item.status === "exported");
+  // DH-8 (#79): a demo-frozen run's stored files return 409, so never link, hash or probe them.
+  const demoFrozen = isDemoFrozen(workspace);
+  const exported = demoFrozen ? [] : workspace.export_artifacts.filter((item) => item.status === "exported");
+  const refusedCount = demoFrozen
+    ? workspace.export_artifacts.filter((item) => item.status === "exported").length
+    : 0;
   const [probes, setProbes] = useState<Record<string, ArtifactProbe | "error">>({});
   const key = exported.map((item) => `${item.artifact_id}:${item.checksum}`).join("|");
 
@@ -35,6 +41,22 @@ export function Downloads({ workspace }: { workspace: Workspace }) {
     };
   }, [key, studyId]);
 
+  if (refusedCount > 0) {
+    return (
+      <Card className="stack" aria-labelledby="hx-dl-h" data-testid="downloads-refused">
+        <div>
+          <Kicker>Exported package</Kicker>
+          <h2 id="hx-dl-h" className="hx-so-title">
+            Downloads · {DEMO_NOT_AVAILABLE}
+          </h2>
+        </div>
+        <p className="hx-sub hx-fine" data-testid="downloads-refused-reason">
+          {DEMO_EXPORT_REASON} The {refusedCount} {refusedCount === 1 ? "file" : "files"} exported before this rule
+          are not served.
+        </p>
+      </Card>
+    );
+  }
   if (exported.length === 0) return null;
   return (
     <Card className="stack" aria-labelledby="hx-dl-h" data-testid="downloads">

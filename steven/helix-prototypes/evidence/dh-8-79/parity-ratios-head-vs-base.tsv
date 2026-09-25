@@ -1,0 +1,35 @@
+agent-activity-card-light	base=0	head=0
+agent-run-banner-light	base=0	head=0
+agent-stage-card-light	base=0	head=0
+agent-step-light	base=0	head=0
+chat-dock-closed-dark	base=0.884971	head=0.884971
+chat-dock-closed-light	base=0.884594	head=0.884594
+chat-dock-open-dark	base=0.754841	head=0.754841
+chat-dock-open-light	base=0.75502	head=0.75502
+component-auth-card-light	base=0	head=0
+component-file-table-light	base=0	head=0
+component-gate-banner-light	base=0	head=0
+component-stage-rail-s0-dark	base=0	head=0
+component-stage-rail-s0-light	base=0	head=0
+component-stage-rail-s7-light	base=0	head=0
+component-upload-composition-light	base=0	head=0
+design-tokens-dark	base={'colorScheme': 'dark', 'tokens': 28}	head={'colorScheme': 'dark', 'tokens': 28}
+design-tokens-light	base={'colorScheme': 'light', 'tokens': 28}	head={'colorScheme': 'light', 'tokens': 28}
+journey-progress-light	base=0	head=0
+report-assembly-dark	base=0.877366	head=0.877366
+report-assembly-light	base=0.869985	head=0.869985
+review-export-control-dark	base=0	head=0
+review-export-control-light	base=0	head=0
+review-export-dark	base=0.843448	head=0.843448
+review-export-light	base=0.843425	head=0.843425
+review-gate-banner-dark	base=0	head=0
+review-gate-banner-light	base=0	head=0
+review-header-dark	base=0	head=0
+review-header-light	base=0	head=0
+review-rail-s8-dark	base=0	head=0
+review-rail-s8-light	base=0	head=0
+shell-header-dark	base=0	head=0
+shell-header-light	base=0	head=0
+shell-viewport-light	base=0.303174	head=0.303174
+traceability-gate-light	base=0.007127	head=0.007127
+upload-gate-light	base=0.391901	head=0.391901

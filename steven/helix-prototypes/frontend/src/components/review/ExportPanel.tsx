@@ -5,7 +5,7 @@ import type { ExportReceipt, Workspace } from "@/lib/types";
 
 import { RetryIcon } from "../icons";
 import { Button, Spinner } from "../ui";
-import { demoFrozenPackages, exportedAtFromJourney } from "./reviewState";
+import { DEMO_EXPORT_REASON, DEMO_NOT_AVAILABLE, exportedAtFromJourney, isDemoFrozen } from "./reviewState";
 
 // Lane D (#23): the explicit export. Enabled only when the SERVER release gate reports
 // ready_for_export. It is its own button press with loading, success, error, and replay states.
@@ -29,7 +29,9 @@ export function ExportPanel({
   const exported = status === "exported";
   // DH-7 (#68): the server refuses every export of a demo-frozen run (409 demo_not_qualified),
   // so the button stays disabled with the reason instead of inviting a refused click or retry.
-  const demoFrozen = demoFrozenPackages(workspace).length > 0 && !exported;
+  // DH-8 (#79): this also covers a demo run exported before the DH-7 guard. Its files and hashes
+  // now return 409, so the panel shows a refused state instead of a live receipt.
+  const demoFrozen = isDemoFrozen(workspace);
   const ready = status === "ready_for_export" && !demoFrozen;
   const exportedAt = state.kind === "success" ? state.receipt.exported_at : exportedAtFromJourney(workspace);
   // DH-6 (#71): the receipt names exactly what left HELIX: the slice-11 approved files and their
@@ -50,6 +52,8 @@ export function ExportPanel({
           <>
             <Spinner onFill /> Exporting…
           </>
+        ) : exported && demoFrozen ? (
+          "Export not available"
         ) : exported ? (
           "Package exported"
         ) : state.kind === "error" && !demoFrozen ? (
@@ -62,8 +66,7 @@ export function ExportPanel({
       </Button>
       {demoFrozen ? (
         <p className="hx-sub hx-fine" data-testid="export-disabled-reason" data-gate="demo_not_qualified">
-          Export is refused for this run. It was frozen with the demo flag, so its section packages have no
-          passing qualification.
+          {DEMO_EXPORT_REASON}
         </p>
       ) : (
         !ready &&
@@ -78,7 +81,13 @@ export function ExportPanel({
           Export failed: {state.message} Nothing was exported.
         </p>
       )}
-      {(state.kind === "success" || exported) && (
+      {demoFrozen && exported && (
+        <p className="hx-notice t-warn" data-testid="export-receipt-refused">
+          {DEMO_NOT_AVAILABLE}. An earlier export of this run is refused by the server, so its files and hashes
+          are not shown or served.
+        </p>
+      )}
+      {!demoFrozen && (state.kind === "success" || exported) && (
         <dl className="hx-export-receipt" data-testid="export-receipt">
           <dt>Exported</dt>
           <dd>

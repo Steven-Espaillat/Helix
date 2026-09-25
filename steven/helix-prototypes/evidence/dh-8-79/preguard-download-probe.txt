@@ -1,0 +1,4 @@
+release_gate exported
+[('RUN-63DFA01CA5B8CDD9', 'exported'), ('RCP-DVP-B3E9D3F2C7B7D2D1', 'exported')]
+GET exports/RUN-63DFA01CA5B8CDD9: {"detail":{"code":"demo_not_qualified","message":"Export refused: this run was frozen with the demo flag (packages not qualified)."}} -> HTTP 409
+GET exports/RCP-DVP-B3E9D3F2C7B7D2D1: {"detail":{"code":"demo_not_qualified","message":"Export refused: this run was frozen with the demo flag (packages not qualified)."}} -> HTTP 409

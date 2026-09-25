@@ -23,6 +23,7 @@ import type {
 } from "@/lib/types";
 
 import { CheckIcon } from "./icons";
+import { DEMO_EXPORT_REASON, DEMO_NOT_AVAILABLE, isDemoFrozen } from "./review/reviewState";
 
 type Props = {
   workspace: Workspace;
@@ -46,6 +47,7 @@ export function ReportAssembly({
   onExport,
 }: Props) {
   const studyId = workspace.study.study_id;
+  const demoFrozen = isDemoFrozen(workspace);
   const [sections, setSections] = useState<SectionListItem[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState("5_2_3_body_weight");
   const [draft, setDraft] = useState<SectionContentDraft | null>(null);
@@ -478,9 +480,10 @@ export function ReportAssembly({
             )}
           </section>
 
-          <section className="panel export-card hx-card">
+          <section className="panel export-card hx-card" data-demo-frozen={demoFrozen ? "true" : undefined}>
             <p className="eyebrow hx-kicker">Explicit action</p>
-            <h3>Approved artifact export</h3>
+            {/* DH-8 (#79): no "Approved" export copy, live links or hashes on a demo-frozen run. */}
+            <h3>{demoFrozen ? "Artifact export not available" : "Approved artifact export"}</h3>
             <div className="artifact-list">
               {workspace.export_artifacts.map((artifact) => (
                 <div key={artifact.artifact_id}>
@@ -488,7 +491,12 @@ export function ReportAssembly({
                     {artifact.status === "exported" ? <CheckIcon size={12} /> : null}
                   </span>
                   <div>
-                    {artifact.status === "exported" ? (
+                    {demoFrozen ? (
+                      <>
+                        <strong>{artifactLabel(artifact.kind)}</strong>
+                        <code data-testid={`export-refused-${artifact.artifact_id}`}>{DEMO_NOT_AVAILABLE}</code>
+                      </>
+                    ) : artifact.status === "exported" ? (
                       <a
                         className="artifact-download"
                         href={artifactDownloadUrl(workspace.study.study_id, artifact.artifact_id)}
@@ -512,16 +520,29 @@ export function ReportAssembly({
             <button
               className="button primary wide hx-btn primary"
               type="button"
-              disabled={workspace.release_gate.status !== "ready_for_export" || busy !== null}
+              disabled={demoFrozen || workspace.release_gate.status !== "ready_for_export" || busy !== null}
               onClick={onExport}
               data-testid="export-package"
+              aria-describedby={demoFrozen ? "export-package-reason" : undefined}
             >
-              {workspace.release_gate.status === "exported"
+              {demoFrozen
+                ? "Export not available"
+                : workspace.release_gate.status === "exported"
                 ? "Approved artifacts exported"
                 : busy === "export"
                   ? "Exporting approved hashes…"
                   : "Export approved artifacts"}
             </button>
+            {demoFrozen && (
+              <p
+                className="fine-print"
+                id="export-package-reason"
+                data-testid="export-package-disabled-reason"
+                data-gate="demo_not_qualified"
+              >
+                {DEMO_EXPORT_REASON}
+              </p>
+            )}
             <p className="fine-print">
               Export packages only Final Study Approval hashes. Status language stays at exported —
               never a regulator approval claim.

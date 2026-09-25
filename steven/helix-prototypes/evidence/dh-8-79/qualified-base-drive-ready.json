@@ -1,0 +1,17 @@
+{
+  "freeze": {
+    "status": 201,
+    "run_requested_details": {
+      "run_id": "RUN-EE3107A1BE8B0D53",
+      "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+      "run_plan_fingerprint": "sha256:0e5d77f6b619e6a0b5ea387de493c567bee63dc2f9045a863ba914e598c5734e"
+    }
+  },
+  "validation": 201,
+  "approval_pathologist": 200,
+  "approval_peer_reviewer": 200,
+  "approval_qau": 200,
+  "approval_study_director": 200,
+  "fsa": 200,
+  "release_gate_before_export": "ready_for_export"
+}

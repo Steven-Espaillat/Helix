@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { PlannerMode, Workspace } from "@/lib/types";
 
 import { ArrowIcon, CheckIcon } from "./icons";
+import { demoExportStageCopy } from "./review/reviewState";
 
 type Props = {
   workspace: Workspace;
@@ -230,7 +231,7 @@ export function StudyJourney({
           <div className="flow-pair">
             <div className="flow-node">
               <span>Input</span>
-              <strong>{stage.input_title}</strong>
+              <strong>{demoExportStageCopy(workspace, stage)?.input_title ?? stage.input_title}</strong>
               <code>{stage.input_detail}</code>
             </div>
             <div className="flow-arrow" aria-hidden="true">
@@ -239,12 +240,12 @@ export function StudyJourney({
             <div className="flow-node output">
               <span>Output</span>
               <strong>{stage.output_title}</strong>
-              <code>{stage.output_detail}</code>
+              <code>{demoExportStageCopy(workspace, stage)?.output_detail ?? stage.output_detail}</code>
             </div>
           </div>
           <div className="boundary-callout">
             <span>Control boundary</span>
-            <p>{stage.boundary}</p>
+            <p>{demoExportStageCopy(workspace, stage)?.boundary ?? stage.boundary}</p>
           </div>
         </article>
 

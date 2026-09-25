@@ -1,0 +1,44 @@
+{
+  "stage": "review-export",
+  "exportFinal": {
+    "enabled": false,
+    "text": "Export final package"
+  },
+  "exportPackage": {
+    "enabled": false,
+    "text": "Export not available"
+  },
+  "exportCardHeading": "Artifact export not available",
+  "liveDownloadLinks": 0,
+  "anchorsInExportCard": 0,
+  "checksums": 0,
+  "receiptHashes": 0,
+  "downloadsCard": 0,
+  "downloadsRefused": 0,
+  "receiptRefused": 0,
+  "exportReason": "Export is refused for this run. It was frozen with the demo flag, so its section packages have no passing qualification.",
+  "packageReason": "Export is refused for this run. It was frozen with the demo flag, so its section packages have no passing qualification.",
+  "approvedReleasePackageText": 0,
+  "approvedArtifactExportText": 0,
+  "export-disabled-reason_box": {
+    "x": 1105,
+    "y": 355.5625,
+    "width": 270,
+    "height": 52.171875
+  },
+  "chatDockBox": {
+    "x": 0,
+    "y": 788.625,
+    "width": 1440,
+    "height": 111.375
+  },
+  "export-disabled-reason_coveredByDock": false,
+  "export-package-disabled-reason_box": {
+    "x": 1061.484375,
+    "y": 364.359375,
+    "width": 317.515625,
+    "height": 34.78125
+  },
+  "export-package-disabled-reason_coveredByDock": false,
+  "exportRequestsDuringView": []
+}

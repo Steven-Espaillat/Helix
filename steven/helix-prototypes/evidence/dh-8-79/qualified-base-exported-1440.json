@@ -1,0 +1,29 @@
+{
+  "stage": "review-export",
+  "exportFinal": {
+    "enabled": false,
+    "text": "Package exported"
+  },
+  "exportPackage": {
+    "enabled": false,
+    "text": "Approved artifacts exported"
+  },
+  "exportCardHeading": "Approved artifact export",
+  "liveDownloadLinks": 4,
+  "anchorsInExportCard": 2,
+  "checksums": 2,
+  "receiptHashes": 3,
+  "downloadsCard": 1,
+  "downloadsRefused": 0,
+  "receiptRefused": 0,
+  "exportReason": null,
+  "packageReason": null,
+  "approvedReleasePackageText": 1,
+  "approvedArtifactExportText": 1,
+  "exportRequestsDuringView": [
+    "GET http://127.0.0.1:19434/api/v1/studies/STUDY-HLX-028/exports/RUN-EE3107A1BE8B0D53",
+    "GET http://127.0.0.1:19434/api/v1/studies/STUDY-HLX-028/exports/RCP-DVP-5B4E10EB8B2FDBDB",
+    "GET http://127.0.0.1:19434/api/v1/studies/STUDY-HLX-028/exports/RUN-EE3107A1BE8B0D53",
+    "GET http://127.0.0.1:19434/api/v1/studies/STUDY-HLX-028/exports/RCP-DVP-5B4E10EB8B2FDBDB"
+  ]
+}

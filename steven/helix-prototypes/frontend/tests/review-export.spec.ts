@@ -501,12 +501,134 @@ test("strict run: no 'Not qualified' label at any phase", async ({ page }) => {
   }
 });
 
-test("demo flag on: exported downloads show no demo note", async ({ page }) => {
-  await harness(page, { demo: true, phase: "exported", roles: ["pathologist", "peer_reviewer", "qau", "study_director"] });
+// DH-8 (#79): on a demo-frozen run no export affordance is live. The Gate 3 export panel and the
+// legacy ReportAssembly export card both show the same visible reason; downloads, links, checksums
+// and receipt hashes that the server would refuse (409) are replaced by a "not available" state.
+const DEMO_REASON = "Export is refused for this run";
+const NOT_AVAILABLE = "Not available: demo not qualified";
+const ALL_ROLES = ["pathologist", "peer_reviewer", "qau", "study_director"];
+
+async function expectNoLiveExportAffordances(page: Page) {
+  const stage = page.getByTestId("stage-view");
+  await expect(page.getByTestId("export-final-package")).toBeDisabled();
+  await expect(page.getByTestId("export-package")).toBeDisabled();
+  // No enabled export action anywhere in the stage (the legacy journey's "Explicit final export"
+  // stage tab only navigates, so it is not an export action).
+  await expect(stage.getByRole("button", { name: /^(retry )?export/i, disabled: false })).toHaveCount(0);
+  await expect(stage.locator('a[href*="/exports/"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid^="download-"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid^="export-checksum-"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid^="export-receipt-hash"]')).toHaveCount(0);
+  await expect(page.getByTestId("export-receipt")).toHaveCount(0);
+  await expect(page.getByTestId("downloads")).toHaveCount(0);
+  await expect(page.getByText("Approved artifact export")).toHaveCount(0);
+  await expect(page.getByText("Approved release package")).toHaveCount(0);
+  await expect(page.getByText("Export approved artifacts")).toHaveCount(0);
+  for (const id of ["export-disabled-reason", "export-package-disabled-reason"]) {
+    const reason = page.getByTestId(id);
+    await expect(reason).toBeVisible();
+    await expect(reason).toHaveAttribute("data-gate", "demo_not_qualified");
+    await expect(reason).toContainText(DEMO_REASON);
+  }
+}
+
+test("demo-frozen run (DH-8): the legacy ReportAssembly export is disabled with the same reason; no live links or hashes", async ({
+  page,
+}) => {
+  const h = await harness(page, { demo: true, phase: "fsa", roles: ALL_ROLES, exportRefusal: DEMO_EXPORT_REFUSAL });
+  const commands = trackCommands(page);
   await page.goto("/");
-  await expect(page.getByTestId("downloads")).toBeVisible();
+  await expect(page.getByTestId("run-not-qualified")).toHaveText(NOT_QUALIFIED);
+  await expectNoLiveExportAffordances(page);
+  await expect(page.getByTestId("export-package")).toHaveText("Export not available");
+  await expect(page.getByTestId("export-package")).toHaveAttribute("aria-describedby", "export-package-reason");
+  await expect(page.locator(".export-card h3")).toHaveText("Artifact export not available");
+  await page.getByTestId("export-package").click({ force: true }).catch(() => undefined);
+  await page.getByTestId("export-final-package").click({ force: true }).catch(() => undefined);
+  expect(h.exportPosts).toBe(0);
+  expect(commands).toEqual([]);
+  // Still one "Not qualified" label: the reasons do not add demo chrome.
+  await expect(page.getByText(NOT_QUALIFIED, { exact: true })).toHaveCount(1);
+});
+
+test("demo run exported before the DH-7 guard (DH-8): refused states, no download links, no hashes, no probes", async ({
+  page,
+}) => {
+  await harness(page, { demo: true, phase: "exported", roles: ALL_ROLES });
+  const artifactRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/\/exports\/[^/]+$/.test(new URL(request.url()).pathname)) artifactRequests.push(request.url());
+  });
+  const commands = trackCommands(page);
+  await page.goto("/");
+  await expect(page.getByTestId("run-not-qualified")).toHaveText(NOT_QUALIFIED);
+  await expectNoLiveExportAffordances(page);
+  await expect(page.getByTestId("export-final-package")).toHaveText("Export not available");
+  await expect(page.getByTestId("export-final-package")).not.toHaveText("Package exported");
+  await expect(page.getByTestId("export-receipt-refused")).toContainText(NOT_AVAILABLE);
+  const refused = page.getByTestId("downloads-refused");
+  await expect(refused).toBeVisible();
+  await expect(refused).toContainText(NOT_AVAILABLE);
+  await expect(refused.getByTestId("downloads-refused-reason")).toContainText(DEMO_REASON);
+  for (const artifact of fx.export_receipt.artifacts) {
+    await expect(page.getByTestId(`export-refused-${artifact.artifact_id}`)).toHaveText(NOT_AVAILABLE);
+  }
   await expect(page.getByTestId("downloads-demo-note")).toHaveCount(0);
   await expect(page.getByText(DEMO)).toHaveCount(0);
+  await page.waitForTimeout(500);
+  expect(artifactRequests).toEqual([]);
+  expect(commands).toEqual([]);
+});
+
+test("qualified run (DH-8): export button, download links, checksums and receipt hashes are unchanged", async ({ page }) => {
+  // Before export: both export actions are enabled, with no demo reason.
+  const h = await harness(page, { phase: "fsa", roles: ALL_ROLES });
+  await page.goto("/");
+  await expect(page.getByTestId("export-final-package")).toBeEnabled();
+  await expect(page.getByTestId("export-final-package")).toHaveText("Export final package");
+  await expect(page.getByTestId("export-package")).toBeEnabled();
+  await expect(page.getByTestId("export-package")).toHaveText("Export approved artifacts");
+  await expect(page.locator(".export-card h3")).toHaveText("Approved artifact export");
+  for (const id of ["export-disabled-reason", "export-package-disabled-reason", "export-receipt-refused", "downloads-refused"]) {
+    await expect(page.getByTestId(id)).toHaveCount(0);
+  }
+  await page.getByTestId("export-package").click();
+  await expect(page.getByTestId("downloads")).toBeVisible();
+  expect(h.exportPosts).toBe(1);
+  // After export: live links and hashes in the export panel, downloads and the legacy card.
+  await page.unrouteAll({ behavior: "ignoreErrors" });
+  await harness(page, { phase: "exported", roles: ALL_ROLES });
+  await page.goto("/");
+  await expect(page.getByTestId("export-final-package")).toHaveText("Package exported");
+  await expect(page.getByTestId("export-receipt")).toBeVisible();
+  await expect(page.locator('[data-testid^="export-receipt-hash-"]').first()).toHaveText(/^sha256:/);
+  for (const artifact of fx.export_receipt.artifacts) {
+    await expect(page.getByTestId(`download-checksum-${artifact.artifact_id}`)).toHaveText(artifact.checksum);
+    await expect(page.getByTestId(`download-${artifact.artifact_id}`)).toHaveAttribute(
+      "href",
+      new RegExp(`/api/v1/studies/STUDY-HLX-028/exports/${artifact.artifact_id}$`),
+    );
+  }
+  await expect(page.locator(".export-card a").first()).toHaveAttribute("href", /\/exports\//);
+  await expect(page.locator('[data-testid^="export-checksum-"]').first()).toContainText(/sha256:[a-f0-9]{64}/);
+  await expect(page.getByTestId("export-package")).toHaveText("Approved artifacts exported");
+  await expect(page.getByText(NOT_AVAILABLE)).toHaveCount(0);
+});
+
+test("demo-frozen run at 1024px (DH-8): scrolling a disabled-export reason into view keeps it clear of the ChatDock", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await harness(page, { demo: true, phase: "fsa", roles: ALL_ROLES, exportRefusal: DEMO_EXPORT_REFUSAL });
+  await page.goto("/");
+  const dock = page.getByTestId("chat-dock");
+  await expect(dock).toBeVisible();
+  for (const id of ["export-disabled-reason", "export-package-disabled-reason"]) {
+    const reason = page.getByTestId(id);
+    await reason.evaluate((node) => node.scrollIntoView({ block: "end" }));
+    const [box, dockBox] = [await reason.boundingBox(), await dock.boundingBox()];
+    expect(box && dockBox && box.y + box.height <= dockBox.y).toBe(true);
+  }
 });
 
 test("demo flag on: freeze stays a human action; nothing freezes on load or on approval", async ({ page }) => {
