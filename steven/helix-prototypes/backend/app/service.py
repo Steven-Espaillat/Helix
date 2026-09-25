@@ -30,6 +30,12 @@ from .data_validation import (
 )
 from .drafting_cycles import current_cycle, cycle_exhausted, load_recorded_attempts
 from .journey import JourneyFacts, project_journey
+from .manifest_authorization import (
+    DATA_VALIDATION_PACKAGE_ID,
+    FreezeDataValidationFailedError,
+    HumanFreezeRequiredError,
+    freeze_data_validation_key,
+)
 from .release_candidates import (
     MissingReleaseCandidateError,
     approval_is_current,
@@ -371,15 +377,42 @@ class StudyService:
         pinned_run = self.pinned_runs.freeze(study_id, command, commit=False)
         execution = None
         if pinned_run.status == "planned":
-            execution = self.data_validation.execute(
-                study_id,
-                DataValidationCommand(
-                    actor=command.actor,
-                    package_id="validation.body_weight",
-                    idempotency_key=f"dvp-{pinned_run.run_id}-validation.body_weight",
-                ),
-                commit=False,
+            superseding = self.repository.get(study_id).superseding_run_receipt is not None
+            if not superseding:
+                # Lane A (#20): commit the Pinned Run first, so a Data Validation failure
+                # keeps the frozen manifest and the retry never freezes again. A
+                # superseding freeze stays one transaction: its authority update needs
+                # the execution receipt.
+                self.session.commit()
+            dv_command = DataValidationCommand(
+                actor=command.actor,
+                package_id=DATA_VALIDATION_PACKAGE_ID,
+                idempotency_key=freeze_data_validation_key(pinned_run.run_id),
             )
+            if superseding:
+                execution = self.data_validation.execute(study_id, dv_command, commit=False)
+            else:
+                try:
+                    execution = self.data_validation.execute(study_id, dv_command, commit=False)
+                except Exception as error:  # noqa: BLE001 - reported as a typed partial result
+                    self.session.rollback()
+                    LOGGER.exception(
+                        "Data Validation failed after freezing %s on %s", pinned_run.run_id, study_id
+                    )
+                    # Domain refusals are safe to show; anything else stays in the server log.
+                    reason = (
+                        str(error)
+                        if isinstance(error, DataValidationConflictError | UnknownValidationPackageError)
+                        else "Data Validation raised an internal error; see the server log."
+                    )
+                    try:
+                        self._record_command_failure(study_id, "freeze_run", "upload", reason)
+                    except SQLAlchemyError:
+                        self.session.rollback()
+                        LOGGER.exception("Could not record command_failed for freeze_run on %s", study_id)
+                    raise FreezeDataValidationFailedError(
+                        study_id=study_id, run_id=pinned_run.run_id, reason=reason
+                    ) from error
         package = self.repository.get(study_id, for_update=True)
         assert_bound_pinned_run(package, pinned_run)
         if package.superseding_run_receipt is not None:
@@ -415,15 +448,9 @@ class StudyService:
     def _run_validation_command(self, study_id: str, request: ValidationRequest) -> ValidationRun:
         package = self.repository.get(study_id)
         if package.pinned_run is None:
-            pinned_run = self.pinned_runs.freeze(
-                study_id,
-                FreezeRunCommand(
-                    actor="HELIX validation service",
-                    idempotency_key=f"validation-freeze-{study_id}",
-                ),
-            )
-        else:
-            pinned_run = package.pinned_run
+            # Human Gate 1: only the audited freeze command may pin the manifest.
+            raise HumanFreezeRequiredError(study_id=study_id, operation="run_validation")
+        pinned_run = package.pinned_run
         if pinned_run.status != "planned":
             raise WorkflowConflictError("The Pinned Run requires study-type review")
         execution = self.data_validation.execute(

@@ -27,3 +27,24 @@
   cursor: pointer;
 }
 #helix-e2e .hx-consent input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--hx-accent); }
+
+/* Lane A (#20): Pinned Run identity and hash lists. Tokens only. */
+#helix-e2e .hx-up-kv {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--hx-sp-4) var(--hx-sp-12);
+  margin: 0;
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .hx-up-kv dt { color: var(--hx-muted); }
+#helix-e2e .hx-up-kv dd { margin: 0; overflow-wrap: anywhere; }
+#helix-e2e .hx-up-list { margin: var(--hx-sp-8) 0 0; padding-left: var(--hx-sp-16); font-size: var(--hx-fs-row); overflow-wrap: anywhere; }
+#helix-e2e details > summary { cursor: pointer; font-size: var(--hx-fs-row); color: var(--hx-ink-2); }
+#helix-e2e .hx-up-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--hx-sp-8) var(--hx-sp-12); }
+#helix-e2e .hx-up-fields label { display: grid; gap: var(--hx-sp-4); font-size: var(--hx-fs-row); color: var(--hx-ink-2); }
+#helix-e2e .hx-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+#helix-e2e .hx-drop { position: relative; }
+/* Lane A (#19): the server workflow state under the Progress Bar. */
+#helix-e2e .hx-progress-meta { margin: var(--hx-sp-8) 0 var(--hx-sp-12); font-size: var(--hx-fs-meta); }
+/* Lane A (#22 P1): shown in place of the legacy validation panel until Gate 1 freezes the manifest. */
+#helix-e2e .hx-stage-note { margin: var(--hx-sp-12) 0; font-size: var(--hx-fs-row); color: var(--hx-ink-2); }

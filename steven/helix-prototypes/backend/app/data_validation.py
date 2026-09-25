@@ -23,6 +23,7 @@ from .body_weight import (
     provenance_failures,
     recompute_matches_fixture,
 )
+from .manifest_authorization import HumanFreezeRequiredError
 from .models import DataValidationRunRow
 from .repository import StudyPackageRepository
 from .run_plans import PinnedRunService, canonical_hash
@@ -32,7 +33,6 @@ from .schemas import (
     DataValidationExecution,
     DataValidationReceipt,
     DataValidationRuleResult,
-    FreezeRunCommand,
     PinnedRun,
     ProvenanceEdge,
     SectionClaimReference,
@@ -245,18 +245,10 @@ class DataValidationService:
         if command.package_id != PACKAGE_ID:
             raise UnknownValidationPackageError(f"Unknown Data Validation Package {command.package_id}")
         package = self.repository.get(study_id)
-        if package.pinned_run is None:
-            self.pinned_runs.freeze(
-                study_id,
-                FreezeRunCommand(
-                    actor=command.actor,
-                    idempotency_key=f"dvp-freeze-{study_id}",
-                ),
-            )
-            package = self.repository.get(study_id)
         pinned = package.pinned_run
         if pinned is None:
-            raise DataValidationConflictError("Freeze the authorized manifest first")
+            # Human Gate 1: only the audited freeze command may pin the manifest.
+            raise HumanFreezeRequiredError(study_id=study_id, operation="run_data_validation")
         if pinned.status != "planned":
             raise DataValidationConflictError("The Pinned Run requires study-type review")
         node = next((item for item in pinned.run_plan.nodes if item.node_id == PACKAGE_ID), None)

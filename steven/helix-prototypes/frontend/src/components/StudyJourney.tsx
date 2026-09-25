@@ -278,11 +278,17 @@ export function StudyJourney({
               <span>{llm?.detail}</span>
             </button>
           </div>
+          {/* Human Gate 1 (#22 P1): validation never freezes the manifest; it waits for a human freeze. */}
+          {!workspace.pinned_run && (
+            <p className="hx-stage-note" data-testid="validation-locked">
+              Validation starts after the authorized manifest is frozen at Human Gate 1.
+            </p>
+          )}
           <button
             className="button primary wide"
             type="button"
             onClick={onValidate}
-            disabled={commandBusy}
+            disabled={commandBusy || !workspace.pinned_run}
             data-testid="run-validation"
           >
             {validationBusy ? "Running checks…" : "Run hybrid validation"}
@@ -291,7 +297,7 @@ export function StudyJourney({
             className="button secondary wide"
             type="button"
             onClick={onExecuteBodyWeight}
-            disabled={commandBusy}
+            disabled={commandBusy || !workspace.pinned_run}
             data-testid="run-body-weight-validation"
           >
             {dataValidationBusy ? "Executing package…" : "Execute body-weight package"}

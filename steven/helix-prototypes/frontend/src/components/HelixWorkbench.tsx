@@ -22,9 +22,13 @@ import type { ApprovalRole, PlannerMode, Workspace } from "@/lib/types";
 import { EvidenceChain } from "./EvidenceChain";
 import { CloseIcon, RetryIcon } from "./icons";
 import { ReportAssembly } from "./ReportAssembly";
+import { ProgressBar } from "./journey/ProgressBar";
+import { useSelectedStage } from "./journey/useSelectedStage";
 import { ShellHeader } from "./shell/ShellHeader";
 import { StudyJourney } from "./StudyJourney";
 import { Button, Card, Kicker, Pill, Spinner, type Tone } from "./ui";
+import { IntakeUploadForm } from "./upload/IntakeUploadForm";
+import { UploadGate } from "./upload/UploadGate";
 
 type Props = {
   studyId: string;
@@ -44,6 +48,7 @@ const releasePresentation: Record<ReleaseStatus, { label: string; tone: Tone }> 
 
 export function HelixWorkbench({ studyId }: Props) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const { selectedStageId, select: selectStage } = useSelectedStage(workspace?.journey);
   const [selectedClaimId, setSelectedClaimId] = useState("C-BW-HIGH");
   const [planner, setPlanner] = useState<PlannerMode>("fixture");
   const [busy, setBusy] = useState<string | null>(null);
@@ -337,30 +342,15 @@ export function HelixWorkbench({ studyId }: Props) {
       ) : (
         <main className="hx-main" data-testid="helix-workbench">
           <h1 className="hx-sr">HELIX report workspace for {workspace.study.study_id}</h1>
-          {/* Reserved for Lane A (#19): replace this section with <StageRail> fed by
-              workspace.journey. Keep data-testid="progress-region". */}
-          <section
-            className="hx-stepper is-reserved"
-            aria-labelledby="hx-progress-heading"
-            data-testid="progress-region"
-          >
-            <div className="hx-stepper-head">
-              <div className="hx-progress">
-                <Kicker id="hx-progress-heading">
-                  Journey progress
-                </Kicker>
-                <span className="hx-sub">
-                  Server workflow state{" "}
-                  <span className="hx-mono" data-testid="workflow-state">
-                    {workspace.workflow_state}
-                  </span>
-                </span>
-              </div>
-              <span className="hx-sub">
-                The stage-gated progress bar arrives with the server journey projection.
+          <div className="hx-progress-region" data-testid="progress-region">
+            <ProgressBar journey={workspace.journey} selectedStageId={selectedStageId} onSelect={selectStage} />
+            <p className="hx-sub hx-progress-meta">
+              Server workflow state{" "}
+              <span className="hx-mono" data-testid="workflow-state">
+                {workspace.workflow_state}
               </span>
-            </div>
-          </section>
+            </p>
+          </div>
 
           {(notice || error) && (
             <div className={error ? "hx-notice t-block" : "hx-notice t-info"} role="status">
@@ -379,7 +369,19 @@ export function HelixWorkbench({ studyId }: Props) {
             </div>
           )}
 
-          <section className="hx-stage-view" aria-label="Stage view" data-testid="stage-view">
+          <section
+            className="hx-stage-view"
+            aria-label="Stage view"
+            data-testid="stage-view"
+            data-selected-stage={selectedStageId ?? undefined}
+          >
+            {selectedStageId === "upload" && (
+              <UploadGate workspace={workspace} onRefresh={refresh} onKeepView={() => selectStage("upload")}>
+                <IntakeUploadForm />
+              </UploadGate>
+            )}
+            {/* Lanes B, C and D replace these legacy panels with their stage views. Until
+                then they remain the fallback so no stage loses its working controls. */}
             <StudyJourney
               workspace={workspace}
               planner={planner}

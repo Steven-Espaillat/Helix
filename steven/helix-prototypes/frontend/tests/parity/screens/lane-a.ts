@@ -1,8 +1,8 @@
 import type { ParityScreen } from "../types";
 
 // OWNER: Lane A (#19 journey progress, #20 freeze manifest, #26 upload/run controls).
-// Flip `status` to "enforced" when the screen ships. Match the reference `?stage=N`
-// to the server state the lane's backend is seeded into.
+// The seeded server state is Upload current (Gate 1 awaiting the study owner), which is
+// the reference `?stage=0`.
 
 export const laneAScreens: ParityScreen[] = [
   {
@@ -10,21 +10,31 @@ export const laneAScreens: ParityScreen[] = [
     title: "Progress Bar in the shell (#19)",
     lane: "A",
     issue: "#19",
-    status: "pending",
+    status: "enforced",
     colorScheme: "light",
     reference: { path: "?stage=0", selector: ".hx-stepper" },
-    ours: { path: "/", selector: '[data-testid="progress-region"]', waitFor: '[data-testid="release-status"]' },
-    notes: "Set the reference ?stage to the seeded server stage before enforcing.",
+    ours: {
+      path: "/",
+      selector: '[data-testid="journey-progress"] .hx-stepper',
+      waitFor: '[data-testid="release-status"]',
+    },
+    notes: "Seeded server stage is Upload current, matching ?stage=0.",
   },
   {
     id: "upload-gate-light",
     title: "Human Gate 1 upload + authorization (#20)",
     lane: "A",
     issue: "#20",
-    status: "pending",
+    status: "report-only",
     colorScheme: "light",
     reference: { path: "?stage=0", selector: "#hx-panel", mask: [".hx-drop"] },
-    ours: { path: "/", selector: '[data-testid="stage-view"]', waitFor: '[data-testid="release-status"]', mask: [".hx-drop"] },
-    notes: "#20 disables or removes the drop zone and relabels the primary action; mask or accept those diffs explicitly.",
+    ours: {
+      path: "/",
+      selector: '[data-testid="upload-gate"]',
+      waitFor: '[data-testid="manifest-table"]',
+      mask: [".hx-drop", '[data-testid="intake-upload"]', '[data-testid="manifest-hashes"]'],
+    },
+    notes:
+      "#20 relabels the drop zone and checklist to separate seeded facts from unsupported upload validation, and #26 adds the real intake form; those regions are masked.",
   },
 ];

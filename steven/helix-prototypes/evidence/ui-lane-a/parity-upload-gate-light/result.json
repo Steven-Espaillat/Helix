@@ -1,0 +1,30 @@
+{
+  "id": "upload-gate-light",
+  "title": "Human Gate 1 upload + authorization (#20)",
+  "lane": "A",
+  "issue": "#20",
+  "status": "report-only",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=0",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0.391901,
+  "diffPixels": 435112,
+  "comparedPixels": 1110260,
+  "maskedPixels": 377580,
+  "oursSize": {
+    "width": 1360,
+    "height": 1094
+  },
+  "referenceSize": {
+    "width": 1360,
+    "height": 880
+  },
+  "sizeMismatch": true,
+  "pass": false
+}

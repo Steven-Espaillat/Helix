@@ -1,0 +1,1856 @@
+{
+  "_note": "Test-local fixture for lane A specs. Produced by freezing the seeded study against a temporary qualified copy of the governed tree (qualification set in the copy only). Not a shipped package status. Data Validation claims and provenance edges are truncated to two entries each; the *_total fields hold the real counts.",
+  "before": {
+    "pinned_run": null,
+    "data_validation_executions": [],
+    "journey": {
+      "label": "SYNTHETIC / NOT FOR SUBMISSION",
+      "current_stage_id": "upload",
+      "run": null,
+      "stages": [
+        {
+          "stage_id": "upload",
+          "sequence": 1,
+          "kind": "human_gate",
+          "gate_number": 1,
+          "short_label": "Upload",
+          "name": "Upload and authorize inputs",
+          "status": "current",
+          "selectable": true,
+          "summary": "The study owner authorizes each source. Freezing the manifest pins checksums and starts the run.",
+          "input": {
+            "title": "Authorized artifacts",
+            "detail": "Protocol, template, source data, statistics, and pattern inputs"
+          },
+          "output": {
+            "title": "Frozen manifest",
+            "detail": "Checksums, authority tiers, and owner authorization"
+          },
+          "control_boundary": "The agent cannot add an unapproved source. Only the freeze command leaves this gate.",
+          "actions": [
+            {
+              "action_id": "manifest:A-PROTOCOL",
+              "label": "Authorized protocol-v3.pdf",
+              "detail": "protocol \u00b7 tier 2 \u00b7 sha256:synthetic-a-protocol-3.0",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-TEMPLATE",
+              "label": "Authorized repeat-dose-template-v5.docx",
+              "detail": "report_template \u00b7 tier 2 \u00b7 sha256:synthetic-a-template-5.0",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-DM",
+              "label": "Authorized dm.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-dm-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-BW",
+              "label": "Authorized body-weights.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-bw-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-CL",
+              "label": "Authorized clinical-observations.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-cl-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-OM",
+              "label": "Authorized organ-weights.xlsx",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-om-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-MI",
+              "label": "Authorized histopathology.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-mi-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-PC",
+              "label": "Authorized formulation-results.pdf",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-pc-SIGNED-2026-09-19",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-STATS",
+              "label": "Authorized analysis-output.pdf",
+              "detail": "statistical_output \u00b7 tier 1 \u00b7 sha256:synthetic-a-stats-FINAL-2026-09-20",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-PATTERN",
+              "label": "Authorized approved-study-pattern.pdf",
+              "detail": "approved_report \u00b7 tier 3 \u00b7 sha256:synthetic-a-pattern-FINAL",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:freeze",
+              "label": "Freeze manifest and start the Pinned Run",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/pinned-runs"
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "parse",
+          "sequence": 2,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Parse",
+          "name": "Parse protocol, template and source data",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Format-specific parsers convert each frozen file into normalized facts without changing the originals.",
+          "input": {
+            "title": "Frozen files",
+            "detail": "Authorized synthetic protocol, template, and source representations"
+          },
+          "output": {
+            "title": "Typed source records",
+            "detail": "Normalized study records with source pointers"
+          },
+          "control_boundary": "Parsing may flag ambiguity. It may not repair or overwrite raw study data.",
+          "actions": [
+            {
+              "action_id": "parse:records",
+              "label": "Parse frozen inputs",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "resolve",
+          "sequence": 3,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Resolve",
+          "name": "Resolve study type and pattern",
+          "status": "pending",
+          "selectable": false,
+          "summary": "HELIX resolves the study type and retrieves the approved report pattern for structure only.",
+          "input": {
+            "title": "Protocol facts",
+            "detail": "species \u00b7 route \u00b7 duration \u00b7 endpoints"
+          },
+          "output": {
+            "title": "Study profile",
+            "detail": "Resolved study type and report template"
+          },
+          "control_boundary": "Prior reports may guide structure and phrasing. Their values never enter the new study.",
+          "actions": [
+            {
+              "action_id": "resolve:study-type",
+              "label": "Resolve study type",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "extract",
+          "sequence": 4,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Extract",
+          "name": "Deterministic extraction",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Code reads the selected source rows and computes report-ready values at the required grain.",
+          "input": {
+            "title": "Normalized study records",
+            "detail": "Pinned data-validation packages"
+          },
+          "output": {
+            "title": "Candidate claims",
+            "detail": "values \u00b7 units \u00b7 grain \u00b7 transform IDs"
+          },
+          "control_boundary": "The model selects tools and evidence. Deterministic code reads values and performs math.",
+          "actions": [
+            {
+              "action_id": "dvp:pending",
+              "label": "Execute pinned data-validation packages",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "validate",
+          "sequence": 5,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Validate",
+          "name": "Deterministic validation",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Rules check keys, terminology, units, grain, authority, aggregation and source-to-report reconciliation.",
+          "input": {
+            "title": "Candidate claims",
+            "detail": "claims + field rule registry"
+          },
+          "output": {
+            "title": "Validation evidence",
+            "detail": "passes \u00b7 blockers \u00b7 exact evidence IDs"
+          },
+          "control_boundary": "A failed rule creates a blocker. The agent cannot downgrade it to green.",
+          "actions": [
+            {
+              "action_id": "validate:run",
+              "label": "Run deterministic validation",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/validation-runs"
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "draft",
+          "sequence": 6,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Draft",
+          "name": "Structured section drafting",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Report sections are assembled around validated claims with explicit review markers for unresolved fields.",
+          "input": {
+            "title": "Validated claims + pattern",
+            "detail": "facts separated from style pattern"
+          },
+          "output": {
+            "title": "Structured sections",
+            "detail": "draft text \u00b7 tables \u00b7 review markers"
+          },
+          "control_boundary": "The model may write prose. It may not invent a value or make the final scientific judgment.",
+          "actions": [
+            {
+              "action_id": "section:S1",
+              "label": "Assembled Study identity and compliance",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S2",
+              "label": "Assembled Objectives",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S3",
+              "label": "Assembled Materials and methods",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S4",
+              "label": "Assembled Dose formulation",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S5",
+              "label": "Assembled In-life observations",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S6",
+              "label": "Assembled Clinical pathology",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S7",
+              "label": "Assembled Anatomic pathology",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S8",
+              "label": "Assembled Discussion and conclusion",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "provenance",
+          "sequence": 7,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Provenance",
+          "name": "Compile provenance",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Every report claim is linked to exact source records, the deterministic transform, validation results and manifest version.",
+          "input": {
+            "title": "Draft claims + evidence IDs",
+            "detail": "all numeric claims"
+          },
+          "output": {
+            "title": "Provenance graph",
+            "detail": "source \u2192 transform \u2192 claim"
+          },
+          "control_boundary": "A numeric claim without a provenance edge cannot pass its section gate.",
+          "actions": [
+            {
+              "action_id": "provenance:edges",
+              "label": "Compiled 14 provenance edges",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "traceability",
+          "sequence": 8,
+          "kind": "human_gate",
+          "gate_number": 2,
+          "short_label": "Gates",
+          "name": "Traceability review",
+          "status": "pending",
+          "selectable": false,
+          "summary": "A reviewer records a disposition for every blocking result before review and export opens.",
+          "input": {
+            "title": "Validation evidence",
+            "detail": "blockers with exact evidence IDs"
+          },
+          "output": {
+            "title": "Recorded dispositions",
+            "detail": "each blocker resolved by a named reviewer"
+          },
+          "control_boundary": "Agent execution stops here. A disposition is recorded as a disposition, never as a pass.",
+          "actions": [],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "review-export",
+          "sequence": 9,
+          "kind": "human_gate",
+          "gate_number": 3,
+          "short_label": "Review & export",
+          "name": "Review, sign and export",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Reviewers sign, the Study Director records Final Study Approval, and an explicit export command releases artifacts.",
+          "input": {
+            "title": "Traceable report",
+            "detail": "dispositions, approvals, and release candidate"
+          },
+          "output": {
+            "title": "Exported artifacts",
+            "detail": "checksummed synthetic artifacts"
+          },
+          "control_boundary": "Approvals can make export ready. Only the explicit export command completes this stage.",
+          "actions": [
+            {
+              "action_id": "approval:pathologist",
+              "label": "Pathologist approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "approval:peer_reviewer",
+              "label": "Peer Reviewer approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "approval:qau",
+              "label": "Qau approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "approval:study_director",
+              "label": "Study Director approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "final-study-approval",
+              "label": "Final Study Approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/final-study-approvals"
+            },
+            {
+              "action_id": "export",
+              "label": "Explicit export",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/exports"
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        }
+      ],
+      "latest_event": null
+    },
+    "workflow_state": "gated"
+  },
+  "after": {
+    "pinned_run": {
+      "run_id": "RUN-2650F4339A3B586C",
+      "study_id": "STUDY-HLX-028",
+      "status": "planned",
+      "created_at": "2026-09-24T23:41:03.596859Z",
+      "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+      "governed_inputs": [
+        {
+          "kind": "data_validation_package",
+          "artifact_id": "validation.body_weight",
+          "version": "0.1.0",
+          "path": "skills/helix-evidence-pipeline/packages/data-validation/body-weight/package.json",
+          "content_hash": "sha256:2bea2e2f5a12b35979b65c61f833b074e8aff5fa560da9317b4221836e7918e4"
+        },
+        {
+          "kind": "executor",
+          "artifact_id": "body-weight-summary",
+          "version": "1.0.0",
+          "path": "backend/app/body_weight.py",
+          "content_hash": "sha256:092bce89402052debf2388a46ad84da362641e120cc3044932f64e6eefc0e61f"
+        },
+        {
+          "kind": "ontology",
+          "artifact_id": "helix-ontology",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/references/ontology.md",
+          "content_hash": "sha256:a7c4f6b7417e83d0121330b4034550b5c608732bbe7efcd0b2bcdc30e204e92f"
+        },
+        {
+          "kind": "ontology_schema",
+          "artifact_id": "helix-schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/references/schema.md",
+          "content_hash": "sha256:6409f1a6b68883471822fb2db7621827b4c3ab2376ac8de4a3f7cbaad5bee1cc"
+        },
+        {
+          "kind": "rule_bundle",
+          "artifact_id": "helix-rules",
+          "version": "1.0.0",
+          "path": "backend/app/validation.py",
+          "content_hash": "sha256:0d51cefef9550203d23f0a76e1cd4fd164a51336bdeb5964789758e0944aa947"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "artifact-lineage.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/artifact-lineage.schema.json",
+          "content_hash": "sha256:03d3474d9a98c263461cb216138dafe45b7c1a5c92367b50415a3044f0f5fa63"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "candidate-evaluation.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/candidate-evaluation.schema.json",
+          "content_hash": "sha256:19341fb6e95f4bfc94493f315e825bce0e58a733d7508af1480564a8a15e134e"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "cross-section-query-receipt.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/cross-section-query-receipt.schema.json",
+          "content_hash": "sha256:ba30bd1cf500f251e721d3ec8c5eacb46b64b1475c4986c452dbd67d1d9b7ca1"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "data-validation-package.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/data-validation-package.schema.json",
+          "content_hash": "sha256:39d6c4641c27ec44f9398e9dfe57cc2aaf5ed2f6eaee717dfc9a1af8ab955b97"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "drafting-cycle.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/drafting-cycle.schema.json",
+          "content_hash": "sha256:d9e3093bb577011ae037fb639f3f6d2a5a8c7fe2889416eadf49ea2dfd733a7e"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "final-study-approval.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/final-study-approval.schema.json",
+          "content_hash": "sha256:093d8c5bcfd5ac23dccccfbfe1e74249e71a19ca733168e1644c505eb288481f"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "human-directed-revision-command.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/human-directed-revision-command.schema.json",
+          "content_hash": "sha256:1225c39bbaa9cd8b9d4158d572f3a2119fd39dcd8a20470e88c2a9ab56bba6f9"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "predecessor-snapshot.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/predecessor-snapshot.schema.json",
+          "content_hash": "sha256:2455b628f33962d1210bebf376fe309ec991de6920bdbbf46db89ad387748d37"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "provenance-receipt.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/provenance-receipt.schema.json",
+          "content_hash": "sha256:b85b3554cbd9250dd8e68bb5162d46e39efa6f91cd48b12b0f4171ce3a87ed0f"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "release-candidate.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/release-candidate.schema.json",
+          "content_hash": "sha256:26f757d0b8982a4f4627f6092debecf507ca278ff8a5c27522ed37f05d1f31b2"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "review-scaffold-revision.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/review-scaffold-revision.schema.json",
+          "content_hash": "sha256:20a796af0c8cf2c2b98a549e1ace58ecd553ce98341c022545af4605dc8e1e10"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "run-plan.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/run-plan.schema.json",
+          "content_hash": "sha256:0a02110d8a93b8b774d285520c4da09209715b38e65455aa7f96032e56d076cb"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "section-draft-candidate.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/section-draft-candidate.schema.json",
+          "content_hash": "sha256:179b5ddf23845421634e398a7634a537a6dfa1ee1881e473fedd6a66ce234e12"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "section-draft.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/section-draft.schema.json",
+          "content_hash": "sha256:b7fb89a065d99417c5c9e74b00002009a192ebbdd0d86d95afc5a0de6c1f8d40"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "section-execution-envelope.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/section-execution-envelope.schema.json",
+          "content_hash": "sha256:7045dbe94ecd97fc13db8ee4bd3b306fd6f0a0618ef4394402cc06f647901cf9"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "section-package.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/section-package.schema.json",
+          "content_hash": "sha256:529f4a1f2f36f3290d08a5bf84adace65cf9a61fb3a73eda9959530db7daf295"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "section-promotion-decision.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/section-promotion-decision.schema.json",
+          "content_hash": "sha256:4b8ea2f65992e0e217113dca715e65933336896c734735aae673323f035e2a55"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "study-output-evaluation-receipt.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/study-output-evaluation-receipt.schema.json",
+          "content_hash": "sha256:cc864902782a4fe009dabe5ccf090fd8e87b4cceeaa58acd67d6d5bfb06c83ac"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "superseding-run.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/superseding-run.schema.json",
+          "content_hash": "sha256:280c7841ef71f1e41c5bb8aff3e00d76d84f484f210385610f23236acaa637fa"
+        },
+        {
+          "kind": "schema",
+          "artifact_id": "template-conformance-receipt.schema",
+          "version": "1.0.0",
+          "path": "skills/helix-evidence-pipeline/contracts/template-conformance-receipt.schema.json",
+          "content_hash": "sha256:c0f61888df930070052207a4e87b9d0b55abe9a3cf1bf4572269e389b2289d14"
+        },
+        {
+          "kind": "section_package",
+          "artifact_id": "section.5_2_3_body_weight",
+          "version": "0.1.0",
+          "path": "skills/helix-evidence-pipeline/packages/sections/5_2_3_body_weight/package.json",
+          "content_hash": "sha256:c86107864d607b07b74dc5ab7b402d45e01bee59ad13902117b4cfc8f3e38124"
+        },
+        {
+          "kind": "section_package",
+          "artifact_id": "section.5_3_discussion",
+          "version": "0.1.0",
+          "path": "skills/helix-evidence-pipeline/packages/sections/5_3_discussion/package.json",
+          "content_hash": "sha256:05bc783c7debacdee983872a3c92dcdd1c00444b0c0b2af8fdb3f99b9b2e0b5e"
+        },
+        {
+          "kind": "skill",
+          "artifact_id": "helix-section-agent",
+          "version": "0.1.0",
+          "path": ".agents/skills/helix-section-agent/SKILL.md",
+          "content_hash": "sha256:62abd7721d062c807a8481014e513bb41e45c11fa8fc0861b6658340bf860a0e"
+        },
+        {
+          "kind": "study_type_mapping",
+          "artifact_id": "study-type-mapping",
+          "version": "1.0.0",
+          "path": "backend/app/data/study-type-mapping.json",
+          "content_hash": "sha256:11ea74cfef07f0a7ec4bbd5f2a003f3c23e2d1895026c24381e7ca034f35c4ea"
+        },
+        {
+          "kind": "suite",
+          "artifact_id": "helix-section-agent-qualification",
+          "version": "0.1.0",
+          "path": ".agents/skills/helix-section-agent/evals/promptfooconfig.yaml",
+          "content_hash": "sha256:43bc196187d1879c02db457bb91a12db39a4c0a0ded23cde6b44d633fea86968"
+        },
+        {
+          "kind": "suite",
+          "artifact_id": "helix-section-study-output",
+          "version": "0.1.0",
+          "path": ".agents/skills/helix-section-agent/evals/study-output.yaml",
+          "content_hash": "sha256:ca4d8bc8d3a097ecd560c29a4729921e1d432837d8e56318ca05690804627249"
+        },
+        {
+          "kind": "template",
+          "artifact_id": "repeat-dose-report-template",
+          "version": "1.0.0",
+          "path": "backend/app/data/report-template.json",
+          "content_hash": "sha256:d1c1fd73d7a75b544b02d9ff9fc585dbdbfa9244220980560bc10e9ad84c3f45"
+        },
+        {
+          "kind": "tool",
+          "artifact_id": "codex-section-runtime",
+          "version": "0.1.0",
+          "path": "backend/app/agents/codex_section_agent.py",
+          "content_hash": "sha256:0d75503cfea1e2bf5bb670267e6a88c3fb1b7f7c9e940c4bbc8e48636573ed89"
+        }
+      ],
+      "study_type_resolution": {
+        "status": "resolved",
+        "study_type_id": "REPEAT_DOSE_28D_RODENT",
+        "mapping_version": "1.0.0",
+        "mapping_hash": "sha256:11ea74cfef07f0a7ec4bbd5f2a003f3c23e2d1895026c24381e7ca034f35c4ea",
+        "protocol_fields": {
+          "species": "Sprague-Dawley rat",
+          "route": "oral gavage",
+          "duration_days": 28
+        },
+        "evidence": []
+      },
+      "run_plan": {
+        "schema_version": "helix.run-plan/v1",
+        "run_plan_id": "PLAN-BFB992920EC05840",
+        "run_id": "RUN-2650F4339A3B586C",
+        "version": 1,
+        "fingerprint": "sha256:bfb992920ec05840d01ec333baaf0e17c1cf760f1d46fdccf5606423a46a3c51",
+        "created_at": "2026-09-24T23:41:03.596859Z",
+        "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+        "governed_versions": {
+          "validation.body_weight": "0.1.0@sha256:2bea2e2f5a12b35979b65c61f833b074e8aff5fa560da9317b4221836e7918e4",
+          "body-weight-summary": "1.0.0@sha256:092bce89402052debf2388a46ad84da362641e120cc3044932f64e6eefc0e61f",
+          "helix-ontology": "1.0.0@sha256:a7c4f6b7417e83d0121330b4034550b5c608732bbe7efcd0b2bcdc30e204e92f",
+          "helix-schema": "1.0.0@sha256:6409f1a6b68883471822fb2db7621827b4c3ab2376ac8de4a3f7cbaad5bee1cc",
+          "helix-rules": "1.0.0@sha256:0d51cefef9550203d23f0a76e1cd4fd164a51336bdeb5964789758e0944aa947",
+          "artifact-lineage.schema": "1.0.0@sha256:03d3474d9a98c263461cb216138dafe45b7c1a5c92367b50415a3044f0f5fa63",
+          "candidate-evaluation.schema": "1.0.0@sha256:19341fb6e95f4bfc94493f315e825bce0e58a733d7508af1480564a8a15e134e",
+          "cross-section-query-receipt.schema": "1.0.0@sha256:ba30bd1cf500f251e721d3ec8c5eacb46b64b1475c4986c452dbd67d1d9b7ca1",
+          "data-validation-package.schema": "1.0.0@sha256:39d6c4641c27ec44f9398e9dfe57cc2aaf5ed2f6eaee717dfc9a1af8ab955b97",
+          "drafting-cycle.schema": "1.0.0@sha256:d9e3093bb577011ae037fb639f3f6d2a5a8c7fe2889416eadf49ea2dfd733a7e",
+          "final-study-approval.schema": "1.0.0@sha256:093d8c5bcfd5ac23dccccfbfe1e74249e71a19ca733168e1644c505eb288481f",
+          "human-directed-revision-command.schema": "1.0.0@sha256:1225c39bbaa9cd8b9d4158d572f3a2119fd39dcd8a20470e88c2a9ab56bba6f9",
+          "predecessor-snapshot.schema": "1.0.0@sha256:2455b628f33962d1210bebf376fe309ec991de6920bdbbf46db89ad387748d37",
+          "provenance-receipt.schema": "1.0.0@sha256:b85b3554cbd9250dd8e68bb5162d46e39efa6f91cd48b12b0f4171ce3a87ed0f",
+          "release-candidate.schema": "1.0.0@sha256:26f757d0b8982a4f4627f6092debecf507ca278ff8a5c27522ed37f05d1f31b2",
+          "review-scaffold-revision.schema": "1.0.0@sha256:20a796af0c8cf2c2b98a549e1ace58ecd553ce98341c022545af4605dc8e1e10",
+          "run-plan.schema": "1.0.0@sha256:0a02110d8a93b8b774d285520c4da09209715b38e65455aa7f96032e56d076cb",
+          "section-draft-candidate.schema": "1.0.0@sha256:179b5ddf23845421634e398a7634a537a6dfa1ee1881e473fedd6a66ce234e12",
+          "section-draft.schema": "1.0.0@sha256:b7fb89a065d99417c5c9e74b00002009a192ebbdd0d86d95afc5a0de6c1f8d40",
+          "section-execution-envelope.schema": "1.0.0@sha256:7045dbe94ecd97fc13db8ee4bd3b306fd6f0a0618ef4394402cc06f647901cf9",
+          "section-package.schema": "1.0.0@sha256:529f4a1f2f36f3290d08a5bf84adace65cf9a61fb3a73eda9959530db7daf295",
+          "section-promotion-decision.schema": "1.0.0@sha256:4b8ea2f65992e0e217113dca715e65933336896c734735aae673323f035e2a55",
+          "study-output-evaluation-receipt.schema": "1.0.0@sha256:cc864902782a4fe009dabe5ccf090fd8e87b4cceeaa58acd67d6d5bfb06c83ac",
+          "superseding-run.schema": "1.0.0@sha256:280c7841ef71f1e41c5bb8aff3e00d76d84f484f210385610f23236acaa637fa",
+          "template-conformance-receipt.schema": "1.0.0@sha256:c0f61888df930070052207a4e87b9d0b55abe9a3cf1bf4572269e389b2289d14",
+          "section.5_2_3_body_weight": "0.1.0@sha256:c86107864d607b07b74dc5ab7b402d45e01bee59ad13902117b4cfc8f3e38124",
+          "section.5_3_discussion": "0.1.0@sha256:05bc783c7debacdee983872a3c92dcdd1c00444b0c0b2af8fdb3f99b9b2e0b5e",
+          "helix-section-agent": "0.1.0@sha256:62abd7721d062c807a8481014e513bb41e45c11fa8fc0861b6658340bf860a0e",
+          "study-type-mapping": "1.0.0@sha256:11ea74cfef07f0a7ec4bbd5f2a003f3c23e2d1895026c24381e7ca034f35c4ea",
+          "helix-section-agent-qualification": "0.1.0@sha256:43bc196187d1879c02db457bb91a12db39a4c0a0ded23cde6b44d633fea86968",
+          "helix-section-study-output": "0.1.0@sha256:ca4d8bc8d3a097ecd560c29a4729921e1d432837d8e56318ca05690804627249",
+          "repeat-dose-report-template": "1.0.0@sha256:d1c1fd73d7a75b544b02d9ff9fc585dbdbfa9244220980560bc10e9ad84c3f45",
+          "codex-section-runtime": "0.1.0@sha256:0d75503cfea1e2bf5bb670267e6a88c3fb1b7f7c9e940c4bbc8e48636573ed89"
+        },
+        "nodes": [
+          {
+            "node_id": "parse.body_weights",
+            "node_type": "parse",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [],
+            "input_fingerprint": "sha256:e2bb1a2890ea4cdb5a6f6c498160ded7fec63762ef4821ac63fe617838ddfa27",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "study_type.resolve",
+            "node_type": "study_type_resolution",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [
+              "parse.body_weights"
+            ],
+            "input_fingerprint": "sha256:c79bba92f27e443a9df3dd9fa38d681fea19bef1ba16a40717e8decf947eb9e9",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "validation.body_weight",
+            "node_type": "data_validation",
+            "package_id": "validation.body_weight",
+            "package_version": "0.1.0",
+            "depends_on": [
+              "parse.body_weights",
+              "study_type.resolve"
+            ],
+            "input_fingerprint": "sha256:36f4c234de34b909e42e5d3d1d0757e59de41b8784b4db15fca8db4e5be1f0af",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "template_contract.section.5_2_3_body_weight",
+            "node_type": "template_contract",
+            "package_id": "section.5_2_3_body_weight",
+            "package_version": "0.1.0",
+            "depends_on": [
+              "validation.body_weight"
+            ],
+            "input_fingerprint": "sha256:3201c2285c36d078422d6ae2d08f1f2203f2f0a55dd8c39fa217baf0ec42be4e",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "section.5_2_3_body_weight",
+            "node_type": "section_agent",
+            "package_id": "section.5_2_3_body_weight",
+            "package_version": "0.1.0",
+            "depends_on": [
+              "template_contract.section.5_2_3_body_weight"
+            ],
+            "input_fingerprint": "sha256:703316f208787919d9c60c86994e5ae8512f61ec39e04b1a16289f142ecb070d",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "template_contract.section.5_3_discussion",
+            "node_type": "template_contract",
+            "package_id": "section.5_3_discussion",
+            "package_version": "0.1.0",
+            "depends_on": [
+              "validation.body_weight"
+            ],
+            "input_fingerprint": "sha256:573a33aef3b185a71d4dcfb0729f2f83f0120fe4173ab126eefe8e752e50c7a7",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "section.5_3_discussion",
+            "node_type": "section_agent",
+            "package_id": "section.5_3_discussion",
+            "package_version": "0.1.0",
+            "depends_on": [
+              "template_contract.section.5_3_discussion"
+            ],
+            "input_fingerprint": "sha256:89904553ba24188b3c71ea3ff6c1c9cfafac94cc1294f60054eed8bb23fed190",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "provenance.section.5_2_3_body_weight",
+            "node_type": "provenance",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [
+              "section.5_2_3_body_weight"
+            ],
+            "input_fingerprint": "sha256:d27923461ecce447fa13654a35c9fd08b3f59329104bbc04a69f565e6cc5234c",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "study_output_evaluation.section.5_2_3_body_weight",
+            "node_type": "study_output_evaluation",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [
+              "provenance.section.5_2_3_body_weight"
+            ],
+            "input_fingerprint": "sha256:48c5eacab54df748a71256b9eb32eec59ddb77cc37b9b7e5d1f616da050305a0",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "template_conformance.section.5_2_3_body_weight",
+            "node_type": "template_conformance",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [
+              "study_output_evaluation.section.5_2_3_body_weight"
+            ],
+            "input_fingerprint": "sha256:32b96b35099118789e71bb6864590f12f0cb6beebb1a186c6cd0171cf4aaedc5",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "section_promotion.section.5_2_3_body_weight",
+            "node_type": "section_promotion",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [
+              "template_conformance.section.5_2_3_body_weight"
+            ],
+            "input_fingerprint": "sha256:fafc73f7a631649e8af76ffa92eefbc8dfd3c27e766ef0034fea17a262ea818f",
+            "status": "pending",
+            "evidence": []
+          },
+          {
+            "node_id": "review_scaffold.materialize",
+            "node_type": "review_scaffold",
+            "package_id": null,
+            "package_version": null,
+            "depends_on": [
+              "section_promotion.section.5_2_3_body_weight"
+            ],
+            "input_fingerprint": "sha256:c9ee44bd7d28a8037870cc01331508629d21c2cc437366f6cb96450fc34a39a0",
+            "status": "pending",
+            "evidence": []
+          }
+        ]
+      },
+      "receipt": {
+        "receipt_id": "RCP-150BBC8BF7272ECA",
+        "run_id": "RUN-2650F4339A3B586C",
+        "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+        "run_plan_fingerprint": "sha256:bfb992920ec05840d01ec333baaf0e17c1cf760f1d46fdccf5606423a46a3c51",
+        "governed_inputs_fingerprint": "sha256:fd98e4492bbb793b57af52a37968c027483b9218ff5921ab0fd1436bc931552a",
+        "event_id": "EV-916EBF8076C2D582"
+      },
+      "event_history": [
+        {
+          "event_id": "EV-916EBF8076C2D582",
+          "event": "run_requested",
+          "actor": "Dr. Study Owner",
+          "timestamp": "2026-09-24T23:41:03.596859Z",
+          "outcome": "planned",
+          "details": {
+            "run_id": "RUN-2650F4339A3B586C",
+            "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+            "run_plan_fingerprint": "sha256:bfb992920ec05840d01ec333baaf0e17c1cf760f1d46fdccf5606423a46a3c51"
+          }
+        }
+      ],
+      "predecessor_run_id": null,
+      "supersession_reason": null
+    },
+    "data_validation_executions": [
+      {
+        "receipt": {
+          "receipt_id": "RCP-DVP-8B908C0909A43D02",
+          "run_id": "RUN-2650F4339A3B586C",
+          "package_id": "validation.body_weight",
+          "package_version": "0.1.0",
+          "package_hash": "sha256:2bea2e2f5a12b35979b65c61f833b074e8aff5fa560da9317b4221836e7918e4",
+          "node_id": "validation.body_weight",
+          "executor_id": "body-weight-summary",
+          "executor_version": "1.0.0",
+          "executor_hash": "sha256:092bce89402052debf2388a46ad84da362641e120cc3044932f64e6eefc0e61f",
+          "rule_bundle_id": "validation.body_weight",
+          "rule_ids": [
+            "body-weight-required-grain",
+            "body-weight-summary-recompute",
+            "body-weight-cell-provenance"
+          ],
+          "source_artifact_id": "A-BW",
+          "source_hash": "sha256:synthetic-a-bw-LOCK-2026-09-18",
+          "governed_versions": {
+            "validation.body_weight": "0.1.0@sha256:2bea2e2f5a12b35979b65c61f833b074e8aff5fa560da9317b4221836e7918e4",
+            "body-weight-summary": "1.0.0@sha256:092bce89402052debf2388a46ad84da362641e120cc3044932f64e6eefc0e61f",
+            "helix-ontology": "1.0.0@sha256:a7c4f6b7417e83d0121330b4034550b5c608732bbe7efcd0b2bcdc30e204e92f",
+            "helix-schema": "1.0.0@sha256:6409f1a6b68883471822fb2db7621827b4c3ab2376ac8de4a3f7cbaad5bee1cc",
+            "helix-rules": "1.0.0@sha256:0d51cefef9550203d23f0a76e1cd4fd164a51336bdeb5964789758e0944aa947",
+            "artifact-lineage.schema": "1.0.0@sha256:03d3474d9a98c263461cb216138dafe45b7c1a5c92367b50415a3044f0f5fa63",
+            "candidate-evaluation.schema": "1.0.0@sha256:19341fb6e95f4bfc94493f315e825bce0e58a733d7508af1480564a8a15e134e",
+            "cross-section-query-receipt.schema": "1.0.0@sha256:ba30bd1cf500f251e721d3ec8c5eacb46b64b1475c4986c452dbd67d1d9b7ca1",
+            "data-validation-package.schema": "1.0.0@sha256:39d6c4641c27ec44f9398e9dfe57cc2aaf5ed2f6eaee717dfc9a1af8ab955b97",
+            "drafting-cycle.schema": "1.0.0@sha256:d9e3093bb577011ae037fb639f3f6d2a5a8c7fe2889416eadf49ea2dfd733a7e",
+            "final-study-approval.schema": "1.0.0@sha256:093d8c5bcfd5ac23dccccfbfe1e74249e71a19ca733168e1644c505eb288481f",
+            "human-directed-revision-command.schema": "1.0.0@sha256:1225c39bbaa9cd8b9d4158d572f3a2119fd39dcd8a20470e88c2a9ab56bba6f9",
+            "predecessor-snapshot.schema": "1.0.0@sha256:2455b628f33962d1210bebf376fe309ec991de6920bdbbf46db89ad387748d37",
+            "provenance-receipt.schema": "1.0.0@sha256:b85b3554cbd9250dd8e68bb5162d46e39efa6f91cd48b12b0f4171ce3a87ed0f",
+            "release-candidate.schema": "1.0.0@sha256:26f757d0b8982a4f4627f6092debecf507ca278ff8a5c27522ed37f05d1f31b2",
+            "review-scaffold-revision.schema": "1.0.0@sha256:20a796af0c8cf2c2b98a549e1ace58ecd553ce98341c022545af4605dc8e1e10",
+            "run-plan.schema": "1.0.0@sha256:0a02110d8a93b8b774d285520c4da09209715b38e65455aa7f96032e56d076cb",
+            "section-draft-candidate.schema": "1.0.0@sha256:179b5ddf23845421634e398a7634a537a6dfa1ee1881e473fedd6a66ce234e12",
+            "section-draft.schema": "1.0.0@sha256:b7fb89a065d99417c5c9e74b00002009a192ebbdd0d86d95afc5a0de6c1f8d40",
+            "section-execution-envelope.schema": "1.0.0@sha256:7045dbe94ecd97fc13db8ee4bd3b306fd6f0a0618ef4394402cc06f647901cf9",
+            "section-package.schema": "1.0.0@sha256:529f4a1f2f36f3290d08a5bf84adace65cf9a61fb3a73eda9959530db7daf295",
+            "section-promotion-decision.schema": "1.0.0@sha256:4b8ea2f65992e0e217113dca715e65933336896c734735aae673323f035e2a55",
+            "study-output-evaluation-receipt.schema": "1.0.0@sha256:cc864902782a4fe009dabe5ccf090fd8e87b4cceeaa58acd67d6d5bfb06c83ac",
+            "superseding-run.schema": "1.0.0@sha256:280c7841ef71f1e41c5bb8aff3e00d76d84f484f210385610f23236acaa637fa",
+            "template-conformance-receipt.schema": "1.0.0@sha256:c0f61888df930070052207a4e87b9d0b55abe9a3cf1bf4572269e389b2289d14",
+            "section.5_2_3_body_weight": "0.1.0@sha256:c86107864d607b07b74dc5ab7b402d45e01bee59ad13902117b4cfc8f3e38124",
+            "section.5_3_discussion": "0.1.0@sha256:05bc783c7debacdee983872a3c92dcdd1c00444b0c0b2af8fdb3f99b9b2e0b5e",
+            "helix-section-agent": "0.1.0@sha256:62abd7721d062c807a8481014e513bb41e45c11fa8fc0861b6658340bf860a0e",
+            "study-type-mapping": "1.0.0@sha256:11ea74cfef07f0a7ec4bbd5f2a003f3c23e2d1895026c24381e7ca034f35c4ea",
+            "helix-section-agent-qualification": "0.1.0@sha256:43bc196187d1879c02db457bb91a12db39a4c0a0ded23cde6b44d633fea86968",
+            "helix-section-study-output": "0.1.0@sha256:ca4d8bc8d3a097ecd560c29a4729921e1d432837d8e56318ca05690804627249",
+            "repeat-dose-report-template": "1.0.0@sha256:d1c1fd73d7a75b544b02d9ff9fc585dbdbfa9244220980560bc10e9ad84c3f45",
+            "codex-section-runtime": "0.1.0@sha256:0d75503cfea1e2bf5bb670267e6a88c3fb1b7f7c9e940c4bbc8e48636573ed89"
+          },
+          "input_fingerprint": "sha256:36f4c234de34b909e42e5d3d1d0757e59de41b8784b4db15fca8db4e5be1f0af",
+          "claim_ids": [
+            "C-BW-MEAN-D1-G1-F",
+            "C-BW-SD-D1-G1-F",
+            "C-BW-PCT-D1-G1-F",
+            "C-BW-MEAN-D1-G2-F",
+            "C-BW-SD-D1-G2-F",
+            "C-BW-PCT-D1-G2-F",
+            "C-BW-MEAN-D1-G3-F",
+            "C-BW-SD-D1-G3-F",
+            "C-BW-PCT-D1-G3-F",
+            "C-BW-MEAN-D1-G4-F",
+            "C-BW-SD-D1-G4-F",
+            "C-BW-PCT-D1-G4-F",
+            "C-BW-MEAN-D1-G1-M",
+            "C-BW-SD-D1-G1-M",
+            "C-BW-PCT-D1-G1-M",
+            "C-BW-MEAN-D1-G2-M",
+            "C-BW-SD-D1-G2-M",
+            "C-BW-PCT-D1-G2-M",
+            "C-BW-MEAN-D1-G3-M",
+            "C-BW-SD-D1-G3-M",
+            "C-BW-PCT-D1-G3-M",
+            "C-BW-MEAN-D1-G4-M",
+            "C-BW-SD-D1-G4-M",
+            "C-BW-PCT-D1-G4-M",
+            "C-BW-MEAN-D14-G1-F",
+            "C-BW-SD-D14-G1-F",
+            "C-BW-PCT-D14-G1-F",
+            "C-BW-MEAN-D14-G2-F",
+            "C-BW-SD-D14-G2-F",
+            "C-BW-PCT-D14-G2-F",
+            "C-BW-MEAN-D14-G3-F",
+            "C-BW-SD-D14-G3-F",
+            "C-BW-PCT-D14-G3-F",
+            "C-BW-MEAN-D14-G4-F",
+            "C-BW-SD-D14-G4-F",
+            "C-BW-PCT-D14-G4-F",
+            "C-BW-MEAN-D14-G1-M",
+            "C-BW-SD-D14-G1-M",
+            "C-BW-PCT-D14-G1-M",
+            "C-BW-MEAN-D14-G2-M",
+            "C-BW-SD-D14-G2-M",
+            "C-BW-PCT-D14-G2-M",
+            "C-BW-MEAN-D14-G3-M",
+            "C-BW-SD-D14-G3-M",
+            "C-BW-PCT-D14-G3-M",
+            "C-BW-MEAN-D14-G4-M",
+            "C-BW-SD-D14-G4-M",
+            "C-BW-PCT-D14-G4-M",
+            "C-BW-MEAN-D21-G1-F",
+            "C-BW-SD-D21-G1-F",
+            "C-BW-PCT-D21-G1-F",
+            "C-BW-MEAN-D21-G2-F",
+            "C-BW-SD-D21-G2-F",
+            "C-BW-PCT-D21-G2-F",
+            "C-BW-MEAN-D21-G3-F",
+            "C-BW-SD-D21-G3-F",
+            "C-BW-PCT-D21-G3-F",
+            "C-BW-MEAN-D21-G4-F",
+            "C-BW-SD-D21-G4-F",
+            "C-BW-PCT-D21-G4-F",
+            "C-BW-MEAN-D21-G1-M",
+            "C-BW-SD-D21-G1-M",
+            "C-BW-PCT-D21-G1-M",
+            "C-BW-MEAN-D21-G2-M",
+            "C-BW-SD-D21-G2-M",
+            "C-BW-PCT-D21-G2-M",
+            "C-BW-MEAN-D21-G3-M",
+            "C-BW-SD-D21-G3-M",
+            "C-BW-PCT-D21-G3-M",
+            "C-BW-MEAN-D21-G4-M",
+            "C-BW-SD-D21-G4-M",
+            "C-BW-PCT-D21-G4-M",
+            "C-BW-MEAN-D28-G1-F",
+            "C-BW-SD-D28-G1-F",
+            "C-BW-PCT-D28-G1-F",
+            "C-BW-MEAN-D28-G2-F",
+            "C-BW-SD-D28-G2-F",
+            "C-BW-PCT-D28-G2-F",
+            "C-BW-MEAN-D28-G3-F",
+            "C-BW-SD-D28-G3-F",
+            "C-BW-PCT-D28-G3-F",
+            "C-BW-MEAN-D28-G4-F",
+            "C-BW-SD-D28-G4-F",
+            "C-BW-PCT-D28-G4-F",
+            "C-BW-MEAN-D28-G1-M",
+            "C-BW-SD-D28-G1-M",
+            "C-BW-PCT-D28-G1-M",
+            "C-BW-MEAN-D28-G2-M",
+            "C-BW-SD-D28-G2-M",
+            "C-BW-PCT-D28-G2-M",
+            "C-BW-MEAN-D28-G3-M",
+            "C-BW-SD-D28-G3-M",
+            "C-BW-PCT-D28-G3-M",
+            "C-BW-MEAN-D28-G4-M",
+            "C-BW-SD-D28-G4-M",
+            "C-BW-PCT-D28-G4-M",
+            "C-BW-MEAN-D7-G1-F",
+            "C-BW-SD-D7-G1-F",
+            "C-BW-PCT-D7-G1-F",
+            "C-BW-MEAN-D7-G2-F",
+            "C-BW-SD-D7-G2-F",
+            "C-BW-PCT-D7-G2-F",
+            "C-BW-MEAN-D7-G3-F",
+            "C-BW-SD-D7-G3-F",
+            "C-BW-PCT-D7-G3-F",
+            "C-BW-MEAN-D7-G4-F",
+            "C-BW-SD-D7-G4-F",
+            "C-BW-PCT-D7-G4-F",
+            "C-BW-MEAN-D7-G1-M",
+            "C-BW-SD-D7-G1-M",
+            "C-BW-PCT-D7-G1-M",
+            "C-BW-MEAN-D7-G2-M",
+            "C-BW-SD-D7-G2-M",
+            "C-BW-PCT-D7-G2-M",
+            "C-BW-MEAN-D7-G3-M",
+            "C-BW-SD-D7-G3-M",
+            "C-BW-PCT-D7-G3-M",
+            "C-BW-MEAN-D7-G4-M",
+            "C-BW-SD-D7-G4-M",
+            "C-BW-PCT-D7-G4-M",
+            "C-BW-HIGH"
+          ],
+          "result_ids": [
+            "VR-BW-GRAIN",
+            "VR-BW-RECOMPUTE",
+            "VR-BW-PROVENANCE"
+          ],
+          "event_id": "EV-DVP-C8DE33498B45",
+          "status": "passed",
+          "idempotent_replay": false
+        },
+        "claims": [
+          {
+            "claim_id": "C-BW-MEAN-D1-G1-F",
+            "section_id": "BW",
+            "field_id": "mean-d1-g1-f",
+            "value": 247.0,
+            "unit": "g",
+            "grain": "study_day_x_sex_x_dose_group",
+            "status": "validated",
+            "claim_type": "body_weight.mean",
+            "grain_key": {
+              "study_day": "DAY 1",
+              "sex": "F",
+              "dose_group": "G1"
+            },
+            "source_hashes": [
+              "sha256:4fc7ae897ae330a68bb2d4d73a75dc6176c21118aa8eb6244b9bcd5457f1c513",
+              "sha256:bf29f85706d008b7d23d20b7c6c92d77d27ee947ca172346d8e9a4e03200b298",
+              "sha256:d2969c5410049f3983c30db1831f29e9d2f5cc0b130524275d3d636fcedf2aaa",
+              "sha256:206342b2a23992a93cbf5c0c94d3be07b5167ae9436b28651c60bf82d046a8ae",
+              "sha256:575045e9a136fba002b0491009db2444673b40f2fea48206de50462fb267ce4b"
+            ],
+            "transform_id": "body-weight-mean-v1",
+            "transform_version": "1.0.0",
+            "rule_versions": {
+              "body-weight-required-grain": "1.0.0",
+              "body-weight-summary-recompute": "1.0.0",
+              "body-weight-cell-provenance": "1.0.0"
+            },
+            "package_id": "validation.body_weight",
+            "package_version": "0.1.0",
+            "executor_id": "body-weight-summary",
+            "executor_version": "1.0.0"
+          },
+          {
+            "claim_id": "C-BW-SD-D1-G1-F",
+            "section_id": "BW",
+            "field_id": "standard-deviation-d1-g1-f",
+            "value": 3.3,
+            "unit": "g",
+            "grain": "study_day_x_sex_x_dose_group",
+            "status": "validated",
+            "claim_type": "body_weight.standard_deviation",
+            "grain_key": {
+              "study_day": "DAY 1",
+              "sex": "F",
+              "dose_group": "G1"
+            },
+            "source_hashes": [
+              "sha256:4fc7ae897ae330a68bb2d4d73a75dc6176c21118aa8eb6244b9bcd5457f1c513",
+              "sha256:bf29f85706d008b7d23d20b7c6c92d77d27ee947ca172346d8e9a4e03200b298",
+              "sha256:d2969c5410049f3983c30db1831f29e9d2f5cc0b130524275d3d636fcedf2aaa",
+              "sha256:206342b2a23992a93cbf5c0c94d3be07b5167ae9436b28651c60bf82d046a8ae",
+              "sha256:575045e9a136fba002b0491009db2444673b40f2fea48206de50462fb267ce4b"
+            ],
+            "transform_id": "body-weight-sd-v1",
+            "transform_version": "1.0.0",
+            "rule_versions": {
+              "body-weight-required-grain": "1.0.0",
+              "body-weight-summary-recompute": "1.0.0",
+              "body-weight-cell-provenance": "1.0.0"
+            },
+            "package_id": "validation.body_weight",
+            "package_version": "0.1.0",
+            "executor_id": "body-weight-summary",
+            "executor_version": "1.0.0"
+          }
+        ],
+        "results": [
+          {
+            "result_id": "VR-BW-GRAIN",
+            "rule_id": "body-weight-required-grain",
+            "rule_version": "1.0.0",
+            "enforcement_class": "hard_blocker",
+            "status": "pass",
+            "scope_id": "validation.body_weight",
+            "evidence_ids": [
+              "study_day_x_sex_x_dose_group"
+            ],
+            "message": "Every body-weight record has grain and projects to study_day \u00d7 sex \u00d7 dose_group.",
+            "waivable": false,
+            "package_id": "validation.body_weight",
+            "executor_id": "body-weight-summary"
+          },
+          {
+            "result_id": "VR-BW-RECOMPUTE",
+            "rule_id": "body-weight-summary-recompute",
+            "rule_version": "1.0.0",
+            "enforcement_class": "hard_blocker",
+            "status": "pass",
+            "scope_id": "C-BW-HIGH",
+            "evidence_ids": [
+              "C-BW-HIGH",
+              "backend/tests/fixtures/body-weight-summary.json"
+            ],
+            "message": "Recomputed body-weight summaries match the frozen fixture.",
+            "waivable": false,
+            "package_id": "validation.body_weight",
+            "executor_id": "body-weight-summary"
+          },
+          {
+            "result_id": "VR-BW-PROVENANCE",
+            "rule_id": "body-weight-cell-provenance",
+            "rule_version": "1.0.0",
+            "enforcement_class": "hard_blocker",
+            "status": "pass",
+            "scope_id": "validation.body_weight",
+            "evidence_ids": [
+              "PE-C-BW-MEAN-D1-G1-F-1",
+              "PE-C-BW-MEAN-D1-G1-F-2",
+              "PE-C-BW-MEAN-D1-G1-F-3",
+              "PE-C-BW-MEAN-D1-G1-F-4",
+              "PE-C-BW-MEAN-D1-G1-F-5",
+              "PE-C-BW-SD-D1-G1-F-1",
+              "PE-C-BW-SD-D1-G1-F-2",
+              "PE-C-BW-SD-D1-G1-F-3",
+              "PE-C-BW-SD-D1-G1-F-4",
+              "PE-C-BW-SD-D1-G1-F-5",
+              "PE-C-BW-PCT-D1-G1-F-1",
+              "PE-C-BW-PCT-D1-G1-F-2"
+            ],
+            "message": "Every numeric body-weight claim has complete hashes, transforms, and edges.",
+            "waivable": false,
+            "package_id": "validation.body_weight",
+            "executor_id": "body-weight-summary"
+          }
+        ],
+        "provenance_edges": [
+          {
+            "edge_id": "PE-C-BW-MEAN-D1-G1-F-1",
+            "claim_id": "C-BW-MEAN-D1-G1-F",
+            "source_record_id": "BW-HXL-F101-1",
+            "transform_id": "body-weight-mean-v1",
+            "source_pointer": "A-BW#HXL-F101:DAY1",
+            "authority_tier": 1,
+            "source_hash": "sha256:4fc7ae897ae330a68bb2d4d73a75dc6176c21118aa8eb6244b9bcd5457f1c513",
+            "transform_version": "1.0.0"
+          },
+          {
+            "edge_id": "PE-C-BW-MEAN-D1-G1-F-2",
+            "claim_id": "C-BW-MEAN-D1-G1-F",
+            "source_record_id": "BW-HXL-F102-1",
+            "transform_id": "body-weight-mean-v1",
+            "source_pointer": "A-BW#HXL-F102:DAY1",
+            "authority_tier": 1,
+            "source_hash": "sha256:bf29f85706d008b7d23d20b7c6c92d77d27ee947ca172346d8e9a4e03200b298",
+            "transform_version": "1.0.0"
+          }
+        ],
+        "section_references": [
+          {
+            "section_id": "S5",
+            "section_package_id": "section.5_2_3_body_weight",
+            "title": "5.2.3 Body Weight",
+            "claim_id": "C-BW-HIGH",
+            "executor_receipt_id": "RCP-DVP-8B908C0909A43D02"
+          },
+          {
+            "section_id": "S8",
+            "section_package_id": "section.5_3_discussion",
+            "title": "Discussion and conclusion",
+            "claim_id": "C-BW-HIGH",
+            "executor_receipt_id": "RCP-DVP-8B908C0909A43D02"
+          }
+        ],
+        "event": {
+          "event_id": "EV-DVP-C8DE33498B45",
+          "event": "data_validation_completed",
+          "actor": "Dr. Study Owner",
+          "timestamp": "2026-09-24T23:41:03.697152Z",
+          "outcome": "passed",
+          "details": {
+            "run_id": "RUN-2650F4339A3B586C",
+            "package_id": "validation.body_weight",
+            "receipt_id": "RCP-DVP-8B908C0909A43D02",
+            "executor_id": "body-weight-summary",
+            "source_artifact_id": "A-BW"
+          }
+        },
+        "_claims_total": 121,
+        "_provenance_edges_total": 610
+      }
+    ],
+    "journey": {
+      "label": "SYNTHETIC / NOT FOR SUBMISSION",
+      "current_stage_id": "validate",
+      "run": {
+        "run_id": "RUN-2650F4339A3B586C",
+        "study_id": "STUDY-HLX-028",
+        "run_status": "planned",
+        "run_version": "sha256:bfb992920ec05840d01ec333baaf0e17c1cf760f1d46fdccf5606423a46a3c51",
+        "created_at": "2026-09-24T23:41:03.596859Z",
+        "manifest_hash": "sha256:476a422e743002528a55669186c1490edf7314c505a85d5373390ea72b5157af",
+        "run_plan_fingerprint": "sha256:bfb992920ec05840d01ec333baaf0e17c1cf760f1d46fdccf5606423a46a3c51",
+        "predecessor_run_id": null,
+        "latest_event_id": "RUN-2650F4339A3B586C.E000038",
+        "latest_sequence": 38,
+        "events_url": "/api/v1/studies/STUDY-HLX-028/pinned-runs/RUN-2650F4339A3B586C/events"
+      },
+      "stages": [
+        {
+          "stage_id": "upload",
+          "sequence": 1,
+          "kind": "human_gate",
+          "gate_number": 1,
+          "short_label": "Upload",
+          "name": "Upload and authorize inputs",
+          "status": "complete",
+          "selectable": true,
+          "summary": "The study owner authorizes each source. Freezing the manifest pins checksums and starts the run.",
+          "input": {
+            "title": "Authorized artifacts",
+            "detail": "Protocol, template, source data, statistics, and pattern inputs"
+          },
+          "output": {
+            "title": "Frozen manifest",
+            "detail": "Checksums, authority tiers, and owner authorization"
+          },
+          "control_boundary": "The agent cannot add an unapproved source. Only the freeze command leaves this gate.",
+          "actions": [
+            {
+              "action_id": "manifest:A-PROTOCOL",
+              "label": "Authorized protocol-v3.pdf",
+              "detail": "protocol \u00b7 tier 2 \u00b7 sha256:synthetic-a-protocol-3.0",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-TEMPLATE",
+              "label": "Authorized repeat-dose-template-v5.docx",
+              "detail": "report_template \u00b7 tier 2 \u00b7 sha256:synthetic-a-template-5.0",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-DM",
+              "label": "Authorized dm.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-dm-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-BW",
+              "label": "Authorized body-weights.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-bw-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-CL",
+              "label": "Authorized clinical-observations.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-cl-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-OM",
+              "label": "Authorized organ-weights.xlsx",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-om-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-MI",
+              "label": "Authorized histopathology.csv",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-mi-LOCK-2026-09-18",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-PC",
+              "label": "Authorized formulation-results.pdf",
+              "detail": "source_dataset \u00b7 tier 1 \u00b7 sha256:synthetic-a-pc-SIGNED-2026-09-19",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-STATS",
+              "label": "Authorized analysis-output.pdf",
+              "detail": "statistical_output \u00b7 tier 1 \u00b7 sha256:synthetic-a-stats-FINAL-2026-09-20",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:A-PATTERN",
+              "label": "Authorized approved-study-pattern.pdf",
+              "detail": "approved_report \u00b7 tier 3 \u00b7 sha256:synthetic-a-pattern-FINAL",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "manifest:freeze",
+              "label": "Freeze manifest and start the Pinned Run",
+              "detail": null,
+              "status": "done",
+              "outcome": "passed",
+              "command": "POST /api/v1/studies/STUDY-HLX-028/pinned-runs"
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": 23,
+          "finished_at": "2026-09-24T23:41:03.675113Z"
+        },
+        {
+          "stage_id": "parse",
+          "sequence": 2,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Parse",
+          "name": "Parse protocol, template and source data",
+          "status": "complete",
+          "selectable": true,
+          "summary": "Format-specific parsers convert each frozen file into normalized facts without changing the originals.",
+          "input": {
+            "title": "Frozen files",
+            "detail": "Authorized synthetic protocol, template, and source representations"
+          },
+          "output": {
+            "title": "Typed source records",
+            "detail": "Normalized study records with source pointers"
+          },
+          "control_boundary": "Parsing may flag ambiguity. It may not repair or overwrite raw study data.",
+          "actions": [
+            {
+              "action_id": "node:parse.body_weights",
+              "label": "Parsed parse.body_weights",
+              "detail": null,
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            },
+            {
+              "action_id": "parse:records",
+              "label": "Normalized 1,662 source records",
+              "detail": null,
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": 24,
+          "started_at": "2026-09-24T23:41:03.675362Z",
+          "finished_sequence": 29,
+          "finished_at": "2026-09-24T23:41:03.676018Z"
+        },
+        {
+          "stage_id": "resolve",
+          "sequence": 3,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Resolve",
+          "name": "Resolve study type and pattern",
+          "status": "complete",
+          "selectable": true,
+          "summary": "HELIX resolves the study type and retrieves the approved report pattern for structure only.",
+          "input": {
+            "title": "Protocol facts",
+            "detail": "species \u00b7 route \u00b7 duration \u00b7 endpoints"
+          },
+          "output": {
+            "title": "Study profile",
+            "detail": "Resolved study type and report template"
+          },
+          "control_boundary": "Prior reports may guide structure and phrasing. Their values never enter the new study.",
+          "actions": [
+            {
+              "action_id": "resolve:study-type",
+              "label": "Resolved REPEAT_DOSE_28D_RODENT",
+              "detail": null,
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": 30,
+          "started_at": "2026-09-24T23:41:03.676146Z",
+          "finished_sequence": 33,
+          "finished_at": "2026-09-24T23:41:03.676520Z"
+        },
+        {
+          "stage_id": "extract",
+          "sequence": 4,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Extract",
+          "name": "Deterministic extraction",
+          "status": "complete",
+          "selectable": true,
+          "summary": "Code reads the selected source rows and computes report-ready values at the required grain.",
+          "input": {
+            "title": "Normalized study records",
+            "detail": "Pinned data-validation packages"
+          },
+          "output": {
+            "title": "Candidate claims",
+            "detail": "values \u00b7 units \u00b7 grain \u00b7 transform IDs"
+          },
+          "control_boundary": "The model selects tools and evidence. Deterministic code reads values and performs math.",
+          "actions": [
+            {
+              "action_id": "dvp:validation.body_weight",
+              "label": "Executed validation.body_weight (121 claims)",
+              "detail": "RCP-DVP-8B908C0909A43D02",
+              "status": "done",
+              "outcome": "passed",
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": 34,
+          "started_at": "2026-09-24T23:41:03.676647Z",
+          "finished_sequence": 37,
+          "finished_at": "2026-09-24T23:41:03.803204Z"
+        },
+        {
+          "stage_id": "validate",
+          "sequence": 5,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Validate",
+          "name": "Deterministic validation",
+          "status": "current",
+          "selectable": true,
+          "summary": "Rules check keys, terminology, units, grain, authority, aggregation and source-to-report reconciliation.",
+          "input": {
+            "title": "Candidate claims",
+            "detail": "claims + field rule registry"
+          },
+          "output": {
+            "title": "Validation evidence",
+            "detail": "passes \u00b7 blockers \u00b7 exact evidence IDs"
+          },
+          "control_boundary": "A failed rule creates a blocker. The agent cannot downgrade it to green.",
+          "actions": [
+            {
+              "action_id": "validate:run",
+              "label": "Run deterministic validation",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/validation-runs"
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": 38,
+          "started_at": "2026-09-24T23:41:03.803362Z",
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "draft",
+          "sequence": 6,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Draft",
+          "name": "Structured section drafting",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Report sections are assembled around validated claims with explicit review markers for unresolved fields.",
+          "input": {
+            "title": "Validated claims + pattern",
+            "detail": "facts separated from style pattern"
+          },
+          "output": {
+            "title": "Structured sections",
+            "detail": "draft text \u00b7 tables \u00b7 review markers"
+          },
+          "control_boundary": "The model may write prose. It may not invent a value or make the final scientific judgment.",
+          "actions": [
+            {
+              "action_id": "section:S1",
+              "label": "Assembled Study identity and compliance",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S2",
+              "label": "Assembled Objectives",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S3",
+              "label": "Assembled Materials and methods",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S4",
+              "label": "Assembled Dose formulation",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S5",
+              "label": "Assembled In-life observations",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S6",
+              "label": "Assembled Clinical pathology",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S7",
+              "label": "Assembled Anatomic pathology",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            },
+            {
+              "action_id": "section:S8",
+              "label": "Assembled Discussion and conclusion",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "provenance",
+          "sequence": 7,
+          "kind": "agent_step",
+          "gate_number": null,
+          "short_label": "Provenance",
+          "name": "Compile provenance",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Every report claim is linked to exact source records, the deterministic transform, validation results and manifest version.",
+          "input": {
+            "title": "Draft claims + evidence IDs",
+            "detail": "all numeric claims"
+          },
+          "output": {
+            "title": "Provenance graph",
+            "detail": "source \u2192 transform \u2192 claim"
+          },
+          "control_boundary": "A numeric claim without a provenance edge cannot pass its section gate.",
+          "actions": [
+            {
+              "action_id": "provenance:edges",
+              "label": "Compiled 614 provenance edges",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": null
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "traceability",
+          "sequence": 8,
+          "kind": "human_gate",
+          "gate_number": 2,
+          "short_label": "Gates",
+          "name": "Traceability review",
+          "status": "pending",
+          "selectable": false,
+          "summary": "A reviewer records a disposition for every blocking result before review and export opens.",
+          "input": {
+            "title": "Validation evidence",
+            "detail": "blockers with exact evidence IDs"
+          },
+          "output": {
+            "title": "Recorded dispositions",
+            "detail": "each blocker resolved by a named reviewer"
+          },
+          "control_boundary": "Agent execution stops here. A disposition is recorded as a disposition, never as a pass.",
+          "actions": [],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        },
+        {
+          "stage_id": "review-export",
+          "sequence": 9,
+          "kind": "human_gate",
+          "gate_number": 3,
+          "short_label": "Review & export",
+          "name": "Review, sign and export",
+          "status": "pending",
+          "selectable": false,
+          "summary": "Reviewers sign, the Study Director records Final Study Approval, and an explicit export command releases artifacts.",
+          "input": {
+            "title": "Traceable report",
+            "detail": "dispositions, approvals, and release candidate"
+          },
+          "output": {
+            "title": "Exported artifacts",
+            "detail": "checksummed synthetic artifacts"
+          },
+          "control_boundary": "Approvals can make export ready. Only the explicit export command completes this stage.",
+          "actions": [
+            {
+              "action_id": "approval:pathologist",
+              "label": "Pathologist approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "approval:peer_reviewer",
+              "label": "Peer Reviewer approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "approval:qau",
+              "label": "Qau approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "approval:study_director",
+              "label": "Study Director approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/approvals"
+            },
+            {
+              "action_id": "final-study-approval",
+              "label": "Final Study Approval",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/final-study-approvals"
+            },
+            {
+              "action_id": "export",
+              "label": "Explicit export",
+              "detail": null,
+              "status": "pending",
+              "outcome": null,
+              "command": "POST /api/v1/studies/STUDY-HLX-028/exports"
+            }
+          ],
+          "gate_status": null,
+          "started_sequence": null,
+          "started_at": null,
+          "finished_sequence": null,
+          "finished_at": null
+        }
+      ],
+      "latest_event": {
+        "label": "SYNTHETIC / NOT FOR SUBMISSION",
+        "event_id": "RUN-2650F4339A3B586C.E000038",
+        "run_id": "RUN-2650F4339A3B586C",
+        "study_id": "STUDY-HLX-028",
+        "sequence": 38,
+        "stage_id": "validate",
+        "occurred_at": "2026-09-24T23:41:03.803362Z",
+        "type": "stage_started"
+      }
+    },
+    "workflow_state": "gated"
+  }
+}

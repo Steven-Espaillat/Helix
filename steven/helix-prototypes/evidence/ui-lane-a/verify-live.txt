@@ -1,0 +1,52 @@
+  -   1 tests/codex-section-run.spec.ts:11:5 › drafts the body-weight component through the real Codex SDK
+  ✓   2 tests/intake-upload.spec.ts:27:5 › submit stays disabled until files and governed facts are supplied, and never claims receipt early (362ms)
+  ✓   3 tests/intake-upload.spec.ts:44:5 › polls the job stage by stage and selects the new study when it succeeds (3.6s)
+  ✓   4 tests/intake-upload.spec.ts:73:5 › a failed job shows the server error and does not select a study (1.8s)
+  ✓   5 tests/journey-progress.spec.ts:31:5 › renders the seeded nine-stage projection with only Upload reachable (362ms)
+  ✓   6 tests/journey-progress.spec.ts:56:5 › labels every projected stage state from the server and marks the three human gates (364ms)
+  ✓   7 tests/journey-progress.spec.ts:91:7 › shows a blocked current stage from the server without advancing (296ms)
+  ✓   8 tests/journey-progress.spec.ts:91:7 › shows a paused current stage from the server without advancing (263ms)
+  ✓   9 tests/journey-progress.spec.ts:101:5 › selecting a reached stage changes only the local view and sends no command (418ms)
+  ✓  10 tests/journey-progress.spec.ts:120:5 › reload restores progress from the workspace and resets selection to the current stage (554ms)
+  ✓  11 tests/journey-progress.spec.ts:130:5 › governance: the agent never passes a human gate (782ms)
+  ✓  12 tests/journey-progress.spec.ts:145:5 › governance: traceability cannot continue while the server reports an undisposed blocker (278ms)
+  ✓  13 tests/journey-progress.spec.ts:155:5 › governance: export stays a separate gate after approvals (261ms)
+  ✓  14 tests/journey-progress.spec.ts:163:5 › contract: a ten-stage array is refused, not merged onto nine nodes (210ms)
+  ✓  15 tests/journey-progress.spec.ts:176:5 › contract: legacy stages without projection fields are refused (260ms)
+  ✓  16 tests/run-events-client.spec.ts:40:5 › expired cursor refreshes the workspace and reconnects without duplicating completion (3ms)
+  ✓  17 tests/run-events-client.spec.ts:85:5 › an untyped conflict is not treated as cursor expiry (1ms)
+  ✓  18 tests/run-events-client.spec.ts:93:5 › the same frames sent twice call onEvent once per sequence, across reconnects (1ms)
+  ✓  19 tests/run-events-client.spec.ts:121:5 › a terminal cursor_expired frame refreshes the workspace and reconnects (0ms)
+  ✓  20 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in light theme (531ms)
+  ✓  21 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in dark theme (517ms)
+  ✓  22 tests/shell.spec.ts:133:5 › announces workspace loading and API errors and retries from the keyboard (962ms)
+  ✓  23 tests/shell.spec.ts:170:5 › renders the release pill from server state without inferring readiness (534ms)
+  ✓  24 tests/upload-gate.spec.ts:54:5 › renders the manifest from the workspace and keeps freeze disabled until consent (481ms)
+  ✓  25 tests/upload-gate.spec.ts:80:5 › freezes through the server, shows the Pinned Run, and restores it on reload (819ms)
+  ✓  26 tests/upload-gate.spec.ts:122:5 › a retry after an unknown result reuses the same idempotency key, even after reload (774ms)
+  ✓  27 tests/upload-gate.spec.ts:141:5 › a changed manifest uses a new idempotency key (695ms)
+  ✓  28 tests/upload-gate.spec.ts:167:5 › shows the server refusal list and stays unfrozen (444ms)
+  ✓  29 tests/upload-gate.spec.ts:187:5 › a Data Validation failure after freeze shows the partial state and retries with the run-scoped key (803ms)
+  ✓  30 tests/upload-gate.spec.ts:232:5 › only Human Gate 1 can pin a run: legacy validation is hidden and the API refuses to auto-freeze (333ms)
+  ✓  31 tests/upload-gate.spec.ts:258:5 › legacy validation unlocks once a human freeze has pinned the run (260ms)
+  ✓  32 tests/workbench.spec.ts:8:5 › rejects a workspace response from an incompatible API (209ms)
+  ✘  33 tests/workbench.spec.ts:38:5 › runs the synthetic study from validation through explicit export (1.5m)
+  ✓  34 tests/workbench.spec.ts:217:5 › keeps draft blocked when the API reports ineligible despite ready-looking claims (311ms)
+  ✓  35 tests/workbench.spec.ts:252:5 › enables draft from backend eligibility even when claims look incomplete (261ms)
+  ✓  36 tests/workbench.spec.ts:282:5 › renders candidate evaluation and cross-section query from backend-owned workspace fields (840ms)
+  ✘  37 tests/workbench.spec.ts:399:5 › renders predecessor run identity and carry-forward counts from the workspace (207ms)
+  ✓  38 tests/workbench.spec.ts:422:5 › renders the exact Final Study Approval scope from the workspace (311ms)
+  ✓  39 tests/workbench.spec.ts:441:5 › renders backend promotion status and draft evidence without recalculating eligibility (411ms)
+  ✓  40 tests/workbench.spec.ts:494:5 › shows every immutable attempt and offers no fourth attempt after stop_for_review (280ms)
+  ✓  41 tests/workbench.spec.ts:533:5 › offers revise after stop_for_review and shows a new cycle without changing discussion hashes (487ms)
+    test-results/workbench-runs-the-synthet-de3d9-ion-through-explicit-export/test-failed-1.png
+    Error: expect(locator).toBeVisible() failed
+    test-results/workbench-renders-predeces-cd88a-d-counts-from-the-workspace/test-failed-1.png
+  2 failed
+  1 skipped
+  38 passed (1.9m)
+✓ Running next.config.ts took 15ms
+✓ Compiled successfully in 1611ms
+✓ Generating static pages using 6 workers (4/4) in 243ms
+✓ Ready in 77ms
+✓ Running next.config.ts took 17ms

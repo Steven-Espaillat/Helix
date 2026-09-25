@@ -65,6 +65,10 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("source-manifest").getByText("body-weights.csv")).toBeVisible();
   await page.screenshot({ path: "../evidence/helix-source-manifest.png", fullPage: true });
 
+  // Human Gate 1 (#22 P1): a human freezes the authorized manifest; validation never auto-freezes.
+  await page.getByTestId("freeze-consent").check();
+  await page.getByTestId("freeze-manifest").click();
+  await expect(page.getByTestId("upload-gate")).toHaveAttribute("data-frozen", "true");
   await page.getByTestId("run-validation").click();
   await expect(page.getByRole("status")).toContainText("13 checks completed");
   await expect(page.getByTestId("draft-body-weight")).toBeEnabled();
