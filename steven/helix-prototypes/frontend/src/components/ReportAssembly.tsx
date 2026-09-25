@@ -258,7 +258,8 @@ export function ReportAssembly({
             {draftError && <div className="notice error inline">{draftError}</div>}
 
             {draft && draft.status !== "verified" && (
-              <div className="review-banner hx-banner awaiting" role="status">
+              // Static guidance, not a live update: role="note" keeps the page to one status region.
+              <div className="review-banner hx-banner awaiting" role="note" aria-label="Section needs review">
                 <strong>Needs your review.</strong> Verify the content below and use the chat to give
                 feedback or rerun this section.
               </div>

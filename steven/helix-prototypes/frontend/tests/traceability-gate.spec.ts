@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 import {
   apiRoot,
@@ -452,7 +452,21 @@ test("Inspect on a report statement opens Gate 2 on that statement's claim", asy
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
 });
 
-test("a drafted section's Inspect opens Gate 2 on that section's own claim", async ({ page }) => {
+/** Unique claim-backed blocks the server's report projection lists for a template section. */
+async function reportClaims(request: APIRequestContext, sectionId: string): Promise<Array<{ claimId: string; edges: number }>> {
+  const workspace = (await (await request.get(`${apiRoot}/studies/${studyId}/workspace`)).json()) as Json;
+  const section = (workspace.report as { sections: Array<{ section_id: string; blocks: Array<Json> }> }).sections.find(
+    (item) => item.section_id === sectionId,
+  );
+  const claims = new Map<string, number>();
+  for (const block of section?.blocks ?? []) {
+    const claimId = block.claim_id as string | null;
+    if (claimId && !claims.has(claimId)) claims.set(claimId, (block.provenance_count as number | null) ?? 0);
+  }
+  return [...claims].map(([claimId, edges]) => ({ claimId, edges }));
+}
+
+test("a drafted section's Inspect opens Gate 2 on that section's own claim", async ({ page, request }) => {
   await serveGate(page);
   await openGate(page);
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
@@ -468,15 +482,39 @@ test("a drafted section's Inspect opens Gate 2 on that section's own claim", asy
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
   await expect(page.getByTestId("claim-C-MI-LIVER")).toHaveAttribute("aria-pressed", "true");
 
-  // 5.2.3 Body Weight (S5) inspects C-BW-HIGH with its own edge count.
+  // 5.2.3 Body Weight (S5) offers one Inspect per claim the server reports for S5, each with
+  // its own edge count. Before VR-004 is resolved on the server that is C-BW-HIGH (10 edges);
+  // once a live "corrected" disposition resolves it, the server reports S5 by sex
+  // (C-BW-HIGH-M and C-BW-HIGH-F), so the claims come from the live report, not a constant.
+  const bodyWeight = await reportClaims(request, "S5");
+  expect(bodyWeight.length).toBeGreaterThan(0);
+  if (!LIVE_WRITES) expect(bodyWeight).toEqual([{ claimId: "C-BW-HIGH", edges: 10 }]);
   await navigator.getByRole("button", { name: /5\.2\.3 Body Weight/ }).click();
-  await expect(paperClaims.getByTestId("inspect-claim-C-BW-HIGH")).toHaveText("Inspect 10 provenance edges");
-  await paperClaims.getByTestId("inspect-claim-C-BW-HIGH").click();
-  await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
+  await expect(paperClaims.getByRole("button")).toHaveCount(bodyWeight.length);
+  for (const { claimId, edges } of bodyWeight) {
+    const inspect = paperClaims.getByTestId(`inspect-claim-${claimId}`);
+    await expect(inspect).toHaveText(`Inspect ${edges} provenance edges`);
+    await inspect.click();
+    await expect(page.getByTestId("trace-claim-kicker")).toContainText(`Claim ${claimId}`);
+    await expect(page.getByTestId(`claim-${claimId}`)).toHaveAttribute("aria-pressed", "true");
+  }
 
   // A section whose template section has no claims shows no Inspect button.
   await navigator.getByRole("button", { name: /1\. Objective/ }).click();
   await expect(page.getByTestId("draft-section-claims")).toHaveCount(0);
+});
+
+test("the drafted section's review banner is a note, so the page keeps one status region", async ({ page }) => {
+  await serveGate(page);
+  await openGate(page);
+  const navigator = page.getByRole("complementary", { name: "Report sections" });
+  await navigator.getByRole("button", { name: /5\.2\.3 Body Weight/ }).click();
+  const banner = page.locator(".report-view .review-banner");
+  await expect(banner).toBeVisible();
+  await expect(banner).toContainText("Needs your review.");
+  await expect(page.getByRole("note", { name: "Section needs review" })).toBeVisible();
+  // Static guidance must not be a second live status region (workbench.spec.ts:73 reads getByRole("status")).
+  await expect(page.getByRole("status").filter({ hasText: "Needs your review" })).toHaveCount(0);
 });
 
 test("the Gate 2 evidence card shows source hashes, rule versions and exact reconciliation", async ({ page }) => {
