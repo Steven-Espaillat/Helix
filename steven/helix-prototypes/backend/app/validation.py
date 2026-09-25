@@ -23,9 +23,13 @@ logger = logging.getLogger(__name__)
 
 # Upstream error bodies are logged at most this long.
 UPSTREAM_BODY_LOG_LIMIT = 2000
+# Hard rule: no API key (or OpenAI's masked echo of one) reaches logs or clients.
+# ``sk-`` keys include project/service-account/admin forms (``sk-proj-...``,
+# ``sk-svcacct-...``) and OpenAI's own masked echo (``sk-proj-****abcd``), so the
+# ``*`` mask character counts as part of the key.
 _SECRET_PATTERNS = (
-    re.compile(r"sk-[A-Za-z0-9_\-]{8,}"),
-    re.compile(r"(?i)bearer\s+[A-Za-z0-9._\-]+"),
+    re.compile(r"sk-[A-Za-z0-9_\-*.]{4,}"),
+    re.compile(r"(?i)bearer\s+[A-Za-z0-9._\-*]+"),
 )
 
 
@@ -60,6 +64,36 @@ class PlannerUpstreamError(PlannerUnavailableError):
         if param:
             parts.append(f"param={param}")
         super().__init__(f"Planner endpoint rejected the request ({', '.join(parts)}): {message}")
+
+    @property
+    def http_status(self) -> int:
+        """HELIX status for this upstream failure.
+
+        An upstream 4xx means our request or credentials were refused, not that the
+        planner is temporarily unavailable: 429 stays a typed 429 (retry later) and
+        every other 4xx is a typed 502 Bad Gateway. Upstream 5xx stays 503.
+        """
+        if self.status_code == 429:
+            return 429
+        if 400 <= self.status_code < 500:
+            return 502
+        return 503
+
+    def as_detail(self) -> dict[str, Any]:
+        if self.status_code == 429:
+            code = "planner_rate_limited"
+        elif 400 <= self.status_code < 500:
+            code = "planner_upstream_rejected"
+        else:
+            code = "planner_upstream_unavailable"
+        return {
+            "code": code,
+            "message": str(self),
+            "upstream_status": self.status_code,
+            "upstream_type": self.error_type,
+            "upstream_code": self.code,
+            "upstream_param": self.param,
+        }
 
 
 class PlannerResponseError(PlannerUnavailableError):
@@ -107,9 +141,13 @@ class AgentPlan(BaseModel):
 
 # JSON Schema keywords OpenAI structured outputs accept with "strict": true
 # (https://platform.openai.com/docs/guides/structured-outputs#supported-schemas).
-# Anything else (oneOf, discriminator, title, minItems, ...) is dropped or
-# rewritten; AgentPlan still validates the reply, so the contract is unchanged.
+# Array length limits (minItems/maxItems) are supported, so AgentPlan's 1-12
+# proposal contract is enforced upstream too. Anything else (oneOf,
+# discriminator, title, ...) is dropped or rewritten; AgentPlan still validates
+# the reply.
 _STRICT_KEYWORDS = {
+    "minItems",
+    "maxItems",
     "type",
     "properties",
     "required",
@@ -128,6 +166,11 @@ def _strict_node(node: Any) -> Any:
         return [_strict_node(item) for item in node]
     if not isinstance(node, dict):
         return node
+    extra = node.get("additionalProperties")
+    if extra not in (None, False):
+        # A dict[str, X] field emits additionalProperties: {schema}; strict mode would
+        # silently turn it into a closed empty object, so refuse it loudly instead.
+        raise ValueError("Strict planner schema cannot express open additionalProperties")
     out: dict[str, Any] = {}
     for key, value in node.items():
         if key == "oneOf":
@@ -150,7 +193,7 @@ def strict_plan_schema() -> dict[str, Any]:
     Works for OpenAI (api.openai.com) and OpenAI-compatible gateways (the Azure
     path): the union becomes anyOf (strict mode rejects oneOf/discriminator),
     const becomes a one-value enum, and every object is closed with all
-    properties required. Length limits are enforced by AgentPlan on the reply.
+    properties required. Array length limits are kept; AgentPlan re-checks the reply.
     """
     return _strict_node(AgentPlan.model_json_schema())
 
@@ -242,11 +285,13 @@ class OpenAICompatiblePlanner:
             content = response.json()["choices"][0]["message"]["content"]
             return AgentPlan.model_validate_json(content)
         except (KeyError, IndexError, TypeError, ValueError) as error:
+            # Log only the size and the parse error, never the model output itself.
             logger.warning(
-                "Planner %s returned an unusable plan (HTTP %s): %s",
+                "Planner %s returned an unusable plan (HTTP %s, %d bytes): %s",
                 url,
                 response.status_code,
-                _redact(response.text[:UPSTREAM_BODY_LOG_LIMIT], self.settings.llm_api_key),
+                len(response.content),
+                type(error).__name__,
             )
             raise PlannerResponseError(f"Planner returned an invalid plan: {type(error).__name__}") from error
 

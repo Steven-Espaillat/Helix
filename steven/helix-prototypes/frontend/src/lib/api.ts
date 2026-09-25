@@ -238,6 +238,10 @@ function errorMessage(value: unknown): string {
   if (isObject(value) && typeof value.detail === "string") {
     return value.detail;
   }
+  // Typed errors ({ code, message, ... }) still show their message.
+  if (isObject(value) && isObject(value.detail) && typeof value.detail.message === "string") {
+    return value.detail.message;
+  }
   return "The HELIX API returned an unexpected error.";
 }
 

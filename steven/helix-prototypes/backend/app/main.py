@@ -81,7 +81,7 @@ from .section_runs import (
 )
 from .seed import seed_database
 from .service import InvalidCommandError, StudyService, WorkflowConflictError
-from .validation import PlannerUnavailableError
+from .validation import PlannerUnavailableError, PlannerUpstreamError
 
 
 STUDY_ID_PATTERN = re.compile(r"^STUDY-[A-Z0-9-]+$")
@@ -631,6 +631,8 @@ def _call[ResponseT](operation: Callable[[], ResponseT]) -> ResponseT:
         ) from error
     except CandidateValidationError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+    except PlannerUpstreamError as error:
+        raise HTTPException(status_code=error.http_status, detail=error.as_detail()) from error
     except (PlannerUnavailableError, SectionRunUnavailableError) as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 

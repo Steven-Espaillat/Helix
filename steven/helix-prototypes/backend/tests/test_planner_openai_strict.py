@@ -36,6 +36,8 @@ STRICT_ALLOWED = {
     "$ref",
     "$defs",
     "description",
+    "minItems",
+    "maxItems",
 }
 STRICT_FORBIDDEN = {"oneOf", "allOf", "not", "discriminator", "if", "then", "else", "patternProperties"}
 
@@ -100,7 +102,12 @@ def test_strict_schema_keeps_the_output_contract() -> None:
             jsonschema.validate(bad, schema)
         with pytest.raises(ValidationError):
             AgentPlan.model_validate(bad)
-    # Length limits stay enforced on the reply by AgentPlan.
+    # Length limits are enforced upstream by the strict schema and on the reply by AgentPlan.
+    proposals = schema["properties"]["proposals"]
+    assert (proposals["minItems"], proposals["maxItems"]) == (1, 12)
+    for bad_length in ({"proposals": []}, {"proposals": GOOD_PLAN["proposals"] * 5}):
+        with pytest.raises(jsonschema.ValidationError):
+            jsonschema.validate(bad_length, schema)
     with pytest.raises(ValidationError):
         AgentPlan.model_validate({"proposals": []})
     with pytest.raises(ValidationError):
@@ -231,3 +238,148 @@ def test_transport_error_does_not_leak_the_key(monkeypatch, caplog) -> None:
     with pytest.raises(PlannerUnavailableError) as raised:
         _openai_planner().plan(load_seed_package(SEED_PATH))
     assert KEY not in str(raised.value) and KEY not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "secret",
+    [
+        "sk-proj-AbCdEf0123456789_xyz-QRS",
+        "sk-proj-****abcd",
+        "sk-proj-********************************************abcd",
+        "sk-svcacct-0123456789abcdef",
+        "sk-admin-0123456789abcdef",
+        "sk-abcd",
+        "sk-****wxyz",
+    ],
+)
+def test_redaction_catches_project_and_masked_keys(secret: str) -> None:
+    from app.validation import _redact
+
+    text = f"Incorrect API key provided: {secret}. You can find your API key at ..."
+    redacted = _redact(text, None)
+    assert "[REDACTED]" in redacted
+    # No fragment of the key survives, including the unmasked tail.
+    assert secret not in redacted and secret[-4:] not in redacted
+
+
+def test_masked_project_key_in_upstream_401_is_never_logged(monkeypatch, caplog) -> None:
+    masked = "sk-proj-****************************************Zq9x"
+    body = {
+        "error": {
+            "message": f"Incorrect API key provided: {masked}.",
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": None,
+        }
+    }
+
+    def fake_post(url: str, **kwargs: Any) -> httpx.Response:
+        return httpx.Response(401, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr("app.validation.httpx.post", fake_post)
+    caplog.set_level(logging.WARNING, logger="app.validation")
+    with pytest.raises(PlannerUpstreamError) as raised:
+        _openai_planner().plan(load_seed_package(SEED_PATH))
+    for surface in (caplog.text, str(raised.value), json.dumps(raised.value.as_detail())):
+        assert "Zq9x" not in surface and "sk-proj" not in surface
+
+
+@pytest.mark.parametrize(
+    ("upstream", "expected_status", "expected_code"),
+    [
+        (400, 502, "planner_upstream_rejected"),
+        (401, 502, "planner_upstream_rejected"),
+        (404, 502, "planner_upstream_rejected"),
+        (429, 429, "planner_rate_limited"),
+        (500, 503, "planner_upstream_unavailable"),
+    ],
+)
+def test_upstream_status_maps_to_typed_helix_status(
+    upstream: int, expected_status: int, expected_code: str
+) -> None:
+    error = PlannerUpstreamError(
+        status_code=upstream,
+        error_type="invalid_request_error",
+        code="unsupported_value",
+        param="temperature",
+        message="Unsupported value",
+    )
+    assert error.http_status == expected_status
+    detail = error.as_detail()
+    assert detail["code"] == expected_code
+    assert detail["upstream_status"] == upstream
+    assert detail["upstream_param"] == "temperature"
+    assert f"HTTP {upstream}" in detail["message"]
+
+
+def test_unusable_plan_logs_size_not_model_output(monkeypatch, caplog) -> None:
+    leaked = "PATIENT-NAME-SHOULD-NOT-BE-LOGGED"
+
+    def fake_post(url: str, **kwargs: Any) -> httpx.Response:
+        return _ok(url, {"proposals": [{"tool": "invent_a_result", "claim_id": leaked}]})
+
+    monkeypatch.setattr("app.validation.httpx.post", fake_post)
+    caplog.set_level(logging.WARNING, logger="app.validation")
+    with pytest.raises(PlannerResponseError):
+        _openai_planner().plan(load_seed_package(SEED_PATH))
+    assert "unusable plan" in caplog.text and "bytes" in caplog.text
+    assert leaked not in caplog.text
+
+
+def test_strict_schema_refuses_open_additional_properties() -> None:
+    from app.validation import _strict_node
+
+    with pytest.raises(ValueError, match="additionalProperties"):
+        _strict_node({"type": "object", "additionalProperties": {"type": "string"}})
+
+
+@pytest.mark.parametrize(
+    ("upstream", "expected_status", "expected_code"),
+    [(400, 502, "planner_upstream_rejected"), (429, 429, "planner_rate_limited")],
+)
+def test_route_returns_typed_status_for_upstream_4xx(
+    tmp_path, monkeypatch, upstream: int, expected_status: int, expected_code: str
+) -> None:
+    from fastapi.testclient import TestClient
+
+    from app.database import create_database_engine
+    from app.main import create_app
+    from tests.test_journey_run_events import qualified_fixture_root
+
+    body = {
+        "error": {
+            "message": "Incorrect API key provided: sk-proj-****Zq9x.",
+            "type": "invalid_request_error",
+            "code": "unsupported_value",
+            "param": "temperature",
+        }
+    }
+
+    def fake_post(url: str, **kwargs: Any) -> httpx.Response:
+        return httpx.Response(upstream, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr("app.validation.httpx.post", fake_post)
+    settings = Settings(
+        database_url="sqlite+pysqlite:///:memory:",
+        seed_path=SEED_PATH,
+        codex_repository_root=qualified_fixture_root(tmp_path),
+        auto_seed=True,
+        llm_base_url="https://api.openai.com/v1",
+        llm_api_key=KEY,
+        llm_model="gpt-6-luna",
+    )
+    with TestClient(create_app(settings, create_database_engine(settings))) as client:
+        # Lane A gate: validation requires an audited human freeze (pinned run) first.
+        frozen = client.post(
+            "/api/v1/studies/STUDY-HLX-028/pinned-runs",
+            json={"actor": "Dr. Study Owner", "idempotency_key": f"planner-4xx-freeze-{upstream}"},
+        )
+        assert frozen.status_code == 201, frozen.text
+        response = client.post(
+            "/api/v1/studies/STUDY-HLX-028/validation-runs", json={"planner": "openai_compatible"}
+        )
+    assert response.status_code == expected_status, response.text
+    detail = response.json()["detail"]
+    assert detail["code"] == expected_code
+    assert detail["upstream_status"] == upstream and detail["upstream_param"] == "temperature"
+    assert KEY not in response.text and "Zq9x" not in response.text
