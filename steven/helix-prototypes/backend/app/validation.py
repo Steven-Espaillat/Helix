@@ -1,6 +1,8 @@
 import json
+import logging
+import re
 from collections.abc import Iterable
-from typing import Annotated, Literal, Protocol
+from typing import Annotated, Any, Literal, Protocol
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
@@ -17,9 +19,59 @@ from .schemas import (
 
 RULE_BUNDLE_VERSION = "helix-rules-1.0.0"
 
+logger = logging.getLogger(__name__)
+
+# Upstream error bodies are logged at most this long.
+UPSTREAM_BODY_LOG_LIMIT = 2000
+_SECRET_PATTERNS = (
+    re.compile(r"sk-[A-Za-z0-9_\-]{8,}"),
+    re.compile(r"(?i)bearer\s+[A-Za-z0-9._\-]+"),
+)
+
 
 class PlannerUnavailableError(RuntimeError):
     pass
+
+
+class PlannerUpstreamError(PlannerUnavailableError):
+    """The planner endpoint answered with a non-2xx status.
+
+    Carries the upstream status and OpenAI-style error fields (type, code,
+    param, message) so callers and logs say *why*, never the credentials.
+    """
+
+    def __init__(
+        self,
+        status_code: int,
+        *,
+        error_type: str | None,
+        code: str | None,
+        param: str | None,
+        message: str,
+    ):
+        self.status_code = status_code
+        self.error_type = error_type
+        self.code = code
+        self.param = param
+        self.upstream_message = message
+        parts = [f"HTTP {status_code}"]
+        if code or error_type:
+            parts.append(code or error_type or "")
+        if param:
+            parts.append(f"param={param}")
+        super().__init__(f"Planner endpoint rejected the request ({', '.join(parts)}): {message}")
+
+
+class PlannerResponseError(PlannerUnavailableError):
+    """The planner endpoint answered 2xx but the plan was missing or invalid."""
+
+
+def _redact(text: str, secret: str | None) -> str:
+    if secret:
+        text = text.replace(secret, "[REDACTED]")
+    for pattern in _SECRET_PATTERNS:
+        text = pattern.sub("[REDACTED]", text)
+    return text
 
 
 class ProposalBase(BaseModel):
@@ -53,6 +105,56 @@ class AgentPlan(BaseModel):
     proposals: list[CheckProposal] = Field(min_length=1, max_length=12)
 
 
+# JSON Schema keywords OpenAI structured outputs accept with "strict": true
+# (https://platform.openai.com/docs/guides/structured-outputs#supported-schemas).
+# Anything else (oneOf, discriminator, title, minItems, ...) is dropped or
+# rewritten; AgentPlan still validates the reply, so the contract is unchanged.
+_STRICT_KEYWORDS = {
+    "type",
+    "properties",
+    "required",
+    "additionalProperties",
+    "items",
+    "anyOf",
+    "enum",
+    "$ref",
+    "$defs",
+    "description",
+}
+
+
+def _strict_node(node: Any) -> Any:
+    if isinstance(node, list):
+        return [_strict_node(item) for item in node]
+    if not isinstance(node, dict):
+        return node
+    out: dict[str, Any] = {}
+    for key, value in node.items():
+        if key == "oneOf":
+            out["anyOf"] = _strict_node(value)
+        elif key == "const":
+            out["enum"] = [value]
+        elif key in ("properties", "$defs"):
+            out[key] = {name: _strict_node(child) for name, child in value.items()}
+        elif key in _STRICT_KEYWORDS:
+            out[key] = _strict_node(value)
+    if out.get("type") == "object" or "properties" in out:
+        out["additionalProperties"] = False
+        out["required"] = list(out.get("properties", {}))
+    return out
+
+
+def strict_plan_schema() -> dict[str, Any]:
+    """AgentPlan's JSON Schema, rewritten for OpenAI strict structured outputs.
+
+    Works for OpenAI (api.openai.com) and OpenAI-compatible gateways (the Azure
+    path): the union becomes anyOf (strict mode rejects oneOf/discriminator),
+    const becomes a one-value enum, and every object is closed with all
+    properties required. Length limits are enforced by AgentPlan on the reply.
+    """
+    return _strict_node(AgentPlan.model_json_schema())
+
+
 class CheckPlanner(Protocol):
     label: str
     llm_used: bool
@@ -84,10 +186,12 @@ class OpenAICompatiblePlanner:
         self.settings = settings
 
     def plan(self, package: StudyEvidencePackage) -> AgentPlan:
-        schema = AgentPlan.model_json_schema()
+        schema = strict_plan_schema()
+        # No "temperature": newer OpenAI models (gpt-6-luna) reject any value
+        # but the default ("temperature does not support 0 with this model").
+        # Determinism comes from the strict schema plus deterministic tools.
         payload = {
             "model": self.settings.llm_model,
-            "temperature": 0,
             "messages": [
                 {
                     "role": "system",
@@ -121,18 +225,54 @@ class OpenAICompatiblePlanner:
                 "json_schema": {"name": "helix_check_plan", "strict": True, "schema": schema},
             },
         }
+        url = f"{self.settings.llm_base_url.rstrip('/')}/chat/completions"
         try:
             response = httpx.post(
-                f"{self.settings.llm_base_url.rstrip('/')}/chat/completions",
+                url,
                 headers={"Authorization": f"Bearer {self.settings.llm_api_key}"},
                 json=payload,
                 timeout=30,
             )
-            response.raise_for_status()
+        except httpx.HTTPError as error:
+            logger.warning("Planner request to %s failed before a response: %s", url, type(error).__name__)
+            raise PlannerUnavailableError(f"Planner request failed: {type(error).__name__}") from error
+        if response.status_code >= 400:
+            raise self._upstream_error(url, response)
+        try:
             content = response.json()["choices"][0]["message"]["content"]
             return AgentPlan.model_validate_json(content)
-        except (httpx.HTTPError, KeyError, TypeError, ValueError) as error:
-            raise PlannerUnavailableError(f"Planner request failed: {error}") from error
+        except (KeyError, IndexError, TypeError, ValueError) as error:
+            logger.warning(
+                "Planner %s returned an unusable plan (HTTP %s): %s",
+                url,
+                response.status_code,
+                _redact(response.text[:UPSTREAM_BODY_LOG_LIMIT], self.settings.llm_api_key),
+            )
+            raise PlannerResponseError(f"Planner returned an invalid plan: {type(error).__name__}") from error
+
+    def _upstream_error(self, url: str, response: httpx.Response) -> PlannerUpstreamError:
+        body = _redact(response.text[:UPSTREAM_BODY_LOG_LIMIT], self.settings.llm_api_key)
+        # Log status and body only: never the request headers or the key.
+        logger.warning("Planner endpoint %s returned HTTP %s: %s", url, response.status_code, body)
+        error: dict[str, Any] = {}
+        try:
+            parsed = response.json()
+            if isinstance(parsed, dict) and isinstance(parsed.get("error"), dict):
+                error = parsed["error"]
+        except ValueError:
+            pass
+
+        def field(name: str) -> str | None:
+            value = error.get(name)
+            return _redact(str(value), self.settings.llm_api_key) if value is not None else None
+
+        return PlannerUpstreamError(
+            response.status_code,
+            error_type=field("type"),
+            code=field("code"),
+            param=field("param"),
+            message=field("message") or body[:300] or "no response body",
+        )
 
 
 def deterministic_results(package: StudyEvidencePackage) -> list[ValidationResult]:

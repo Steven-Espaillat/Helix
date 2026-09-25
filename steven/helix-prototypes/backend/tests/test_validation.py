@@ -12,6 +12,9 @@ SEED_PATH = Path(__file__).resolve().parents[2] / "synthetic-e2e" / "helix-synth
 
 
 class StubResponse:
+    status_code = 200
+    text = ""
+
     def raise_for_status(self) -> None:
         return None
 
@@ -49,7 +52,7 @@ def test_openai_compatible_planner_uses_strict_plan_then_deterministic_tools(mon
     assert request["headers"] == {"Authorization": "Bearer test-key"}
     payload = request["json"]
     assert isinstance(payload, dict)
-    assert payload["temperature"] == 0
+    assert "temperature" not in payload
     assert payload["response_format"]["json_schema"]["strict"] is True
     assert [result.tool_name for result in results] == [
         "grounded_numeric_claim",
