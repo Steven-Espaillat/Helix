@@ -13,8 +13,8 @@
   "reference": "research/helix-e2e-workbench-v1.html?stage=7",
   "pixelThreshold": 0.02,
   "maxDiffRatio": 0.01,
-  "ratio": 0.007106,
-  "diffPixels": 6398,
+  "ratio": 0.007092,
+  "diffPixels": 6385,
   "comparedPixels": 900320,
   "maskedPixels": 0,
   "oursSize": {

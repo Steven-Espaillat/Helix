@@ -13,6 +13,7 @@ import type { DispositionCommand } from "./dispositionRules";
 import {
   claimForResult,
   continueEligibility,
+  evaluationForClaim,
   isRecorded,
   latestDispositions,
   requiredBlockerIds,
@@ -63,6 +64,11 @@ export function TraceabilityStageView({
   useEffect(() => {
     let active = true;
     setLoadError(null);
+    // No claim, no lookup: never ask the API for an empty claim ID.
+    if (!claimId) {
+      setChain(null);
+      return;
+    }
     void loadEvidence(studyId, claimId)
       .then((value) => {
         if (active) setChain(value);
@@ -102,7 +108,8 @@ export function TraceabilityStageView({
   );
 
   const selectedClaim = workspace.claims.find((claim) => claim.claim_id === claimId);
-  const evaluation = latestEvaluation(workspace);
+  const evaluation = evaluationForClaim(workspace, claimId);
+  const evaluationCount = workspace.candidate_evaluations?.length ?? 0;
 
   function selectClaim(nextClaimId: string, resultId?: string) {
     setFormResultId(null);
@@ -158,7 +165,7 @@ export function TraceabilityStageView({
         <div className="hx-trace-head">
           <div>
             <Kicker data-testid="trace-claim-kicker">
-              Claim {claimId}
+              {claimId ? `Claim ${claimId}` : "No claims"}
               {selectedClaim ? ` \u00b7 ${humanizeField(selectedClaim.field_id)}` : ""}
             </Kicker>
             <h1>Validation and traceability</h1>
@@ -180,7 +187,12 @@ export function TraceabilityStageView({
             )}
           </div>
         </div>
-        {loadError ? (
+        {!claimId ? (
+          <Card data-testid="trace-no-claims">
+            <Kicker>No claims to trace</Kicker>
+            <p className="hx-sub">The server has not recorded any claims for this study, so there is no evidence to review yet.</p>
+          </Card>
+        ) : loadError ? (
           <Card role="alert" data-testid="evidence-error">
             <Kicker>Evidence unavailable</Kicker>
             <p className="hx-sub">{loadError}</p>
@@ -210,7 +222,7 @@ export function TraceabilityStageView({
       <GateBlockers workspace={workspace} required={required} claimId={claimId} onSelect={selectClaim} />
 
       <div className="hx-trace-detail">
-        <CandidateReceipts evaluation={evaluation} claimId={claimId} />
+        {claimId && <CandidateReceipts evaluation={evaluation} evaluationCount={evaluationCount} claimId={claimId} />}
         {current && <ClaimEvidence chain={current} />}
       </div>
     </div>
@@ -296,9 +308,6 @@ function defaultClaim(workspace: TraceabilityWorkspace, required: string[]): str
   return workspace.claims.at(0)?.claim_id ?? "";
 }
 
-function latestEvaluation(workspace: TraceabilityWorkspace) {
-  return (workspace.candidate_evaluations ?? []).at(-1);
-}
 
 function humanizeField(fieldId: string): string {
   const text = fieldId.replaceAll("-", " ").replaceAll("_", " ");

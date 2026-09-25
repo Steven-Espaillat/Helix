@@ -99,3 +99,20 @@ export function claimForResult(workspace: TraceabilityWorkspace, result: Validat
   if (claimIds.has(result.scope_id)) return result.scope_id;
   return result.evidence_ids.find((id) => claimIds.has(id));
 }
+
+/**
+ * The newest stored candidate evaluation whose provenance receipt binds this claim, or
+ * undefined when none does. Receipts never borrow another section's candidate.
+ */
+export function evaluationForClaim(
+  workspace: TraceabilityWorkspace,
+  claimId: string,
+): NonNullable<Workspace["candidate_evaluations"]>[number] | undefined {
+  const evaluations = workspace.candidate_evaluations ?? [];
+  for (let index = evaluations.length - 1; index >= 0; index -= 1) {
+    if (evaluations[index].provenance_receipt.bindings.some((binding) => binding.claim_id === claimId)) {
+      return evaluations[index];
+    }
+  }
+  return undefined;
+}

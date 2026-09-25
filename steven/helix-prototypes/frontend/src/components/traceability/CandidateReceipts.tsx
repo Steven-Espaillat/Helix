@@ -11,19 +11,27 @@ const statusTone = (status: string): Tone => (status === "passed" ? "pass" : sta
 
 export function CandidateReceipts({
   evaluation,
+  evaluationCount,
   claimId,
 }: {
+  /** The newest stored evaluation that binds `claimId` (see `evaluationForClaim`). */
   evaluation: CandidateEvaluation | undefined;
+  /** How many evaluations the workspace stores in total, to word the empty state. */
+  evaluationCount: number;
   claimId: string;
 }) {
   if (!evaluation) {
     return (
-      <Card stack aria-labelledby="hx-receipts-h" data-testid="candidate-receipts">
+      <Card stack aria-labelledby="hx-receipts-h" data-testid="candidate-receipts" data-empty="true">
         <div>
-          <Kicker>Candidate evaluation receipts</Kicker>
-          <h2 id="hx-receipts-h">No candidate evaluation recorded</h2>
+          <Kicker>Candidate evaluation receipts · {claimId}</Kicker>
+          <h2 id="hx-receipts-h">
+            {evaluationCount > 0 ? `No candidate evaluation covers ${claimId}` : "No candidate evaluation recorded"}
+          </h2>
           <p className="hx-sub">
-            Receipts appear after the Draft stage evaluates a section candidate. This gate only reads stored receipts.
+            {evaluationCount > 0
+              ? "Stored receipts belong to other sections' candidates; none binds this claim. This gate only reads stored receipts."
+              : "Receipts appear after the Draft stage evaluates a section candidate. This gate only reads stored receipts."}
           </p>
         </div>
       </Card>

@@ -126,13 +126,8 @@ test("runs the synthetic study from validation through explicit export", async (
   );
   await page.screenshot({ path: "../evidence/helix-body-weight-validation.png", fullPage: true });
 
-  await expect(page.getByTestId("evidence-chain")).toBeVisible();
-  await expect(page.getByText("286.2 g", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("10 exact records", { exact: true })).toBeVisible();
-  await expect(page.getByText("Exact reconciliation passed", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("claim-lineage").getByText("dose_group", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("claim-lineage").getByText(/sha256:/)).toBeVisible();
-  await expect(page.getByTestId("claim-lineage").getByText(/body-weight-summary-recompute@1.0.0/)).toBeVisible();
+  // Lane C (#22): claim evidence renders only inside Human Gate 2 (the legacy EvidenceChain
+  // panel is removed); the Gate 2 view is covered by tests/traceability-gate.spec.ts.
   const lineageResponse = await request.get(`${apiRoot}/studies/STUDY-HLX-028/claims/C-BW-HIGH/evidence`);
   expect(lineageResponse.ok()).toBeTruthy();
   const lineage: unknown = await lineageResponse.json();
@@ -142,11 +137,6 @@ test("runs the synthetic study from validation through explicit export", async (
     `${JSON.stringify(lineage, null, 2)}\n`,
   );
   await page.screenshot({ path: "../evidence/helix-body-weight-lineage.png", fullPage: true });
-
-  await page.getByRole("button", { name: /Liver Hypertrophy Incidence/ }).click();
-  await expect(page.getByText("4 animals", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("Source and claim agree.", { exact: true })).toBeVisible();
-  await expect(page.getByText("agent source severity match", { exact: true })).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Anatomic pathology" })).toBeVisible();
   await expect(

@@ -223,6 +223,14 @@ test("loads getEvidence per claim and shows the five-step flow, lineage, and rec
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
   await expect(page.getByTestId("rule-badge-VR-005")).toHaveText("Blocked");
   await expect(page.getByTestId("trace-flow").locator('[data-step="transform"]')).toContainText("incidence-count-v1");
+  // Receipts follow the selected claim: the stored candidate binds only body-weight claims,
+  // so C-MI-LIVER shows a claim-scoped empty state, never the body-weight candidate.
+  await expect(receipts).toHaveAttribute("data-empty", "true");
+  await expect(receipts).toContainText("No candidate evaluation covers C-MI-LIVER");
+  await expect(receipts.getByTestId("receipt-provenance")).toHaveCount(0);
+  await expect(receipts).not.toContainText(String(receipt.evaluation.candidate_id));
+  await page.getByTestId("claim-C-BW-HIGH").click();
+  await expect(receipts.getByTestId("receipt-provenance")).toContainText(`${bwBindings} of ${allBindings.length} bindings for C-BW-HIGH`);
   expect(evidenceCalls.some((path) => path.endsWith("/claims/C-BW-HIGH/evidence"))).toBeTruthy();
   expect(evidenceCalls.some((path) => path.endsWith("/claims/C-MI-LIVER/evidence"))).toBeTruthy();
 });
@@ -383,4 +391,25 @@ test("Continue stays disabled when the server has not opened Review", async ({ p
   await openGate(page);
   await expect(page.getByTestId("continue-to-review")).toBeDisabled();
   await expect(page.getByTestId("continue-hint")).toHaveText("Waiting for the server to open Review.");
+});
+
+test("with zero claims the gate shows an empty state and never requests evidence for an empty claim ID", async ({ page }) => {
+  const evidenceCalls: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/evidence")) evidenceCalls.push(new URL(request.url()).pathname);
+  });
+  await serveGate(page, (workspace) => ({ ...workspace, claims: [], candidate_evaluations: [receipt.evaluation] }));
+  await page.goto("/");
+  await expect(page.getByTestId("release-status")).toBeVisible();
+  await stageButtons(page).nth(7).click();
+  await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
+  await expect(page.getByTestId("trace-no-claims")).toBeVisible();
+  await expect(page.getByTestId("trace-claim-kicker")).toHaveText("No claims");
+  await expect(page.getByTestId("evidence-error")).toHaveCount(0);
+  await expect(page.getByTestId("rule-accordion")).toHaveCount(0);
+  await expect(page.getByTestId("candidate-receipts")).toHaveCount(0);
+  // Required blockers stay listed from the server journey, without a claim to open.
+  await expect(page.getByTestId("gate-blockers")).toContainText("No claim scope");
+  await page.waitForLoadState("networkidle");
+  expect(evidenceCalls).toEqual([]);
 });

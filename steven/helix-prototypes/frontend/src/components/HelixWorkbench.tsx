@@ -18,7 +18,6 @@ import {
 } from "@/lib/api";
 import type { ApprovalRole, PlannerMode, Workspace } from "@/lib/types";
 
-import { EvidenceChain } from "./EvidenceChain";
 import { TraceabilityStageView } from "./traceability/TraceabilityStageView";
 import { useTraceabilityGate } from "./traceability/useTraceabilityGate";
 import { CloseIcon, RetryIcon } from "./icons";
@@ -50,7 +49,6 @@ const releasePresentation: Record<ReleaseStatus, { label: string; tone: Tone }> 
 export function HelixWorkbench({ studyId }: Props) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const { selectedStageId, select: selectStage } = useSelectedStage(workspace?.journey);
-  const [selectedClaimId, setSelectedClaimId] = useState("C-BW-HIGH");
   const [planner, setPlanner] = useState<PlannerMode>("fixture");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -288,13 +286,6 @@ export function HelixWorkbench({ studyId }: Props) {
     }
   }
 
-  function inspectClaim(claimId: string) {
-    setSelectedClaimId(claimId);
-    window.requestAnimationFrame(() => {
-      document.getElementById("hx-evidence")?.scrollIntoView({ block: "start" });
-    });
-  }
-
   return (
     <div id="helix-e2e" className="hx-app" data-testid="helix-shell">
       <ShellHeader
@@ -398,17 +389,10 @@ export function HelixWorkbench({ studyId }: Props) {
               onQueryCrossSection={() => void queryBodyWeightFacts()}
               onPromoteSectionDraft={() => void promoteBodyWeight()}
             />
-            <div id="hx-evidence" className="hx-stage-block">
-              <EvidenceChain
-                workspace={workspace}
-                selectedClaimId={selectedClaimId}
-                onSelectClaim={setSelectedClaimId}
-              />
-            </div>
             <ReportAssembly
               workspace={workspace}
               busy={busy}
-              onInspectClaim={inspectClaim}
+              onInspectClaim={() => selectStage("traceability")}
               onResolve={() => selectStage("traceability")}
               onApprove={(role) => void approve(role)}
               onFinalStudyApproval={() => void approveFinalStudy()}
