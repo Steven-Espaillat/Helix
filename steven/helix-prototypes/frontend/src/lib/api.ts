@@ -17,6 +17,7 @@ import type {
   ValidationRun,
   Workspace,
 } from "./types";
+import { APPROVAL_POLICY } from "./api/release";
 import { dispositionRejection, type DispositionCommand } from "./api/traceability";
 
 export const API_ROOT = (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1").replace(
@@ -302,15 +303,11 @@ export async function recordApproval(
   studyId: string,
   role: ApprovalRole,
 ): Promise<Workspace> {
-  const records: Record<ApprovalRole, { reviewer: string; meaning: string }> = {
-    pathologist: { reviewer: "Dr. Avery Pathologist", meaning: "Scientific review complete" },
-    peer_reviewer: { reviewer: "Dr. Priya Reviewer", meaning: "Independent peer review complete" },
-    qau: { reviewer: "Morgan QA", meaning: "Quality assurance statement recorded" },
-    study_director: { reviewer: "Dr. Sam Director", meaning: "Final report approval" },
-  };
+  // Lane D (#23): one role per call with its fixed current meaning (see lib/api/release.ts).
+  const { reviewer, meaning } = APPROVAL_POLICY[role];
   const value = await request(`/studies/${encodeURIComponent(studyId)}/approvals`, {
     method: "POST",
-    body: JSON.stringify({ role, ...records[role] }),
+    body: JSON.stringify({ role, reviewer, meaning }),
   });
   assertWorkspace(value);
   return value;

@@ -36,6 +36,7 @@ from .manifest_authorization import (
     HumanFreezeRequiredError,
     freeze_data_validation_key,
 )
+from .qualification import demo_package_labels
 from .release_candidates import (
     MissingReleaseCandidateError,
     approval_is_current,
@@ -59,6 +60,7 @@ from .schemas import (
     ClaimStatus,
     DataValidationCommand,
     DataValidationExecution,
+    DemoPackageLabel,
     DispositionCommand,
     DispositionDecision,
     EvidenceChain,
@@ -1193,6 +1195,14 @@ class StudyService:
             release_candidate=live,
             final_study_approval=package.final_study_approval,
             approval_current=approval_is_current(package.final_study_approval, live),
+            demo_unqualified_packages=[
+                DemoPackageLabel.model_validate(item)
+                for item in demo_package_labels(
+                    self.settings.codex_repository_root,
+                    flag_on=self.settings.demo_unqualified_packages,
+                    pinned_run=package.pinned_run,
+                )
+            ],
         )
 
     def _can_open_revision(self, study_id: str) -> bool:

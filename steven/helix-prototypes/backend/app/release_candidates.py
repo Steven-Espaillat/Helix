@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 
-from .approved_exports import receipt_content_hash
+from .approved_exports import demo_export_value, receipt_content_hash
 from .contract_schema import draft202012_validator
+from .qualification import demo_packages_of
 from .run_plans import canonical_hash
 from .schemas import (
     ApprovedArtifactHash,
@@ -73,6 +74,8 @@ def compile_release_candidate(
                 content_hash=draft.content_hash,
             )
         )
+    if demo_packages_of(pinned):
+        included = _demo_labelled(package, included, section_runs, section_drafts)
     included.sort(key=lambda item: (KIND_ORDER[item.kind], item.artifact_id))
     latest_cycles: dict[str, DraftingCycle] = {}
     for cycle in drafting_cycles:
@@ -93,6 +96,40 @@ def compile_release_candidate(
     candidate = ReleaseCandidate.model_validate({**payload, "content_hash": canonical_hash(payload)})
     validate_release_candidate(candidate)
     return candidate
+
+
+def _demo_labelled(
+    package: StudyEvidencePackage,
+    included: list[IncludedArtifact],
+    section_runs: list[StoredSectionRun],
+    section_drafts: list[SectionDraft],
+) -> list[IncludedArtifact]:
+    """DEMO ONLY: hash the labelled bytes that export will write for a demo-frozen run."""
+    runs_by_candidate = {run.candidate.candidate_id: run for run in section_runs}
+    drafts_by_id = {draft.draft_id: draft for draft in section_drafts}
+    labelled: list[IncludedArtifact] = []
+    for item in included:
+        value: object | None = None
+        section_package_id: str | None = None
+        if item.kind == "pinned_run":
+            value = [entry.model_dump(mode="json") for entry in package.manifest]
+        elif item.kind == "section_draft_candidate":
+            run = runs_by_candidate.get(item.artifact_id)
+            if run is not None:
+                value = run.candidate.model_dump(mode="json")
+                section_package_id = run.candidate.section_package_id
+        elif item.kind == "section_draft":
+            draft = drafts_by_id.get(item.artifact_id)
+            run = runs_by_candidate.get(draft.candidate_id) if draft is not None else None
+            if run is not None:
+                value = run.candidate.content_blocks
+                section_package_id = run.candidate.section_package_id
+        if value is None:
+            labelled.append(item)
+            continue
+        wrapped = demo_export_value(package, item.kind, value, section_package_id=section_package_id)
+        labelled.append(item.model_copy(update={"content_hash": canonical_hash(wrapped)}))
+    return labelled
 
 
 def approval_is_current(

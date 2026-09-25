@@ -1,0 +1,30 @@
+{
+  "id": "review-export-dark",
+  "title": "Human Gate 3 Review and export, full panel (#23, dark)",
+  "lane": "D",
+  "issue": "#23",
+  "status": "report-only",
+  "colorScheme": "dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity/review",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=8",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0.808606,
+  "diffPixels": 660906,
+  "comparedPixels": 817340,
+  "maskedPixels": 999620,
+  "oursSize": {
+    "width": 1360,
+    "height": 1336
+  },
+  "referenceSize": {
+    "width": 1360,
+    "height": 541
+  },
+  "sizeMismatch": true,
+  "pass": false
+}

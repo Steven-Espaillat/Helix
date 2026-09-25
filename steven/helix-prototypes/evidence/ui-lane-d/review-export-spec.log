@@ -1,0 +1,20 @@
+
+Running 12 tests using 1 worker
+
+(node:68268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/12] tests/review-export.spec.ts:146:5 › renders the server report in three columns with blockers, references, and no regulatory claim
+[2/12] tests/review-export.spec.ts:177:5 › inspect provenance reads the claim evidence endpoint and shows the lineage edges
+[3/12] tests/review-export.spec.ts:187:5 › records one role per call in any order; study director waits for the three priors; never exports
+[4/12] tests/review-export.spec.ts:220:5 › a server-refused approval shows the server detail and leaves the sign-off pending
+[5/12] tests/review-export.spec.ts:238:5 › export is enabled only by the server ready_for_export gate and is its own action
+[6/12] tests/review-export.spec.ts:264:5 › downloads list every exported artifact and each download returns the checksummed server bytes
+[7/12] tests/review-export.spec.ts:297:5 › export errors are shown with a retry, and a replayed export is labeled idempotent
+[8/12] tests/review-export.spec.ts:319:5 › reload restores sign-offs, receipt, downloads, and completed progress from getWorkspace alone
+[9/12] tests/review-export.spec.ts:339:5 › demo flag on: every demo-skipped package is labeled 'Demo: not qualified' in review and downloads
+[10/12] tests/review-export.spec.ts:362:5 › demo flag on: exported downloads carry the demo note
+[11/12] tests/review-export.spec.ts:368:5 › demo flag on: freeze stays a human action; nothing freezes on load or on approval
+[12/12] tests/review-export.spec.ts:390:5 › demo flag off: no demo label anywhere in the review stage or downloads
+  12 passed (10.1s)

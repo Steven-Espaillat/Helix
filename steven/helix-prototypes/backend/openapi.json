@@ -1629,6 +1629,48 @@
         "title": "DataValidationRuleResult",
         "type": "object"
       },
+      "DemoPackageLabel": {
+        "additionalProperties": false,
+        "description": "DEMO ONLY (HELIX_DEMO_UNQUALIFIED_PACKAGES): a section shown without a passing qualification.",
+        "properties": {
+          "label": {
+            "const": "Demo: not qualified",
+            "title": "Label",
+            "type": "string"
+          },
+          "prototype_section_id": {
+            "title": "Prototype Section Id",
+            "type": "string"
+          },
+          "qualification_status": {
+            "const": "pending",
+            "title": "Qualification Status",
+            "type": "string"
+          },
+          "section_id": {
+            "title": "Section Id",
+            "type": "string"
+          },
+          "section_package_id": {
+            "title": "Section Package Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "section_package_id",
+          "section_id",
+          "prototype_section_id",
+          "title",
+          "qualification_status",
+          "label"
+        ],
+        "title": "DemoPackageLabel",
+        "type": "object"
+      },
       "DispositionCommand": {
         "additionalProperties": false,
         "properties": {
@@ -6858,6 +6900,14 @@
               "$ref": "#/components/schemas/DataValidationExecution"
             },
             "title": "Data Validation Executions",
+            "type": "array"
+          },
+          "demo_unqualified_packages": {
+            "description": "DEMO ONLY, not qualification. Empty unless HELIX_DEMO_UNQUALIFIED_PACKAGES is on or the current Pinned Run was frozen with it. Each entry must be shown as 'Demo: not qualified'.",
+            "items": {
+              "$ref": "#/components/schemas/DemoPackageLabel"
+            },
+            "title": "Demo Unqualified Packages",
             "type": "array"
           },
           "dispositions": {

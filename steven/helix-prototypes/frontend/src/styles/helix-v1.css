@@ -214,9 +214,11 @@
 #helix-e2e .hx-boundary-state {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: var(--hx-sp-10);
   max-width: 640px;
+  margin: 18vh auto 0; /* critique P1-e: loading/error card and its button centered on screen */
 }
 #helix-e2e .hx-boundary-state .hx-sub { margin: 0; }
 

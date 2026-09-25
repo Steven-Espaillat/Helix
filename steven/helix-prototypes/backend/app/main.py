@@ -149,7 +149,11 @@ def create_app(
             active_section_agent,
             active_settings.codex_repository_root,
         )
-        pinned_runs = PinnedRunService(session, active_settings.codex_repository_root)
+        pinned_runs = PinnedRunService(
+            session,
+            active_settings.codex_repository_root,
+            demo_unqualified_packages=active_settings.demo_unqualified_packages,
+        )
         return StudyService(session, active_settings, section_runs, pinned_runs)
 
     ServiceDependency = Annotated[StudyService, Depends(service)]

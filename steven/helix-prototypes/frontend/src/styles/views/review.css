@@ -24,3 +24,126 @@
   font-size: var(--hx-fs-body);
 }
 #helix-e2e .hx-flag strong { color: var(--hx-warn); }
+
+/* Lane D (#23) review view composition. Tokens only; shared card/list/button/chip styles live in helix-v1.css. */
+#helix-e2e .hx-review-nav { padding: var(--hx-sp-8); }
+#helix-e2e .hx-review-nav-head {
+  padding: var(--hx-sp-8) var(--hx-sp-10) var(--hx-sp-6);
+  text-transform: none;
+  letter-spacing: 0;
+}
+#helix-e2e button.hx-sec {
+  width: 100%;
+  gap: var(--hx-sp-8);
+  border: 0;
+  background: transparent;
+  color: var(--hx-ink);
+  text-align: left;
+  cursor: pointer;
+}
+#helix-e2e button.hx-sec:not(.is-active):hover { background: var(--hx-surface-2); }
+#helix-e2e .hx-sec-title { min-width: 0; }
+#helix-e2e .hx-doc { padding: var(--hx-sp-32) var(--hx-sp-40); }
+#helix-e2e .hx-doc .hx-doc-title { font-size: var(--hx-fs-h1); margin: var(--hx-sp-6) 0 var(--hx-sp-16); }
+#helix-e2e .hx-doc .hx-doc-purpose { margin: 0 0 var(--hx-sp-16); }
+#helix-e2e .hx-doc-lineage,
+#helix-e2e .hx-doc-readout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--hx-sp-12);
+}
+#helix-e2e .hx-doc-lineage { margin: 0 0 var(--hx-sp-14); }
+#helix-e2e .hx-doc-readout { padding-top: var(--hx-sp-16); border-top: 1px solid var(--hx-line-soft); min-height: var(--hx-sp-20); }
+#helix-e2e .hx-doc-lineage-list ol { margin: var(--hx-sp-6) 0 0; padding-left: var(--hx-sp-20); }
+#helix-e2e .hx-doc-refs,
+#helix-e2e .hx-doc-agent {
+  margin-top: var(--hx-sp-20);
+  padding-top: var(--hx-sp-16);
+  border-top: 1px solid var(--hx-line-soft);
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .hx-doc-refs h3,
+#helix-e2e .hx-doc-agent h3 { font-size: var(--hx-fs-body); margin: 0 0 var(--hx-sp-8); }
+#helix-e2e .hx-doc-refs ul,
+#helix-e2e .hx-doc-agent ul { list-style: none; margin: 0; padding: 0; }
+#helix-e2e .hx-doc-refs li { padding: var(--hx-sp-4) 0; }
+#helix-e2e .hx-doc-refs a { color: var(--hx-accent); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-so-title { margin-top: var(--hx-sp-4); }
+#helix-e2e .hx-signoff-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--hx-sp-8);
+  padding: var(--hx-sp-6) 0 var(--hx-sp-10);
+  font-size: var(--hx-fs-meta);
+}
+#helix-e2e .hx-fine { margin: 0; font-size: var(--hx-fs-meta); }
+#helix-e2e .hx-export-receipt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--hx-sp-4) var(--hx-sp-12);
+  margin: 0;
+  font-size: var(--hx-fs-row);
+}
+#helix-e2e .hx-export-receipt dd { margin: 0; }
+#helix-e2e .hx-review-disclaimer { text-align: center; }
+/* .hx-doc p is the serif report body; references, disclaimers, and meta stay in the UI face. */
+#helix-e2e .hx-doc .hx-doc-refs p,
+#helix-e2e .hx-doc p.hx-sub { font-family: var(--hx-sans); font-size: var(--hx-fs-row); }
+#helix-e2e .hx-fsa-scope {
+  margin: var(--hx-sp-4) 0 var(--hx-sp-10);
+  padding: var(--hx-sp-10) var(--hx-sp-12);
+  border: 1px solid var(--hx-line-soft);
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-surface-2);
+  font-size: var(--hx-fs-meta);
+}
+#helix-e2e .hx-fsa-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--hx-sp-8); flex-wrap: wrap; }
+#helix-e2e .hx-fsa-kicker { font-weight: var(--hx-fw-semibold); color: var(--hx-ink); }
+#helix-e2e .hx-fsa-status { color: var(--hx-muted); }
+#helix-e2e .hx-fsa-status[data-state="current"] { color: var(--hx-pass); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-fsa-status[data-state="stale"] { color: var(--hx-warn); font-weight: var(--hx-fw-semibold); }
+#helix-e2e .hx-fsa-scope dl { margin: 0; }
+#helix-e2e .hx-fsa-details > summary {
+  cursor: pointer;
+  margin-top: var(--hx-sp-8);
+  color: var(--hx-ink-2);
+  font-weight: var(--hx-fw-semibold);
+}
+#helix-e2e .hx-fsa-details > summary:focus-visible { outline: 2px solid var(--hx-accent); outline-offset: 2px; }
+#helix-e2e .hx-fsa-scope dt { color: var(--hx-ink-2); margin-top: var(--hx-sp-8); }
+#helix-e2e .hx-fsa-id { color: var(--hx-muted); }
+#helix-e2e .hx-fsa-hash { display: flex; align-items: center; gap: var(--hx-sp-8); margin: 0; min-width: 0; }
+#helix-e2e .hx-hash { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--hx-muted); }
+#helix-e2e .hx-hash-copy {
+  flex: none;
+  min-height: 28px;
+  padding: 0 var(--hx-sp-8);
+  border: 1px solid var(--hx-line);
+  border-radius: var(--hx-radius-control);
+  background: var(--hx-surface);
+  color: var(--hx-accent);
+  font: inherit;
+  font-weight: var(--hx-fw-semibold);
+  cursor: pointer;
+}
+#helix-e2e .hx-hash-copy:focus-visible { outline: 2px solid var(--hx-accent); outline-offset: 2px; }
+@media (max-width: 1100px) {
+  #helix-e2e .hx-doc { padding: var(--hx-sp-24); }
+}
+/* Critique P1-3/P1-4: visible reasons for disabled sign-offs and refusals next to their control. */
+#helix-e2e .hx-signoff-hint { margin: 0 0 var(--hx-sp-8); font-size: var(--hx-fs-meta); }
+#helix-e2e .hx-signoff-error { margin: 0 0 var(--hx-sp-10); font-size: var(--hx-fs-meta); }
+#helix-e2e .hx-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

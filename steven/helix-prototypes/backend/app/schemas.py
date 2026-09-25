@@ -1243,6 +1243,17 @@ class InvalidEventCursor(StrictModel):
     detail: str
 
 
+class DemoPackageLabel(StrictModel):
+    """DEMO ONLY (HELIX_DEMO_UNQUALIFIED_PACKAGES): a section shown without a passing qualification."""
+
+    section_package_id: str
+    section_id: str
+    prototype_section_id: str
+    title: str
+    qualification_status: Literal["pending"]
+    label: Literal["Demo: not qualified"]
+
+
 class WorkspaceResponse(StrictModel):
     label: str
     study: Study
@@ -1284,6 +1295,13 @@ class WorkspaceResponse(StrictModel):
     release_candidate: ReleaseCandidate | None = None
     final_study_approval: FinalStudyApproval | None = None
     approval_current: bool = False
+    demo_unqualified_packages: list[DemoPackageLabel] = Field(
+        default_factory=list,
+        description=(
+            "DEMO ONLY, not qualification. Empty unless HELIX_DEMO_UNQUALIFIED_PACKAGES is on or the "
+            "current Pinned Run was frozen with it. Each entry must be shown as 'Demo: not qualified'."
+        ),
+    )
 
 
 class ExportInstrumentation(StrictModel):

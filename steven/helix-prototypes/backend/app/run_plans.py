@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .models import PinnedRunRow
+from .qualification import DEMO_EVENT_DETAIL, skips_qualification
 from .repository import StudyPackageRepository
 from .schemas import (
     FreezeRunCommand,
@@ -75,8 +76,11 @@ IMPLEMENTATION_PATHS = {
 
 
 class PinnedRunService:
-    def __init__(self, session: Session, repository_root: Path):
+    def __init__(self, session: Session, repository_root: Path, *, demo_unqualified_packages: bool = False):
         self.session = session
+        # DEMO ONLY (HELIX_DEMO_UNQUALIFIED_PACKAGES): see app/qualification.py.
+        self.demo_unqualified_packages = demo_unqualified_packages
+        self._demo_skipped: list[str] = []
         self.repository_root = repository_root.resolve()
         self.repository = StudyPackageRepository(session)
         self.pipeline_root = self.repository_root / "skills" / "helix-evidence-pipeline"
@@ -130,15 +134,19 @@ class PinnedRunService:
             raise RunPlanRejectedError(evidence)
         governed.extend(declared_inputs)
         governed.sort(key=lambda item: (item.kind, item.artifact_id, item.version))
+        demo_skipped = sorted(self._demo_skipped)
 
-        run_seed = canonical_hash(
-            {
-                "study_id": study_id,
-                "manifest_hash": manifest_hash,
-                "governed_inputs": [item.model_dump(mode="json") for item in governed],
-                "mapping": resolution.model_dump(mode="json"),
-            }
-        )
+        seed_payload: dict[str, object] = {
+            "study_id": study_id,
+            "manifest_hash": manifest_hash,
+            "governed_inputs": [item.model_dump(mode="json") for item in governed],
+            "mapping": resolution.model_dump(mode="json"),
+        }
+        if demo_skipped:
+            # A demo run never shares an identity with a strict run. Strict runs hash
+            # exactly the same payload as before the demo flag existed.
+            seed_payload[DEMO_EVENT_DETAIL] = demo_skipped
+        run_seed = canonical_hash(seed_payload)
         run_id = f"RUN-{run_seed.removeprefix('sha256:')[:16].upper()}"
         current = package.pinned_run
         superseded = list(package.superseded_pinned_runs)
@@ -179,6 +187,7 @@ class PinnedRunService:
                 "run_id": run_id,
                 "manifest_hash": manifest_hash,
                 "run_plan_fingerprint": plan.fingerprint,
+                **({DEMO_EVENT_DETAIL: ",".join(demo_skipped)} if demo_skipped else {}),
             },
         }
         receipt = {
@@ -491,6 +500,7 @@ class PinnedRunService:
         self,
         definitions: list[dict[str, object]],
     ) -> tuple[list[GovernedArtifact], list[PlanningEvidence]]:
+        self._demo_skipped = []
         identities: list[DeclaredGovernedIdentity] = []
         qualification_receipts: list[tuple[DeclaredGovernedIdentity, object]] = []
         evidence: list[PlanningEvidence] = []
@@ -507,7 +517,11 @@ class PinnedRunService:
                 )
             skill = definition.get("skill") or definition.get("agentic_skill")
             if skill is not None:
-                if skill.get("qualification_status") != "passed":
+                if skips_qualification(self.demo_unqualified_packages, package_id, skill):
+                    # DEMO ONLY: accept exactly 5.2.3 and 5.3 while still "pending". No
+                    # qualification receipt is recorded for them, so no hash is invented.
+                    self._demo_skipped.append(package_id)
+                elif skill.get("qualification_status") != "passed":
                     evidence.append(
                         self._evidence(
                             "invalid_package_qualification",

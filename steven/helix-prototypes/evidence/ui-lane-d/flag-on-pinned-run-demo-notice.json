@@ -1,0 +1,18 @@
+{
+ "label": "Demo: not qualified",
+ "note": "Demo only, not qualification. These section packages are qualification_status \"pending\"; HELIX_DEMO_UNQUALIFIED_PACKAGES let this run proceed without a passing qualification.",
+ "sections": [
+  {
+   "label": "Demo: not qualified",
+   "qualification_status": "pending",
+   "section_package_id": "section.5_2_3_body_weight",
+   "title": "5.2.3 Body Weight"
+  },
+  {
+   "label": "Demo: not qualified",
+   "qualification_status": "pending",
+   "section_package_id": "section.5_3_discussion",
+   "title": "Discussion and conclusion"
+  }
+ ]
+}

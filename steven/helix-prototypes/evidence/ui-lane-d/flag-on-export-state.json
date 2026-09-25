@@ -1,0 +1,37 @@
+{
+ "release_gate": "exported",
+ "export_artifacts": [
+  {
+   "artifact_id": "RUN-37F2C2FC37117891",
+   "kind": "pinned_run",
+   "path": "approved/RUN-37F2C2FC37117891.json",
+   "checksum": "sha256:5a45829d8e8e455af6d44085b8a9fca5aadef3e8287f8983d0754fbf4f3a0e50",
+   "status": "exported"
+  },
+  {
+   "artifact_id": "RCP-DVP-058F5426F34BB70B",
+   "kind": "data_validation_receipt",
+   "path": "approved/RCP-DVP-058F5426F34BB70B.json",
+   "checksum": "sha256:602bfdc4af106b6ee9e262760cf34ed2bce9f81f16ca9d3e11bcb56b09e3c242",
+   "status": "exported"
+  }
+ ],
+ "demo_unqualified_packages": [
+  {
+   "section_package_id": "section.5_2_3_body_weight",
+   "section_id": "5_2_3_body_weight",
+   "prototype_section_id": "S5",
+   "title": "5.2.3 Body Weight",
+   "qualification_status": "pending",
+   "label": "Demo: not qualified"
+  },
+  {
+   "section_package_id": "section.5_3_discussion",
+   "section_id": "5_3_discussion",
+   "prototype_section_id": "S8",
+   "title": "Discussion and conclusion",
+   "qualification_status": "pending",
+   "label": "Demo: not qualified"
+  }
+ ]
+}

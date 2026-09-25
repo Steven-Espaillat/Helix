@@ -1,0 +1,30 @@
+{
+  "id": "review-header-light",
+  "title": "Gate 3 shell header (#23, light)",
+  "lane": "D",
+  "issue": "#23",
+  "status": "enforced",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity/review",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=8",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.001,
+  "ratio": 0,
+  "diffPixels": 0,
+  "comparedPixels": 78602,
+  "maskedPixels": 7798,
+  "oursSize": {
+    "width": 1440,
+    "height": 60
+  },
+  "referenceSize": {
+    "width": 1440,
+    "height": 60
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

@@ -138,15 +138,9 @@ test("runs the synthetic study from validation through explicit export", async (
   );
   await page.screenshot({ path: "../evidence/helix-body-weight-lineage.png", fullPage: true });
 
-  await expect(page.getByRole("heading", { name: "Anatomic pathology" })).toBeVisible();
-  await expect(
-    page.locator(".report-paper").getByText("The pattern draft says moderate.", { exact: false }),
-  ).toBeVisible();
-  await expect(page.getByRole("link", { name: "OECD TG 407, 2025" }).first()).toBeVisible();
-
   // Lane C (#22): dispositions are typed reviewer commands recorded at Human Gate 2.
   // The legacy report button only routes there; it never fabricates a command.
-  await page.getByRole("button", { name: "Record synthetic disposition" }).first().click();
+  await page.getByRole("button", { name: /Record (synthetic|Gate 2) disposition/ }).first().click();
   await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
   for (const [resultId, decision] of [
     ["VR-004", "Corrected"],
@@ -165,26 +159,33 @@ test("runs the synthetic study from validation through explicit export", async (
   await expect(page.getByTestId("continue-to-review")).toBeEnabled();
   await page.getByTestId("continue-to-review").click();
   await expect(page.getByTestId("stage-view")).toHaveAttribute("data-selected-stage", "review-export");
+  // Lane D (#23): Human Gate 3 opens once the server reports review-export current.
+  await expect(page.getByTestId("review-stage")).toBeVisible();
+  await page.getByTestId("review-section-S7").click();
+  await expect(page.getByTestId("draft-canvas").getByRole("heading", { name: "Anatomic pathology" })).toBeVisible();
   await expect(
-    page.locator(".report-paper").getByText("Minimal hepatocellular hypertrophy", { exact: false }),
+    page.getByTestId("draft-canvas").getByText("Minimal hepatocellular hypertrophy", { exact: false }),
   ).toBeVisible();
+  await expect(page.getByTestId("regulatory-references").getByRole("link", { name: "OECD TG 407, 2025" }).first()).toBeVisible();
 
-  await recordApproval(page, "Pathologist review");
-  await recordApproval(page, "Independent peer review");
-  await recordApproval(page, "Quality Assurance Unit statement");
-  await recordApproval(page, "Study director approval");
+  await recordApproval(page, "pathologist");
+  await recordApproval(page, "peer_reviewer");
+  await recordApproval(page, "qau");
+  await recordApproval(page, "study_director");
 
   await expect(page.getByTestId("release-status")).toHaveText("Ready for signature");
   await expect(page.getByText("FDA approved")).toHaveCount(0);
-  await expect(page.getByTestId("final-study-approval-scope")).toBeVisible();
-  await page.getByTestId("record-final-study-approval").click();
+  await expect(page.getByTestId("review-fsa-scope")).toBeVisible();
+  await page.getByTestId("approve-final-study").click();
+  await expect(page.getByTestId("review-approval-current")).toHaveAttribute("data-state", "current");
+  await expect(page.getByTestId("review-approval-manifest-hash")).toHaveText(/^sha256:[a-f0-9]{64}$/);
+  // The legacy ReportAssembly FSA card stays in sync with the same server record.
   await expect(page.getByTestId("approval-current")).toHaveText("current");
-  await expect(page.getByTestId("approval-manifest-hash")).toHaveText(/^sha256:[a-f0-9]{64}$/);
   await expect(page.getByTestId("release-status")).toHaveText("Ready for export");
-  await expect(page.getByTestId("export-package")).toBeEnabled();
-  await page.getByTestId("export-package").click();
+  await expect(page.getByTestId("export-final-package")).toBeEnabled();
+  await page.getByTestId("export-final-package").click();
   await expect(page.getByTestId("release-status")).toHaveText("Package exported");
-  await expect(page.getByText(/\d+ approved artifacts exported\. Status: exported\./)).toBeVisible();
+  await expect(page.getByTestId("export-receipt")).toBeVisible();
   await expect(page.getByText("FDA approved")).toHaveCount(0);
 
   const workspaceResponse = await request.get(`${apiRoot}/studies/STUDY-HLX-028/workspace`);
@@ -203,7 +204,8 @@ test("runs the synthetic study from validation through explicit export", async (
     expect(artifact.status).toBe("exported");
     expect(artifact.checksum).toBe(approved.get(artifact.artifact_id));
     const downloadPromise = page.waitForEvent("download");
-    await page.getByTestId(`export-checksum-${artifact.artifact_id}`).click();
+    await expect(page.getByTestId(`download-checksum-${artifact.artifact_id}`)).toHaveText(artifact.checksum!);
+    await page.getByTestId(`download-${artifact.artifact_id}`).click();
     const download = await downloadPromise;
     expect(await download.failure()).toBeNull();
     const downloadPath = await download.path();
@@ -438,7 +440,7 @@ test("renders the exact Final Study Approval scope from the workspace", async ({
     await route.fulfill({
       status: response.status(),
       contentType: "application/json",
-      body: JSON.stringify(withFinalStudyApproval(workspace)),
+      body: JSON.stringify(withReviewStage(withFinalStudyApproval(workspace))),
     });
   });
 
@@ -447,6 +449,11 @@ test("renders the exact Final Study Approval scope from the workspace", async ({
   await expect(page.getByTestId("approval-current")).toHaveText("current");
   await expect(page.getByTestId("approval-manifest-hash")).toHaveText(INJECTED_HASH);
   await expect(page.getByTestId("approval-artifact-RUN-PRED00000001")).toHaveText(INJECTED_HASH);
+  // Lane D (#23): the same scope also renders in the Human Gate 3 sign-off column.
+  await expect(page.getByTestId("review-fsa-scope")).toBeVisible();
+  await expect(page.getByTestId("review-approval-current")).toHaveAttribute("data-state", "current");
+  await expect(page.getByTestId("review-approval-manifest-hash")).toHaveText(INJECTED_HASH);
+  await expect(page.getByTestId("review-approval-artifact-RUN-PRED00000001")).toHaveText(INJECTED_HASH);
   await expect(page.getByText("FDA approved")).toHaveCount(0);
 });
 
@@ -622,10 +629,10 @@ test("offers revise after stop_for_review and shows a new cycle without changing
   expect(revisionPosts).toBe(1);
 });
 
-async function recordApproval(page: import("@playwright/test").Page, label: string) {
-  const row = page.locator(".approval-row").filter({ hasText: label });
-  await row.getByRole("button", { name: "Record" }).click();
-  await expect(row.locator(".approval-check")).toBeVisible();
+async function recordApproval(page: import("@playwright/test").Page, role: string) {
+  // Lane D (#23): one control per role in the Human Gate 3 sign-off column.
+  await page.getByTestId(`approve-${role}`).click();
+  await expect(page.getByTestId(`signoff-${role}`)).toHaveAttribute("data-signed", "true");
 }
 
 function isPersistedClaimLineage(value: unknown): boolean {
@@ -988,6 +995,27 @@ function withStoppedCycle(workspace: unknown, canOpenRevision = false): unknown 
   };
 }
 
+/** Lane D (#23): the server journey with review-export current and every earlier stage complete. */
+function withReviewStage(workspace: unknown): unknown {
+  if (!isObject(workspace) || !isObject(workspace.journey) || !Array.isArray(workspace.journey.stages)) {
+    throw new Error("Workspace journey is missing.");
+  }
+  const stages = workspace.journey.stages as Record<string, unknown>[];
+  const last = stages.length - 1;
+  return {
+    ...workspace,
+    journey: {
+      ...workspace.journey,
+      current_stage_id: stages[last].stage_id,
+      stages: stages.map((stage, index) => ({
+        ...stage,
+        status: index < last ? "complete" : "current",
+        selectable: true,
+      })),
+    },
+  };
+}
+
 function withFinalStudyApproval(workspace: unknown): unknown {
   if (!isObject(workspace)) {
     throw new Error("Workspace is missing.");
@@ -1340,3 +1368,6 @@ async function assertRenderedEligibility(
     }
   }
 }
+
+// Critique P1-f: Gate 3 hides the legacy fallback panels. These legacy displays are asserted
+// from the traceability stage, where the fallback panels still render.

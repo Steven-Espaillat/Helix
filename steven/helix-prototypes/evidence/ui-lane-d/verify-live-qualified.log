@@ -1,0 +1,66 @@
+
+> helix-workbench@0.1.0 test:e2e
+> playwright test
+
+
+Running 53 tests using 1 worker
+
+  -   1 tests/codex-section-run.spec.ts:11:5 › drafts the body-weight component through the real Codex SDK
+(node:69180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 tests/intake-upload.spec.ts:27:5 › submit stays disabled until files and governed facts are supplied, and never claims receipt early (382ms)
+  ✓   3 tests/intake-upload.spec.ts:44:5 › polls the job stage by stage and selects the new study when it succeeds (3.5s)
+  ✓   4 tests/intake-upload.spec.ts:73:5 › a failed job shows the server error and does not select a study (1.8s)
+  ✓   5 tests/journey-progress.spec.ts:31:5 › renders the seeded nine-stage projection with only Upload reachable (371ms)
+  ✓   6 tests/journey-progress.spec.ts:56:5 › labels every projected stage state from the server and marks the three human gates (356ms)
+  ✓   7 tests/journey-progress.spec.ts:91:7 › shows a blocked current stage from the server without advancing (349ms)
+  ✓   8 tests/journey-progress.spec.ts:91:7 › shows a paused current stage from the server without advancing (267ms)
+  ✓   9 tests/journey-progress.spec.ts:101:5 › selecting a reached stage changes only the local view and sends no command (428ms)
+  ✓  10 tests/journey-progress.spec.ts:120:5 › reload restores progress from the workspace and resets selection to the current stage (542ms)
+  ✓  11 tests/journey-progress.spec.ts:130:5 › governance: the agent never passes a human gate (780ms)
+  ✓  12 tests/journey-progress.spec.ts:145:5 › governance: traceability cannot continue while the server reports an undisposed blocker (268ms)
+  ✓  13 tests/journey-progress.spec.ts:155:5 › governance: export stays a separate gate after approvals (311ms)
+  ✓  14 tests/journey-progress.spec.ts:163:5 › contract: a ten-stage array is refused, not merged onto nine nodes (253ms)
+  ✓  15 tests/journey-progress.spec.ts:176:5 › contract: legacy stages without projection fields are refused (262ms)
+  ✓  16 tests/review-export.spec.ts:146:5 › renders the server report in three columns with blockers, references, and no regulatory claim (507ms)
+  ✓  17 tests/review-export.spec.ts:177:5 › inspect provenance reads the claim evidence endpoint and shows the lineage edges (447ms)
+  ✓  18 tests/review-export.spec.ts:187:5 › records one role per call in any order; study director waits for the three priors; never exports (605ms)
+  ✓  19 tests/review-export.spec.ts:220:5 › a server-refused approval shows the server detail and leaves the sign-off pending (338ms)
+  ✓  20 tests/review-export.spec.ts:238:5 › export is enabled only by the server ready_for_export gate and is its own action (652ms)
+  ✓  21 tests/review-export.spec.ts:264:5 › downloads list every exported artifact and each download returns the checksummed server bytes (601ms)
+  ✓  22 tests/review-export.spec.ts:297:5 › export errors are shown with a retry, and a replayed export is labeled idempotent (546ms)
+  ✓  23 tests/review-export.spec.ts:319:5 › reload restores sign-offs, receipt, downloads, and completed progress from getWorkspace alone (448ms)
+  ✓  24 tests/review-export.spec.ts:339:5 › demo flag on: every demo-skipped package is labeled 'Demo: not qualified' in review and downloads (470ms)
+  ✓  25 tests/review-export.spec.ts:362:5 › demo flag on: exported downloads carry the demo note (294ms)
+  ✓  26 tests/review-export.spec.ts:368:5 › demo flag on: freeze stays a human action; nothing freezes on load or on approval (1.3s)
+  ✓  27 tests/review-export.spec.ts:390:5 › demo flag off: no demo label anywhere in the review stage or downloads (325ms)
+  ✓  28 tests/run-events-client.spec.ts:40:5 › expired cursor refreshes the workspace and reconnects without duplicating completion (3ms)
+  ✓  29 tests/run-events-client.spec.ts:85:5 › an untyped conflict is not treated as cursor expiry (1ms)
+  ✓  30 tests/run-events-client.spec.ts:93:5 › the same frames sent twice call onEvent once per sequence, across reconnects (1ms)
+  ✓  31 tests/run-events-client.spec.ts:121:5 › a terminal cursor_expired frame refreshes the workspace and reconnects (1ms)
+  ✓  32 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in light theme (542ms)
+  ✓  33 tests/shell.spec.ts:27:7 › renders the v1 header and one-page shell in dark theme (493ms)
+  ✓  34 tests/shell.spec.ts:133:5 › announces workspace loading and API errors and retries from the keyboard (977ms)
+  ✓  35 tests/shell.spec.ts:170:5 › renders the release pill from server state without inferring readiness (410ms)
+  ✓  36 tests/upload-gate.spec.ts:54:5 › renders the manifest from the workspace and keeps freeze disabled until consent (472ms)
+  ✓  37 tests/upload-gate.spec.ts:80:5 › freezes through the server, shows the Pinned Run, and restores it on reload (801ms)
+  ✓  38 tests/upload-gate.spec.ts:122:5 › a retry after an unknown result reuses the same idempotency key, even after reload (717ms)
+  ✓  39 tests/upload-gate.spec.ts:141:5 › a changed manifest uses a new idempotency key (658ms)
+  ✓  40 tests/upload-gate.spec.ts:167:5 › shows the server refusal list and stays unfrozen (347ms)
+  ✓  41 tests/upload-gate.spec.ts:187:5 › a Data Validation failure after freeze shows the partial state and retries with the run-scoped key (776ms)
+  ✓  42 tests/upload-gate.spec.ts:232:5 › only Human Gate 1 can pin a run: legacy validation is hidden and the API refuses to auto-freeze (342ms)
+  ✓  43 tests/upload-gate.spec.ts:258:5 › legacy validation unlocks once a human freeze has pinned the run (279ms)
+  ✓  44 tests/workbench.spec.ts:8:5 › rejects a workspace response from an incompatible API (216ms)
+  ✓  45 tests/workbench.spec.ts:38:5 › runs the synthetic study from validation through explicit export (13.3s)
+  ✓  46 tests/workbench.spec.ts:225:5 › keeps draft blocked when the API reports ineligible despite ready-looking claims (490ms)
+  ✓  47 tests/workbench.spec.ts:260:5 › enables draft from backend eligibility even when claims look incomplete (471ms)
+  ✓  48 tests/workbench.spec.ts:290:5 › renders candidate evaluation and cross-section query from backend-owned workspace fields (1.6s)
+  ✓  49 tests/workbench.spec.ts:407:5 › renders predecessor run identity and carry-forward counts from the workspace (488ms)
+  ✓  50 tests/workbench.spec.ts:430:5 › renders the exact Final Study Approval scope from the workspace (486ms)
+  ✓  51 tests/workbench.spec.ts:450:5 › renders backend promotion status and draft evidence without recalculating eligibility (491ms)
+  ✓  52 tests/workbench.spec.ts:503:5 › shows every immutable attempt and offers no fourth attempt after stop_for_review (485ms)
+  ✓  53 tests/workbench.spec.ts:542:5 › offers revise after stop_for_review and shows a new cycle without changing discussion hashes (805ms)
+
+  1 skipped
+  52 passed (42.9s)
+{"status":"ok","storage":"sqlite"}

@@ -1086,6 +1086,30 @@ export interface components {
             /** Waivable */
             waivable: boolean;
         };
+        /**
+         * DemoPackageLabel
+         * @description DEMO ONLY (HELIX_DEMO_UNQUALIFIED_PACKAGES): a section shown without a passing qualification.
+         */
+        DemoPackageLabel: {
+            /**
+             * Label
+             * @constant
+             */
+            label: "Demo: not qualified";
+            /** Prototype Section Id */
+            prototype_section_id: string;
+            /**
+             * Qualification Status
+             * @constant
+             */
+            qualification_status: "pending";
+            /** Section Id */
+            section_id: string;
+            /** Section Package Id */
+            section_package_id: string;
+            /** Title */
+            title: string;
+        };
         /** DispositionCommand */
         DispositionCommand: {
             /**
@@ -2923,6 +2947,11 @@ export interface components {
             cross_section_queries?: components["schemas"]["CrossSectionQueryReceipt"][];
             /** Data Validation Executions */
             data_validation_executions: components["schemas"]["DataValidationExecution"][];
+            /**
+             * Demo Unqualified Packages
+             * @description DEMO ONLY, not qualification. Empty unless HELIX_DEMO_UNQUALIFIED_PACKAGES is on or the current Pinned Run was frozen with it. Each entry must be shown as 'Demo: not qualified'.
+             */
+            demo_unqualified_packages?: components["schemas"]["DemoPackageLabel"][];
             /** Dispositions */
             dispositions: components["schemas"]["ReviewDisposition"][];
             /** Drafting Cycles */

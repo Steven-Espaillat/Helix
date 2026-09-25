@@ -6,6 +6,7 @@ from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from typing import Literal
 
+from .qualification import DEMO_LABEL, DEMO_NOTE, demo_notice, demo_packages_of, section_titles
 from .run_plans import canonical_hash
 from .schemas import (
     ExportArtifact,
@@ -158,6 +159,36 @@ def exported_artifacts_from(
     ]
 
 
+def demo_export_value(
+    package: StudyEvidencePackage,
+    kind: str,
+    value: object,
+    *,
+    section_package_id: str | None = None,
+) -> object:
+    """DEMO ONLY: label the exported bytes of a run frozen with HELIX_DEMO_UNQUALIFIED_PACKAGES.
+
+    A strict run (no demo packages recorded on its freeze event) exports ``value`` unchanged.
+    For a demo run the Pinned Run artifact carries a notice listing both sections as
+    "Demo: not qualified", and any section artifact of those packages is wrapped with the
+    same label. The release candidate hashes these exact bytes, so the Final Study Approval
+    covers the label.
+    """
+    ids = demo_packages_of(package.pinned_run)
+    if not ids:
+        return value
+    if kind == "pinned_run":
+        return {"demo_notice": demo_notice(ids, section_titles()), "manifest": value}
+    if kind in {"section_draft_candidate", "section_draft"} and section_package_id in ids:
+        return {
+            "demo_label": DEMO_LABEL,
+            "demo_note": DEMO_NOTE,
+            "section_package_id": section_package_id,
+            "content": value,
+        }
+    return value
+
+
 def _looks_like_review_scaffold(item: IncludedArtifact) -> bool:
     return item.artifact_id.startswith("RSR-") or "scaffold" in item.kind
 
@@ -173,7 +204,8 @@ def _payload_bytes(
         pinned = package.pinned_run
         if pinned is None or pinned.run_id != item.artifact_id:
             raise ApprovedExportError(f"Missing pinned run {item.artifact_id}")
-        return encode_canonical([entry.model_dump(mode="json") for entry in package.manifest])
+        manifest = [entry.model_dump(mode="json") for entry in package.manifest]
+        return encode_canonical(demo_export_value(package, "pinned_run", manifest))
     if item.kind == "data_validation_receipt":
         execution = next(
             (
@@ -195,7 +227,14 @@ def _payload_bytes(
         )
         if run is None:
             raise ApprovedExportError(f"Missing section draft candidate {item.artifact_id}")
-        return encode_canonical(run.candidate.model_dump(mode="json"))
+        return encode_canonical(
+            demo_export_value(
+                package,
+                item.kind,
+                run.candidate.model_dump(mode="json"),
+                section_package_id=run.candidate.section_package_id,
+            )
+        )
     if item.kind == "section_draft":
         draft = next((row for row in section_drafts if row.draft_id == item.artifact_id), None)
         if draft is None:
@@ -206,5 +245,12 @@ def _payload_bytes(
         )
         if run is None:
             raise ApprovedExportError(f"Missing candidate for section draft {item.artifact_id}")
-        return encode_canonical(run.candidate.content_blocks)
+        return encode_canonical(
+            demo_export_value(
+                package,
+                item.kind,
+                run.candidate.content_blocks,
+                section_package_id=run.candidate.section_package_id,
+            )
+        )
     raise ApprovedExportError(f"Unsupported export artifact kind {item.kind}")

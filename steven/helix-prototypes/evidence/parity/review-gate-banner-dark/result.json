@@ -1,0 +1,30 @@
+{
+  "id": "review-gate-banner-dark",
+  "title": "Gate 3 banner (#23, dark)",
+  "lane": "D",
+  "issue": "#23",
+  "status": "enforced",
+  "colorScheme": "dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity/review",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=8",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0,
+  "diffPixels": 0,
+  "comparedPixels": 95200,
+  "maskedPixels": 0,
+  "oursSize": {
+    "width": 1360,
+    "height": 70
+  },
+  "referenceSize": {
+    "width": 1360,
+    "height": 70
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

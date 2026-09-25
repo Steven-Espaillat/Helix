@@ -1,0 +1,15 @@
+...........                                                              [100%]
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_demo_unqualified_flag.py::test_flag_is_off_by_default_and_read_from_its_env_var
+PASSED tests/test_demo_unqualified_flag.py::test_flag_off_keeps_the_strict_422_for_both_pending_packages[unset]
+PASSED tests/test_demo_unqualified_flag.py::test_flag_off_keeps_the_strict_422_for_both_pending_packages[explicit-off]
+PASSED tests/test_demo_unqualified_flag.py::test_flag_off_is_identical_to_today_for_a_qualified_tree
+PASSED tests/test_demo_unqualified_flag.py::test_flag_off_failed_qualification_is_unchanged
+PASSED tests/test_demo_unqualified_flag.py::test_flag_on_never_freezes_by_itself_and_still_requires_the_human_freeze
+PASSED tests/test_demo_unqualified_flag.py::test_flag_on_non_demo_package_still_needs_qualification
+PASSED tests/test_demo_unqualified_flag.py::test_flag_on_scope_is_exactly_the_two_named_packages
+PASSED tests/test_demo_unqualified_flag.py::test_flag_on_freeze_records_no_qualification_hash_and_keeps_packages_pending
+PASSED tests/test_demo_unqualified_flag.py::test_flag_on_exports_with_both_packages_pending_and_labels_ui_payload_and_report
+PASSED tests/test_demo_unqualified_flag.py::test_flag_off_export_bytes_carry_no_demo_label
+# Command: HELIX_DEMO_UNQUALIFIED_PACKAGES=0 HELIX_DATABASE_URL=sqlite+pysqlite:////tmp/helix-lane-d-pytest.db uv run pytest -q -rA -p no:warnings tests/test_demo_unqualified_flag.py (exit 0, 11 PASSED lines above; base bf10719)

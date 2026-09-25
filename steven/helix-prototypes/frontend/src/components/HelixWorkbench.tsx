@@ -24,6 +24,7 @@ import { useTraceabilityGate } from "./traceability/useTraceabilityGate";
 import { CloseIcon, RetryIcon } from "./icons";
 import { ReportAssembly } from "./ReportAssembly";
 import { ProgressBar } from "./journey/ProgressBar";
+import { ReviewStageView } from "./review/ReviewStageView";
 import { useSelectedStage } from "./journey/useSelectedStage";
 import { ShellHeader } from "./shell/ShellHeader";
 import { StudyJourney } from "./StudyJourney";
@@ -381,6 +382,9 @@ export function HelixWorkbench({ studyId }: Props) {
                 otherBusy={busy !== null || agentBusy}
                 onBusyChange={setAgentBusy}
               />
+            )}
+            {selectedStageId === "review-export" && (
+              <ReviewStageView workspace={workspace} onWorkspace={setWorkspace} onRefresh={refresh} />
             )}
             {/* Lanes B, C and D replace these legacy panels with their stage views. Until
                 then they remain the fallback so no stage loses its working controls. */}
