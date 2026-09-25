@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getEvidence } from "@/lib/api";
 import type { EvidenceChainData } from "@/lib/types";
@@ -22,6 +22,7 @@ import {
   type TraceabilityWorkspace,
 } from "./gateState";
 import { RuleAccordion, humanizeRule } from "./RuleAccordion";
+import type { ClaimRequest } from "./useTraceabilityGate";
 
 // Lane C (#22): Human Gate 2, the Traceability Review. Everything rendered here is
 // server state: the workspace (journey, validations, dispositions, candidate
@@ -34,6 +35,8 @@ export type TraceabilityStageViewProps = {
   onRecordDisposition: (resultId: string, command: DispositionCommand) => Promise<unknown>;
   /** Selects the Review view. It never passes the gate; the server already has. */
   onContinue: () => void;
+  /** A claim the reviewer asked to open (Inspect provenance on a report statement). */
+  claimRequest?: ClaimRequest | null;
   /** Loads the evidence chain for a claim. Defaults to the API's `getEvidence`. */
   loadEvidence?: (studyId: string, claimId: string) => Promise<EvidenceChainData>;
 };
@@ -43,6 +46,7 @@ export function TraceabilityStageView({
   onRecordDisposition,
   onContinue,
   loadEvidence = getEvidence,
+  claimRequest = null,
 }: TraceabilityStageViewProps) {
   const studyId = workspace.study.study_id;
   const dispositions = useMemo(() => latestDispositions(workspace), [workspace]);
@@ -52,7 +56,9 @@ export function TraceabilityStageView({
   const gateOpen = Boolean(trace && trace.status !== "complete" && trace.status !== "pending");
   const eligibility = continueEligibility(workspace);
 
-  const [claimId, setClaimId] = useState<string>(() => defaultClaim(workspace, required));
+  const [claimId, setClaimId] = useState<string>(() =>
+    requestedClaim(workspace, claimRequest) ?? defaultClaim(workspace, required),
+  );
   const [chain, setChain] = useState<EvidenceChainData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [openResultId, setOpenResultId] = useState<string | null>(null);
@@ -129,6 +135,16 @@ export function TraceabilityStageView({
       window.requestAnimationFrame(() => document.getElementById(`hx-rule-btn-${resultId}`)?.focus());
     }
   }
+
+  // A new Inspect request selects its claim (if the server lists it), once per nonce.
+  const handledRequest = useRef(claimRequest?.nonce ?? 0);
+  useEffect(() => {
+    if (!claimRequest || claimRequest.nonce === handledRequest.current) return;
+    handledRequest.current = claimRequest.nonce;
+    const requested = requestedClaim(workspace, claimRequest);
+    if (requested) selectClaim(requested);
+    // Keyed on the request alone: workspace refreshes must not re-apply an old request.
+  }, [claimRequest]);
 
   async function record(resultId: string, command: DispositionCommand) {
     await onRecordDisposition(resultId, command);
@@ -295,6 +311,10 @@ function GateBlockers({
       </div>
     </Card>
   );
+}
+
+function requestedClaim(workspace: TraceabilityWorkspace, request: ClaimRequest | null): string | undefined {
+  return request && workspace.claims.some((claim) => claim.claim_id === request.claimId) ? request.claimId : undefined;
 }
 
 function defaultClaim(workspace: TraceabilityWorkspace, required: string[]): string {

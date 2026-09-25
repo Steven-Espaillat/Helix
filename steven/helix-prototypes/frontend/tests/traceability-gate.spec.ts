@@ -413,3 +413,54 @@ test("with zero claims the gate shows an empty state and never requests evidence
   await page.waitForLoadState("networkidle");
   expect(evidenceCalls).toEqual([]);
 });
+
+test("Inspect on a report statement opens Gate 2 on that statement's claim", async ({ page }) => {
+  await serveGate(page);
+  await openGate(page);
+  await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
+
+  // The legacy report panel's section S7 carries the liver statements (C-MI-LIVER).
+  const inspectLiver = page.getByRole("button", { name: "Inspect 4 provenance edges" }).first();
+  await inspectLiver.click();
+  await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
+  await expect(page.getByTestId("rule-badge-VR-005")).toBeVisible();
+  await expect(page.getByTestId("claim-C-MI-LIVER")).toHaveAttribute("aria-pressed", "true");
+
+  // Inspecting the same statement again reselects it after the reviewer switched away.
+  await page.getByTestId("claim-C-BW-HIGH").click();
+  await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
+  await inspectLiver.click();
+  await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-MI-LIVER");
+});
+
+test("the Gate 2 evidence card shows source hashes, rule versions and exact reconciliation", async ({ page }) => {
+  // Coverage moved from the removed EvidenceChain panel (workbench.spec full flow). The seed
+  // has no source hashes until data validation runs after a qualified freeze, so C-BW-HIGH
+  // serves the server-recorded lineage that flow captured (evidence/body-weight-claim-lineage.json).
+  const lineage = JSON.parse(
+    readFileSync(resolve(__dirname, "../../evidence/body-weight-claim-lineage.json"), "utf8"),
+  ) as Json;
+  await page.route("**/api/v1/studies/*/claims/C-BW-HIGH/evidence", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(lineage) }),
+  );
+  await serveGate(page);
+  await openGate(page);
+
+  const evidence = page.getByTestId("claim-evidence");
+  await expect(evidence).toContainText("Claim evidence · C-BW-HIGH");
+  await expect(evidence.getByTestId("evidence-source-hashes")).toContainText(/sha256:[0-9a-f]{12}/);
+  await expect(evidence.getByTestId("evidence-rule-versions")).toContainText("body-weight-summary-recompute@1.0.0");
+  await expect(evidence.getByTestId("evidence-stored")).toHaveText("286.2 g");
+  await expect(evidence.getByTestId("evidence-recomputed")).toHaveText("286.2 g");
+  await expect(evidence.getByTestId("evidence-exact-match")).toHaveText("Yes");
+  await expect(evidence.getByTestId("evidence-grain")).toHaveText("Dose group");
+  await expect(evidence.getByTestId("source-records").getByRole("row")).toHaveCount(11);
+
+  // Liver claim, live getEvidence: source and claim agree (the old "Source and claim agree.").
+  await page.getByTestId("claim-C-MI-LIVER").click();
+  await expect(evidence).toContainText("Claim evidence · C-MI-LIVER");
+  await expect(evidence.getByTestId("evidence-stored")).toHaveText("4 animals");
+  await expect(evidence.getByTestId("evidence-recomputed")).toHaveText("4 animals");
+  await expect(evidence.getByTestId("evidence-exact-match")).toHaveText("Yes");
+  await expect(evidence.getByTestId("source-records").getByRole("row")).toHaveCount(5);
+});

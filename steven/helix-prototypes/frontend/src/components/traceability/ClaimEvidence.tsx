@@ -23,19 +23,19 @@ export function ClaimEvidence({ chain }: { chain: EvidenceChainData }) {
       <dl className="hx-evidence-facts" data-testid="claim-lineage">
         <div>
           <dt>Stored claim</dt>
-          <dd>{claim.value === null ? "Needs review" : `${formatNumber(claim.value)} ${claim.unit}`}</dd>
+          <dd data-testid="evidence-stored">{claim.value === null ? "Needs review" : `${formatNumber(claim.value)} ${claim.unit}`}</dd>
         </div>
         <div>
           <dt>Recomputed</dt>
-          <dd>{chain.recomputed_value === null ? "Not calculated" : `${formatNumber(chain.recomputed_value)} ${claim.unit}`}</dd>
+          <dd data-testid="evidence-recomputed">{chain.recomputed_value === null ? "Not calculated" : `${formatNumber(chain.recomputed_value)} ${claim.unit}`}</dd>
         </div>
         <div>
           <dt>Exact match</dt>
-          <dd>{chain.exact_match === null ? "Human judgment" : chain.exact_match ? "Yes" : "No"}</dd>
+          <dd data-testid="evidence-exact-match">{chain.exact_match === null ? "Human judgment" : chain.exact_match ? "Yes" : "No"}</dd>
         </div>
         <div>
           <dt>Grain</dt>
-          <dd>{displayGrain(claim.grain)}</dd>
+          <dd data-testid="evidence-grain">{displayGrain(claim.grain)}</dd>
         </div>
         <div>
           <dt>Transform</dt>
@@ -45,11 +45,11 @@ export function ClaimEvidence({ chain }: { chain: EvidenceChainData }) {
         </div>
         <div>
           <dt>Source hashes</dt>
-          <dd className="hx-mono">{hashes.length > 0 ? hashes.map(shortHash).join(" · ") : "None"}</dd>
+          <dd className="hx-mono" data-testid="evidence-source-hashes">{hashes.length > 0 ? hashes.map(shortHash).join(" · ") : "None"}</dd>
         </div>
         <div>
           <dt>Rule versions</dt>
-          <dd className="hx-mono">{versions.length > 0 ? versions.join(" · ") : "None"}</dd>
+          <dd className="hx-mono" data-testid="evidence-rule-versions">{versions.length > 0 ? versions.join(" · ") : "None"}</dd>
         </div>
         <div>
           <dt>Report text</dt>

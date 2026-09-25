@@ -365,6 +365,7 @@ export function HelixWorkbench({ studyId }: Props) {
                 workspace={workspace}
                 onRecordDisposition={traceabilityGate.onRecordDisposition}
                 onContinue={traceabilityGate.onContinue}
+                claimRequest={traceabilityGate.claimRequest}
               />
             )}
             {/* Lanes B, C and D replace these legacy panels with their stage views. Until
@@ -392,7 +393,7 @@ export function HelixWorkbench({ studyId }: Props) {
             <ReportAssembly
               workspace={workspace}
               busy={busy}
-              onInspectClaim={() => selectStage("traceability")}
+              onInspectClaim={traceabilityGate.onInspectClaim}
               onResolve={() => selectStage("traceability")}
               onApprove={(role) => void approve(role)}
               onFinalStudyApproval={() => void approveFinalStudy()}

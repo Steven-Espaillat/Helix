@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { recordDisposition } from "@/lib/api";
 import type { DispositionCommand } from "@/lib/api/traceability";
 import type { JourneyStageId, Workspace } from "@/lib/types";
+
+/** A claim the reviewer asked to open in Gate 2 (see `onInspectClaim`). */
+export type ClaimRequest = { claimId: string; nonce: number };
 
 type Setters = {
   studyId: string;
@@ -39,5 +42,16 @@ export function useTraceabilityGate({ studyId, setWorkspace, selectStage, setNot
   // Continue changes only the view; the server already decided Review is reachable.
   const onContinue = useCallback(() => selectStage("review-export"), [selectStage]);
 
-  return { onRecordDisposition, onContinue };
+  // "Inspect provenance" on a report statement opens Gate 2 on THAT claim. The nonce makes
+  // a repeat inspect of the same claim reselect it after the reviewer switched away.
+  const [claimRequest, setClaimRequest] = useState<ClaimRequest | null>(null);
+  const onInspectClaim = useCallback(
+    (claimId: string) => {
+      if (claimId) setClaimRequest((previous) => ({ claimId, nonce: (previous?.nonce ?? 0) + 1 }));
+      selectStage("traceability");
+    },
+    [selectStage],
+  );
+
+  return { onRecordDisposition, onContinue, onInspectClaim, claimRequest };
 }
