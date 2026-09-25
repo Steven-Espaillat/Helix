@@ -1,0 +1,30 @@
+{
+  "id": "traceability-gate-light",
+  "title": "Human Gate 2 Traceability Review (#22)",
+  "lane": "C",
+  "issue": "#22",
+  "status": "enforced",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity/traceability",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=7",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0.007106,
+  "diffPixels": 6398,
+  "comparedPixels": 900320,
+  "maskedPixels": 0,
+  "oursSize": {
+    "width": 1360,
+    "height": 662
+  },
+  "referenceSize": {
+    "width": 1360,
+    "height": 662
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

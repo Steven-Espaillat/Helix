@@ -10,7 +10,6 @@ import {
   promoteSectionDraft,
   queryCrossSection,
   recordApproval,
-  recordDisposition,
   recordFinalStudyApproval,
   reviseSection,
   runDataValidation,
@@ -20,6 +19,8 @@ import {
 import type { ApprovalRole, PlannerMode, Workspace } from "@/lib/types";
 
 import { EvidenceChain } from "./EvidenceChain";
+import { TraceabilityStageView } from "./traceability/TraceabilityStageView";
+import { useTraceabilityGate } from "./traceability/useTraceabilityGate";
 import { CloseIcon, RetryIcon } from "./icons";
 import { ReportAssembly } from "./ReportAssembly";
 import { ProgressBar } from "./journey/ProgressBar";
@@ -54,6 +55,8 @@ export function HelixWorkbench({ studyId }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Lane C (#22): Gate 2 handlers live in the lane-C hook.
+  const traceabilityGate = useTraceabilityGate({ studyId, setWorkspace, selectStage, setNotice, setError });
 
   const refresh = useCallback(async () => {
     try {
@@ -239,20 +242,6 @@ export function HelixWorkbench({ studyId }: Props) {
     }
   }
 
-  async function resolve(resultId: string, message: string) {
-    setBusy(resultId);
-    setNotice(null);
-    setError(null);
-    try {
-      setWorkspace(await recordDisposition(studyId, resultId, message));
-      setNotice(`Synthetic review disposition recorded for ${resultId}.`);
-    } catch (cause) {
-      setError(messageFrom(cause));
-    } finally {
-      setBusy(null);
-    }
-  }
-
   async function approve(role: ApprovalRole) {
     setBusy(role);
     setNotice(null);
@@ -380,6 +369,13 @@ export function HelixWorkbench({ studyId }: Props) {
                 <IntakeUploadForm />
               </UploadGate>
             )}
+            {selectedStageId === "traceability" && (
+              <TraceabilityStageView
+                workspace={workspace}
+                onRecordDisposition={traceabilityGate.onRecordDisposition}
+                onContinue={traceabilityGate.onContinue}
+              />
+            )}
             {/* Lanes B, C and D replace these legacy panels with their stage views. Until
                 then they remain the fallback so no stage loses its working controls. */}
             <StudyJourney
@@ -413,7 +409,7 @@ export function HelixWorkbench({ studyId }: Props) {
               workspace={workspace}
               busy={busy}
               onInspectClaim={inspectClaim}
-              onResolve={(resultId, message) => void resolve(resultId, message)}
+              onResolve={() => selectStage("traceability")}
               onApprove={(role) => void approve(role)}
               onFinalStudyApproval={() => void approveFinalStudy()}
               onExport={() => void performExport()}

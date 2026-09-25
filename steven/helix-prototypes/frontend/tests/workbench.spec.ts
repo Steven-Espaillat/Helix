@@ -154,12 +154,27 @@ test("runs the synthetic study from validation through explicit export", async (
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "OECD TG 407, 2025" }).first()).toBeVisible();
 
-  for (let remaining = 3; remaining > 0; remaining -= 1) {
-    const buttons = page.getByRole("button", { name: "Record synthetic disposition" });
-    await expect(buttons).toHaveCount(remaining);
-    await buttons.first().click();
-    await expect(buttons).toHaveCount(remaining - 1);
+  // Lane C (#22): dispositions are typed reviewer commands recorded at Human Gate 2.
+  // The legacy report button only routes there; it never fabricates a command.
+  await page.getByRole("button", { name: "Record synthetic disposition" }).first().click();
+  await expect(page.getByTestId("traceability-stage-view")).toBeVisible();
+  for (const [resultId, decision] of [
+    ["VR-004", "Corrected"],
+    ["VR-005", "Corrected"],
+    ["VR-006", "Approved exception"],
+  ] as const) {
+    await page.getByTestId(`open-blocker-${resultId}`).click();
+    await page.getByTestId(`record-disposition-${resultId}`).click();
+    const form = page.getByTestId(`disposition-form-${resultId}`);
+    await form.getByRole("radio", { name: decision }).check();
+    await form.getByLabel("Reason").fill(`Synthetic reviewer disposition for ${resultId}.`);
+    await form.getByLabel("Reviewer").fill("Dr. Avery Reviewer");
+    await form.getByTestId("disposition-submit").click();
+    await expect(page.getByTestId(`rule-badge-${resultId}`)).toHaveText("Disposition");
   }
+  await expect(page.getByTestId("continue-to-review")).toBeEnabled();
+  await page.getByTestId("continue-to-review").click();
+  await expect(page.getByTestId("stage-view")).toHaveAttribute("data-selected-stage", "review-export");
   await expect(
     page.locator(".report-paper").getByText("Minimal hepatocellular hypertrophy", { exact: false }),
   ).toBeVisible();

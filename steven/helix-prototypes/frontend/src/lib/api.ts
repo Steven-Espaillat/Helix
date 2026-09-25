@@ -12,6 +12,7 @@ import type {
   ValidationRun,
   Workspace,
 } from "./types";
+import { dispositionRejection, type DispositionCommand } from "./api/traceability";
 
 export const API_ROOT = (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1").replace(
   /\/$/,
@@ -155,19 +156,27 @@ export async function getEvidence(
 export async function recordDisposition(
   studyId: string,
   resultId: string,
-  message: string,
+  command: DispositionCommand,
 ): Promise<Workspace> {
-  const value = await request(
-    `/studies/${encodeURIComponent(studyId)}/validation-results/${encodeURIComponent(resultId)}/dispositions`,
+  // Lane C (#22): the reviewer's typed command is sent verbatim. Rejections keep the
+  // server's field messages (422) or conflict text (409) so the form can show them.
+  const response = await fetch(
+    `${API_ROOT}/studies/${encodeURIComponent(studyId)}/validation-results/${encodeURIComponent(resultId)}/dispositions`,
     {
       method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        decision: resultId === "VR-006" ? "approved_exception" : "corrected",
-        reason: `Synthetic prototype disposition. ${message}`,
-        reviewer: "Dr. Avery Reviewer",
+        decision: command.decision,
+        reason: command.reason,
+        reviewer: command.reviewer,
       }),
     },
   );
+  const value: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw dispositionRejection(value, response.status);
+  }
   assertWorkspace(value);
   return value;
 }
