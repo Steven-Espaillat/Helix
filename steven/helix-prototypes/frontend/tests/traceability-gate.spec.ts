@@ -141,6 +141,16 @@ async function openGate(page: Page) {
   await expect(page.getByTestId("rule-accordion")).toBeVisible();
 }
 
+// #70: Gate 2 shows no blocker, rule or panel tallies; per-rule badges and the blocker
+// list carry the status. Scoped to the gate chrome and the blocker card.
+async function expectNoCountChrome(page: Page) {
+  for (const id of ["traceability-gate", "gate-blockers"]) {
+    const text = await page.getByTestId(id).innerText();
+    expect(text, `${id} renders a tally`).not.toMatch(/\b\d+\s+(passed|blocked|blockers?|dispositions?|blocked rules?)\b/i);
+    expect(text, `${id} renders an x-of-y tally`).not.toMatch(/\b\d+\s+of\s+\d+\s+(blockers?|rules?|dispositions?)\b/i);
+  }
+}
+
 test("renders Gate 2 from server state with an accessible single-open accordion", async ({ page }) => {
   await serveGate(page);
   await openGate(page);
@@ -150,11 +160,12 @@ test("renders Gate 2 from server state with an accessible single-open accordion"
   await expect(banner).toContainText("Human gate 2 of 3");
   await expect(banner).toContainText("Review the traceability of the agent's work");
   await expect(page.getByTestId("continue-to-review")).toBeDisabled();
-  await expect(page.getByTestId("continue-hint")).toContainText("Record a disposition for 3 blocked rules");
+  await expect(page.getByTestId("continue-hint")).toHaveText("Record a disposition for each blocked rule to continue.");
   await expect(page.getByRole("heading", { name: "Validation and traceability" })).toBeVisible();
   await expect(page.getByTestId("trace-claim-kicker")).toContainText("Claim C-BW-HIGH");
-  await expect(page.getByTestId("trace-summary")).toContainText("1 passed");
-  await expect(page.getByTestId("trace-summary")).toContainText("1 blocked");
+  await expect(page.getByTestId("trace-summary")).toHaveText("Needs disposition");
+  await expect(page.getByTestId("trace-summary")).toHaveAttribute("data-status", "block");
+  await expectNoCountChrome(page);
 
   const rows = page.getByTestId("rule-accordion").locator(".hx-acc-btn");
   await expect(rows).toHaveCount(2);
@@ -204,6 +215,10 @@ test("loads getEvidence per claim and shows the five-step flow, lineage, and rec
 
   const evidence = page.getByTestId("claim-evidence");
   await expect(evidence.getByTestId("source-records").getByRole("row")).toHaveCount(11);
+  // Lineage edges start collapsed (#70) and open on demand with every edge.
+  await expect(evidence.getByTestId("lineage-disclosure")).not.toHaveAttribute("open", "");
+  await expect(evidence.getByTestId("lineage-edges")).toBeHidden();
+  await evidence.getByTestId("lineage-toggle").click();
   await expect(evidence.getByTestId("lineage-edges").getByRole("row")).toHaveCount(11);
   await expect(evidence.getByTestId("claim-lineage")).toContainText("mean-v1");
   await expect(evidence.getByTestId("claim-lineage")).toContainText("@");
@@ -307,7 +322,8 @@ test("a recorded disposition keeps the blocker and shows Disposition, never Pass
   await expect(note).toContainText("Corrected. Re-run mean-v1 by sex before release.");
   await expect(note).toContainText("Reviewer Dr. Lane C Reviewer");
   await expect(note).toContainText(/RD-[A-Z0-9-]+/);
-  await expect(page.getByTestId("trace-summary")).toContainText("1 disposition");
+  await expect(page.getByTestId("trace-summary")).toHaveText("Dispositioned");
+  await expectNoCountChrome(page);
   await expect(page.getByTestId("rule-accordion").getByText("Pass", { exact: true })).toHaveCount(1); // VR-003 only
   await expect(page.getByTestId("continue-to-review")).toBeDisabled();
   expect(commands).toEqual([`POST /api/v1/studies/${studyId}/validation-results/VR-004/dispositions`]);
@@ -340,7 +356,9 @@ test("Continue waits for server-reported dispositions and Review, then only chan
   const commands = trackCommands(page);
   await serveGate(page);
   await openGate(page);
-  await expect(page.getByTestId("gate-blockers")).toContainText("1 of 3 blockers have a disposition");
+  await expect(page.getByTestId("gate-blockers")).toContainText("Blockers awaiting a disposition");
+  await expect(page.getByTestId("blocker-VR-004")).toContainText("Disposition");
+  await expectNoCountChrome(page);
 
   for (const [resultId, decision, rule] of [
     ["VR-005", "Corrected", /Mi severity reconcile/],
@@ -358,7 +376,8 @@ test("Continue waits for server-reported dispositions and Review, then only chan
     await expect(page.getByTestId(`rule-badge-${resultId}`)).toHaveText("Disposition");
   }
 
-  await expect(page.getByTestId("gate-blockers")).toContainText("3 of 3 blockers have a disposition");
+  await expect(page.getByTestId("gate-blockers")).toContainText("Every blocker has a disposition");
+  await expectNoCountChrome(page);
   const next = page.getByTestId("continue-to-review");
   await expect(next).toBeEnabled();
   await expect(page.getByTestId("continue-hint")).toHaveText("Reviewed and approved.");

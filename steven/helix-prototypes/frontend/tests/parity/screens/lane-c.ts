@@ -16,13 +16,16 @@ export const laneCScreens: ParityScreen[] = [
     issue: "#22",
     status: "enforced",
     colorScheme: "light",
-    reference: { path: "?stage=7", selector: "#hx-panel" },
+    // DH-5 (#70, spec #64) deliberately drops the reference's "3 passed / 1 blocked" tally
+    // chips for one count-free claim status, so that header chip region is masked on both sides.
+    reference: { path: "?stage=7", selector: "#hx-panel", mask: ['#hx-panel .stack > div[style*="space-between"] > div:last-child'] },
     ours: {
       path: "/parity/traceability",
       selector: '[data-testid="traceability-gate"]',
       waitFor: '[data-testid="trace-flow"]',
+      mask: ['[data-testid="trace-summary"]'],
     },
     notes:
-      "Fixture display state mirrors the reference RULES/TRACE copy. Remaining text differences are data-driven: rule labels come from server rule ids (e.g. 'Grain sex stratified' for 'Expected grain'), the evidence column prefixes the linked-ID count, and the transform detail lists the claim's grain key and input count.",
+      "Fixture display state mirrors the reference RULES/TRACE copy. Remaining text differences are data-driven: rule labels come from server rule ids (e.g. 'Grain sex stratified' for 'Expected grain'), the evidence column prefixes the linked-ID count, and the transform detail lists the claim's grain key and input count. The header tally chips are masked: #70 replaces them with a single count-free claim status chip.",
   },
 ];

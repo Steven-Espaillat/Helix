@@ -80,10 +80,10 @@ export function continueEligibility(workspace: TraceabilityWorkspace): ContinueE
     return { eligible: false, hint: "The server has not reached the traceability gate yet." };
   }
   if (undisposed.length > 0 || pendingTraceActions.length > 0) {
-    const count = Math.max(undisposed.length, pendingTraceActions.length);
+    const single = Math.max(undisposed.length, pendingTraceActions.length) === 1;
     return {
       eligible: false,
-      hint: `Record a disposition for ${count === 1 ? "the blocked rule" : `${count} blocked rules`} to continue.`,
+      hint: `Record a disposition for ${single ? "the blocked rule" : "each blocked rule"} to continue.`,
     };
   }
   if (!reviewReached) {

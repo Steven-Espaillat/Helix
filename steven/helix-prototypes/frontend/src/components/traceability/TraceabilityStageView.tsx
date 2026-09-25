@@ -19,6 +19,7 @@ import {
   requiredBlockerIds,
   ruleDisplay,
   stageById,
+  type Disposition,
   type TraceabilityWorkspace,
 } from "./gateState";
 import { RuleAccordion, humanizeRule } from "./RuleAccordion";
@@ -102,16 +103,13 @@ export function TraceabilityStageView({
     setOpenedFor(claimId);
   }, [current, claimId, openedFor, dispositions]);
 
-  const counts = results.reduce(
-    (total, result) => {
-      const display = ruleDisplay(result, dispositions.get(result.result_id));
-      if (display === "pass") total.passed += 1;
-      else if (display === "disposition") total.disposition += 1;
-      else if (display === "blocked") total.blocked += 1;
-      return total;
-    },
-    { passed: 0, blocked: 0, disposition: 0 },
-  );
+  // One calm status for the selected claim; per-rule badges carry the detail (no tallies, #70).
+  const displays = results.map((result) => ruleDisplay(result, dispositions.get(result.result_id)));
+  const claimStatus: { tone: "pass" | "block" | "warn"; label: string } = displays.includes("blocked")
+    ? { tone: "block", label: "Needs disposition" }
+    : displays.includes("disposition")
+      ? { tone: "warn", label: "Dispositioned" }
+      : { tone: "pass", label: "All rules pass" };
 
   const selectedClaim = workspace.claims.find((claim) => claim.claim_id === claimId);
   const evaluation = evaluationForClaim(workspace, claimId);
@@ -187,21 +185,13 @@ export function TraceabilityStageView({
             <h1>Validation and traceability</h1>
             <p className="hx-sub">Open a rule to see how the value flows from the frozen source to the report.</p>
           </div>
-          <div className="hx-trace-chips" data-testid="trace-summary">
-            <Chip tone="pass" className="hx-trace-chip">
-              {counts.passed} passed
-            </Chip>
-            {counts.blocked > 0 && (
-              <Chip tone="block" className="hx-trace-chip">
-                {counts.blocked} blocked
+          {current && (
+            <div className="hx-trace-chips" data-testid="trace-summary" data-status={claimStatus.tone}>
+              <Chip tone={claimStatus.tone} className="hx-trace-chip">
+                {claimStatus.label}
               </Chip>
-            )}
-            {counts.disposition > 0 && (
-              <Chip tone="warn" className="hx-trace-chip">
-                {counts.disposition} {counts.disposition === 1 ? "disposition" : "dispositions"}
-              </Chip>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         {!claimId ? (
           <Card data-testid="trace-no-claims">
@@ -262,9 +252,7 @@ function GateBlockers({
     <Card stack aria-labelledby="hx-blockers-h" data-testid="gate-blockers">
       <div>
         <Kicker>Required dispositions</Kicker>
-        <h2 id="hx-blockers-h">
-          {required.filter((id) => isRecorded(dispositions.get(id))).length} of {required.length} blockers have a disposition
-        </h2>
+        <h2 id="hx-blockers-h">{blockersHeading(required, dispositions)}</h2>
       </div>
       <div>
         {required.map((resultId) => {
@@ -311,6 +299,11 @@ function GateBlockers({
       </div>
     </Card>
   );
+}
+
+function blockersHeading(required: string[], dispositions: Map<string, Disposition>): string {
+  if (required.length === 0) return "No blockers need a disposition";
+  return required.every((id) => isRecorded(dispositions.get(id))) ? "Every blocker has a disposition" : "Blockers awaiting a disposition";
 }
 
 function requestedClaim(workspace: TraceabilityWorkspace, request: ClaimRequest | null): string | undefined {

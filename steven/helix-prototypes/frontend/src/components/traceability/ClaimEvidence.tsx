@@ -17,8 +17,8 @@ export function ClaimEvidence({ chain }: { chain: EvidenceChainData }) {
     <Card stack aria-labelledby="hx-evidence-h" data-testid="claim-evidence">
       <div>
         <Kicker>Claim evidence · {claim.claim_id}</Kicker>
-        <h2 id="hx-evidence-h">Source records, recomputation and lineage</h2>
-        <p className="hx-sub">The backend recomputes the value from the frozen source IDs. This view only displays the returned evidence.</p>
+        <h2 id="hx-evidence-h">Source records and recomputation</h2>
+        <p className="hx-sub">Recomputed by the backend from the frozen source IDs. Read-only.</p>
       </div>
       <dl className="hx-evidence-facts" data-testid="claim-lineage">
         <div>
@@ -87,24 +87,29 @@ export function ClaimEvidence({ chain }: { chain: EvidenceChainData }) {
       )}
 
       {(chain.lineage?.length ?? 0) > 0 && (
-        <DataTable<Edge>
-          label="Lineage edges"
-          data-testid="lineage-edges"
-          template="130px 150px minmax(0, 1fr) 70px 150px"
-          rows={chain.lineage ?? []}
-          rowKey={(edge) => edge.edge_id}
-          columns={[
-            { key: "edge", header: "Edge", cell: (edge) => <span className="hx-mono">{edge.edge_id}</span> },
-            { key: "record", header: "Source record", cell: (edge) => <span className="hx-mono">{edge.source_record_id}</span> },
-            { key: "pointer", header: "Pointer", cell: (edge) => <span className="hx-mono hx-ellipsis">{edge.source_pointer}</span> },
-            { key: "tier", header: "Tier", cell: (edge) => String(edge.authority_tier) },
-            {
-              key: "transform",
-              header: "Transform",
-              cell: (edge) => <span className="hx-mono">{`${edge.transform_id}${edge.transform_version ? `@${edge.transform_version}` : ""}`}</span>,
-            },
-          ]}
-        />
+        // Calm by default (#70): the edges repeat the source pointers above, so they sit
+        // behind a native disclosure instead of a second always-open table.
+        <details className="hx-evidence-lineage" data-testid="lineage-disclosure">
+          <summary data-testid="lineage-toggle">Lineage edges</summary>
+          <DataTable<Edge>
+            label="Lineage edges"
+            data-testid="lineage-edges"
+            template="130px 150px minmax(0, 1fr) 70px 150px"
+            rows={chain.lineage ?? []}
+            rowKey={(edge) => edge.edge_id}
+            columns={[
+              { key: "edge", header: "Edge", cell: (edge) => <span className="hx-mono">{edge.edge_id}</span> },
+              { key: "record", header: "Source record", cell: (edge) => <span className="hx-mono">{edge.source_record_id}</span> },
+              { key: "pointer", header: "Pointer", cell: (edge) => <span className="hx-mono hx-ellipsis">{edge.source_pointer}</span> },
+              { key: "tier", header: "Tier", cell: (edge) => String(edge.authority_tier) },
+              {
+                key: "transform",
+                header: "Transform",
+                cell: (edge) => <span className="hx-mono">{`${edge.transform_id}${edge.transform_version ? `@${edge.transform_version}` : ""}`}</span>,
+              },
+            ]}
+          />
+        </details>
       )}
     </Card>
   );

@@ -160,3 +160,8 @@
   #helix-e2e .hx-acc-panel { padding-left: 20px; }
   #helix-e2e .hx-trace-detail { grid-template-columns: 1fr; }
 }
+
+/* DH-5 (#70): lineage edges sit behind a calm native disclosure. */
+#helix-e2e .hx-evidence-lineage > summary { cursor: pointer; width: fit-content; font-size: var(--hx-fs-meta); font-weight: 600; color: var(--hx-muted); }
+#helix-e2e .hx-evidence-lineage > summary:focus-visible { outline: var(--hx-focus-outline); outline-offset: 2px; border-radius: 4px; }
+#helix-e2e .hx-evidence-lineage[open] > summary { margin-bottom: var(--hx-sp-10); }
