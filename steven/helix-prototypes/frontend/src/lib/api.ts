@@ -46,13 +46,16 @@ export async function runValidation(
   return value;
 }
 
-export async function runDataValidation(studyId: string): Promise<DataValidationExecution> {
+export async function runDataValidation(
+  studyId: string,
+  idempotencyKey = `workbench-${studyId}-validation.body_weight-v1`,
+): Promise<DataValidationExecution> {
   const value = await request(`/studies/${encodeURIComponent(studyId)}/data-validation-packages`, {
     method: "POST",
     body: JSON.stringify({
       actor: "HELIX workbench",
       package_id: "validation.body_weight",
-      idempotency_key: `workbench-${studyId}-validation.body_weight-v1`,
+      idempotency_key: idempotencyKey,
     }),
   });
   assertDataValidationExecution(value);
@@ -93,13 +96,14 @@ export async function runSectionAgent(
 export async function evaluateCandidate(
   studyId: string,
   runId: string,
+  idempotencyKey = `workbench-${studyId}-evaluate-${runId}-v1`,
 ): Promise<CandidateEvaluation> {
   const value = await request(
     `/studies/${encodeURIComponent(studyId)}/section-runs/${encodeURIComponent(runId)}/evaluations`,
     {
       method: "POST",
       body: JSON.stringify({
-        idempotency_key: `workbench-${studyId}-evaluate-${runId}-v1`,
+        idempotency_key: idempotencyKey,
       }),
     },
   );
@@ -110,13 +114,14 @@ export async function evaluateCandidate(
 export async function promoteSectionDraft(
   studyId: string,
   runId: string,
+  idempotencyKey = `workbench-${studyId}-promote-${runId}-v1`,
 ): Promise<SectionDraft> {
   const value = await request(
     `/studies/${encodeURIComponent(studyId)}/section-runs/${encodeURIComponent(runId)}/promotions`,
     {
       method: "POST",
       body: JSON.stringify({
-        idempotency_key: `workbench-${studyId}-promote-${runId}-v1`,
+        idempotency_key: idempotencyKey,
       }),
     },
   );
@@ -127,6 +132,7 @@ export async function promoteSectionDraft(
 export async function queryCrossSection(
   studyId: string,
   runId: string,
+  idempotencyKey = `workbench-${studyId}-query-${runId}-v1`,
 ): Promise<CrossSectionQueryReceipt> {
   const value = await request(
     `/studies/${encodeURIComponent(studyId)}/section-runs/${encodeURIComponent(runId)}/cross-section-queries`,
@@ -134,7 +140,7 @@ export async function queryCrossSection(
       method: "POST",
       body: JSON.stringify({
         artifact_ids: ["claim:C-BW-HIGH", "validation.body_weight"],
-        idempotency_key: `workbench-${studyId}-query-${runId}-v1`,
+        idempotency_key: idempotencyKey,
       }),
     },
   );

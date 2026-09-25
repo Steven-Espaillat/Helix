@@ -36,3 +36,40 @@
 #helix-e2e .hx-act.active .txt { font-weight: var(--hx-fw-semibold); }
 #helix-e2e .hx-act .tag { font-size: var(--hx-fs-meta); }
 #helix-e2e .hx-hollow { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--hx-faint); }
+#helix-e2e .hx-agent-stage { display: grid; gap: var(--hx-sp-16); }
+#helix-e2e .hx-agent-banner-meta { display: flex; align-items: center; gap: var(--hx-sp-12); }
+#helix-e2e .hx-agent-facts { display: grid; gap: var(--hx-sp-8); margin: 0; }
+#helix-e2e .hx-agent-fact { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--hx-sp-12); font-size: var(--hx-fs-body); }
+#helix-e2e .hx-agent-fact dt { color: var(--hx-muted); }
+#helix-e2e .hx-agent-fact dd { margin: 0; overflow-wrap: anywhere; }
+#helix-e2e .hx-agent-list { margin: var(--hx-sp-8) 0 0; padding-left: var(--hx-sp-16); }
+#helix-e2e .hx-agent-commands { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hx-sp-12); }
+#helix-e2e .hx-agent-planner { display: flex; gap: var(--hx-sp-16); border: 0; padding: 0; margin: 0; flex-basis: 100%; }
+/* Lane B (#21) layout parity with the reference agent view (section 5.5). */
+#helix-e2e .hx-agent-title-row { display: flex; justify-content: space-between; gap: var(--hx-sp-16); align-items: flex-start; }
+#helix-e2e .hx-card h1.hx-agent-h { margin-top: 4px; }
+#helix-e2e .hx-agent-summary { margin: 0; font-size: var(--hx-fs-lead); color: var(--hx-ink-2); }
+#helix-e2e .hx-agent-io-title { font-weight: var(--hx-fw-semibold); margin-top: 4px; }
+#helix-e2e .hx-agent-shield { color: var(--hx-warn); flex-shrink: 0; }
+/* The reference renders the shield as a plain inline svg on the text baseline. */
+#helix-e2e .hx-agent-shield .hx-icon { vertical-align: baseline; }
+#helix-e2e .hx-agent-activity-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--hx-sp-8); }
+#helix-e2e .hx-agent-activity-head .hx-sub { margin: 0; font-size: var(--hx-fs-meta); }
+#helix-e2e .hx-agent-acts { list-style: none; margin: 0; padding: 0; }
+#helix-e2e .hx-agent-ic.pass { color: var(--hx-pass); display: inline-flex; }
+#helix-e2e .hx-agent-ic.block { color: var(--hx-block); display: inline-flex; }
+#helix-e2e .hx-agent-tag.block { color: var(--hx-block); }
+#helix-e2e .hx-agent-tag.warn { color: var(--hx-warn); }
+#helix-e2e .hx-agent-tag.accent { color: var(--hx-accent); }
+#helix-e2e .hx-agent-detail { margin: 0; }
+#helix-e2e .hx-agent-live:empty { display: none; }
+#helix-e2e .hx-agent-live {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-sp-12);
+  padding: 10px 14px;
+  border-radius: var(--hx-radius-inner);
+}
+#helix-e2e .hx-agent-facts-group { display: grid; gap: var(--hx-sp-8); }
+#helix-e2e .hx-agent-facts-group > h4 { margin: var(--hx-sp-8) 0 0; font-size: var(--hx-fs-row); }

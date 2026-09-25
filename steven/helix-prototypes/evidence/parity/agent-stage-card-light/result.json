@@ -1,0 +1,30 @@
+{
+  "id": "agent-stage-card-light",
+  "title": "Agent Step stage card: summary, Input -> Output, control boundary (#21)",
+  "lane": "B",
+  "issue": "#21",
+  "status": "enforced",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "ours": "<base>/parity/agent?stage=4",
+  "reference": "research/helix-e2e-workbench-v1.html?stage=4",
+  "pixelThreshold": 0.02,
+  "maxDiffRatio": 0.01,
+  "ratio": 0,
+  "diffPixels": 0,
+  "comparedPixels": 249912,
+  "maskedPixels": 0,
+  "oursSize": {
+    "width": 702,
+    "height": 356
+  },
+  "referenceSize": {
+    "width": 702,
+    "height": 356
+  },
+  "sizeMismatch": false,
+  "pass": true
+}

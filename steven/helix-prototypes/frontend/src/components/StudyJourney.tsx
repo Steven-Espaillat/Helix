@@ -16,6 +16,8 @@ type Props = {
   queryBusy: boolean;
   promotionBusy: boolean;
   revisionBusy: boolean;
+  /** Lane B (#21): an Agent Step command is in flight; every legacy command waits. */
+  agentBusy?: boolean;
   onPlannerChange: (planner: PlannerMode) => void;
   onValidate: () => void;
   onExecuteBodyWeight: () => void;
@@ -37,6 +39,7 @@ export function StudyJourney({
   queryBusy,
   promotionBusy,
   revisionBusy,
+  agentBusy = false,
   onPlannerChange,
   onValidate,
   onExecuteBodyWeight,
@@ -97,7 +100,8 @@ export function StudyJourney({
     evaluationBusy ||
     queryBusy ||
     promotionBusy ||
-    revisionBusy;
+    revisionBusy ||
+    agentBusy;
   const scaffoldRevisions = workspace.review_scaffold_revisions ?? [];
   const [selectedScaffoldSequence, setSelectedScaffoldSequence] = useState<number | null>(null);
   const selectedScaffold = useMemo(() => {
